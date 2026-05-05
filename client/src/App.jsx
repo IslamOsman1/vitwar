@@ -12,6 +12,7 @@ import ProductDetails from './pages/ProductDetails.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import ContactPage from './pages/ContactPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
+import AlWekalaProductsPage from './pages/AlWekalaProductsPage.jsx';
 import Cart from './pages/Cart.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
@@ -69,6 +70,7 @@ export default function App() {
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/category/:name" element={<CategoryPage />} />
         <Route path="/offers" element={<OffersPage />} />
+        <Route path="/alwekala-products" element={<AlWekalaProductsPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />

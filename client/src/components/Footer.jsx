@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Home, Grid2X2, ShoppingCart, Tag, MoreHorizontal, ClipboardList, Heart, Phone, Info } from 'lucide-react';
+import { Home, Grid2X2, ShoppingCart, Tag, MoreHorizontal, ClipboardList, Heart, Phone, Info, Package } from 'lucide-react';
 import { useCart } from '../context/CartContext.jsx';
 
 export default function Footer() {
@@ -15,12 +15,16 @@ export default function Footer() {
       <NavLink to="/offers"><Tag size={24} /><span>العروض</span></NavLink>
 
       <div className={`bottom-more${moreOpen ? ' open' : ''}`}>
-        <button type="button" className="bottom-more-trigger" onClick={() => setMoreOpen(current => !current)}>
+        <button type="button" className="bottom-more-trigger" onClick={() => setMoreOpen((current) => !current)}>
           <MoreHorizontal size={24} />
           <span>المزيد</span>
         </button>
 
         {moreOpen && <div className="bottom-more-menu">
+          <Link to="/alwekala-products" className="bottom-more-item" onClick={() => setMoreOpen(false)}>
+            <Package size={18} />
+            <span>منتجات الوكالة</span>
+          </Link>
           <Link to="/orders" className="bottom-more-item" onClick={() => setMoreOpen(false)}>
             <ClipboardList size={18} />
             <span>طلباتي</span>
@@ -49,7 +53,7 @@ export default function Footer() {
         </div>
         <div>
           <strong>روابط سريعة</strong>
-          <p>الرئيسية • العروض • الفئات • طلباتي</p>
+          <p>الرئيسية • العروض • الفئات • منتجات الوكالة</p>
         </div>
         <div>
           <strong>الخدمة</strong>
