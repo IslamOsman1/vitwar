@@ -1,0 +1,125 @@
+import asyncHandler from 'express-async-handler';
+import { ensureStoreSettings, serializePublicSettings } from '../utils/storeSettings.js';
+import { uploadToCloudinary } from '../utils/uploadToCloudinary.js';
+
+const sanitizeHeroSlides = (slides = []) => slides
+  .filter((slide) => slide && (slide.title || slide.note || slide.tag || slide.image))
+  .slice(0, 5)
+  .map((slide) => ({
+    title: slide.title || '',
+    note: slide.note || '',
+    tag: slide.tag || '',
+    image: slide.image || '',
+    link: slide.link || ''
+  }));
+
+const sanitizeFeaturedCategories = (items = []) => items
+  .filter((item) => item && item.title && item.category)
+  .slice(0, 8)
+  .map((item) => ({
+    title: item.title || '',
+    subtitle: item.subtitle || '',
+    category: item.category || '',
+    image: item.image || ''
+  }));
+
+const sanitizeCategoryGroups = (groups = []) => groups
+  .filter((group) => group && group.title)
+  .map((group) => ({
+    title: group.title || '',
+    subtitle: group.subtitle || '',
+    sections: (group.sections || [])
+      .filter((section) => section && section.title && section.sourceCategory)
+      .map((section) => ({
+        title: section.title || '',
+        sourceCategory: section.sourceCategory || ''
+      }))
+  }))
+  .filter((group) => group.sections.length);
+
+export const getPublicSettings = asyncHandler(async (req, res) => {
+  const settings = await ensureStoreSettings();
+  res.json(serializePublicSettings(settings));
+});
+
+export const getAdminSettings = asyncHandler(async (req, res) => {
+  const settings = await ensureStoreSettings();
+  res.json(settings);
+});
+
+export const updateSettings = asyncHandler(async (req, res) => {
+  const settings = await ensureStoreSettings();
+  const {
+    storeName,
+    storeTagline,
+    supportEmail,
+    supportPhone,
+    address,
+    workingHours,
+    whatsapp,
+    about,
+    home,
+    categoryGroups,
+    checkout,
+    payment,
+    integrations
+  } = req.body;
+
+  if (typeof storeName === 'string') settings.storeName = storeName;
+  if (typeof storeTagline === 'string') settings.storeTagline = storeTagline;
+  if (typeof supportEmail === 'string') settings.supportEmail = supportEmail;
+  if (typeof supportPhone === 'string') settings.supportPhone = supportPhone;
+  if (typeof address === 'string') settings.address = address;
+  if (typeof workingHours === 'string') settings.workingHours = workingHours;
+  if (typeof whatsapp === 'string') settings.whatsapp = whatsapp;
+
+  if (about) {
+    settings.about = {
+      ...settings.about.toObject(),
+      ...about
+    };
+  }
+
+  if (home) {
+    settings.home = {
+      ...settings.home.toObject(),
+      ...home,
+      heroSlides: home.heroSlides ? sanitizeHeroSlides(home.heroSlides) : settings.home.heroSlides,
+      featuredCategories: home.featuredCategories ? sanitizeFeaturedCategories(home.featuredCategories) : settings.home.featuredCategories
+    };
+  }
+
+  if (categoryGroups) {
+    settings.categoryGroups = sanitizeCategoryGroups(categoryGroups);
+  }
+
+  if (checkout) {
+    settings.checkout = {
+      ...settings.checkout.toObject(),
+      ...checkout
+    };
+  }
+
+  if (payment) {
+    settings.payment = {
+      ...settings.payment.toObject(),
+      ...payment
+    };
+  }
+
+  if (integrations) {
+    settings.integrations = {
+      ...settings.integrations.toObject(),
+      ...integrations
+    };
+  }
+
+  await settings.save();
+  res.json(settings);
+});
+
+export const uploadBannerImage = asyncHandler(async (req, res) => {
+  if (!req.file) return res.status(400).json({ message: 'اختر صورة أولًا' });
+  const result = await uploadToCloudinary(req.file.buffer, 'alwekala/banners');
+  res.json({ url: result.secure_url, publicId: result.public_id });
+});
