@@ -252,6 +252,9 @@ body[data-theme='light'] .profile-link-card span{color:#7a6448}
 .category-page-hero p{margin:0;max-width:640px;color:var(--muted)}
 .category-products-panel{display:grid;gap:18px}
 .category-products-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.agency-product-sections{display:grid;gap:18px}
+.agency-product-section{padding:24px 26px}
+.agency-product-section .section-head{margin-bottom:0}
 .empty-state{display:grid;justify-items:center;gap:14px;padding:34px 18px;text-align:center}
 .empty-state p{margin:0;color:var(--muted)}
 .products-panel .products-grid .product-card{scroll-snap-align:start}
@@ -262,7 +265,7 @@ body[data-theme='light'] .profile-link-card span{color:#7a6448}
 .products-panel .products-grid .price-row strong{font-size:.82rem}
 .products-panel .products-grid .price-row del{font-size:.64rem}
 .products-panel .products-grid .add-mini,.products-panel .products-grid .product-card button{padding:8px 9px}
-@media(max-width:640px){.products-panel .products-grid{grid-auto-columns:minmax(186px,186px);gap:10px}.products-panel .products-grid .product-image{height:176px}.products-panel .products-grid .product-body{padding:9px}.products-panel .products-grid .product-body h3{font-size:.78rem}.products-panel .products-grid .product-body p{font-size:.66rem}.category-page-hero{padding:20px 18px}.category-products-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+@media(max-width:640px){.products-panel .products-grid{grid-auto-columns:minmax(186px,186px);gap:10px}.products-panel .products-grid .product-image{height:176px}.products-panel .products-grid .product-body{padding:9px}.products-panel .products-grid .product-body h3{font-size:.78rem}.products-panel .products-grid .product-body p{font-size:.66rem}.category-page-hero{padding:20px 18px}.category-products-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.agency-product-section{padding:18px}}
 .category-directory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
 .category-option-card{background:#fffdf9;border:1px solid #f0e2ca;border-radius:28px;padding:22px;display:grid;gap:18px;box-shadow:0 16px 36px rgba(41,31,16,.06)}
 .category-option-head{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}

@@ -62,20 +62,20 @@ export default function AlWekalaProductsPage() {
         <div>
           <span className="market-pill">منتجات الوكالة</span>
           <h1>منتجات الوكالة</h1>
-          <p>المنتجات هنا مرتبطة بالفئات والأقسام نفسها، ويتم اختيارها من لوحة التحكم لتظهر في هذا القسم.</p>
+          <p>المنتجات هنا مرتبطة بنفس الفئات والأقسام، ويتم اختيارها من لوحة التحكم لتظهر داخل هذا القسم بنفس أسلوب عرض صفحة الفئات.</p>
         </div>
         <Link to="/" className="secondary-btn">العودة للرئيسية</Link>
       </div>
     </section>
 
-    <section className="panel-card products-panel category-products-panel">
+    <section className="panel-card category-products-panel">
       <div className="section-head compact">
         <h2>الفئات والأقسام</h2>
         <span>{loading ? 'جاري التحميل...' : `${products.length} منتج`}</span>
       </div>
 
-      {loading ? <p className="muted">جاري تحميل المنتجات...</p> : groupedProducts.length ? <div className="product-sections">
-        {groupedProducts.map((section) => <section key={`${section.groupTitle}-${section.title}`} className="product-section">
+      {loading ? <p className="muted">جاري تحميل المنتجات...</p> : groupedProducts.length ? <div className="agency-product-sections">
+        {groupedProducts.map((section) => <section key={`${section.groupTitle}-${section.title}`} className="panel-card category-products-panel agency-product-section">
           <div className="section-head compact">
             <div>
               <h3>{section.title}</h3>
