@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useStoreSettings } from '../context/StoreSettingsContext.jsx';
@@ -27,44 +27,64 @@ const loadGoogleScript = () => new Promise((resolve, reject) => {
 });
 
 export default function SocialLoginButtons() {
-  const { settings } = useStoreSettings();
+  const { settings, refresh } = useStoreSettings();
   const { googleLogin } = useAuth();
   const googleClientId = settings?.googleClientId;
+  const initializedClientIdRef = useRef('');
+
+  const ensureGoogleReady = async (clientId) => {
+    await loadGoogleScript();
+    if (!window.google?.accounts?.id) {
+      throw new Error('google-sdk-unavailable');
+    }
+
+    if (initializedClientIdRef.current === clientId) return;
+
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: async (response) => {
+        try {
+          await googleLogin(response.credential);
+        } catch (error) {
+          toast.error(error.response?.data?.message || 'فشل تسجيل الدخول بجوجل');
+        }
+      }
+    });
+
+    initializedClientIdRef.current = clientId;
+  };
 
   useEffect(() => {
-    let active = true;
-    if (!googleClientId) return undefined;
+    if (!googleClientId) return;
 
-    loadGoogleScript()
-      .then(() => {
-        if (!active || !window.google?.accounts?.id) return;
-        window.google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: async (response) => {
-            try {
-              await googleLogin(response.credential);
-            } catch (error) {
-              toast.error(error.response?.data?.message || 'فشل تسجيل الدخول بجوجل');
-            }
-          }
-        });
-      })
-      .catch(() => {
-        if (active) toast.error('تعذر تحميل تسجيل الدخول بجوجل');
-      });
+    ensureGoogleReady(googleClientId).catch(() => {
+      toast.error('تعذر تحميل تسجيل الدخول بجوجل');
+    });
+  }, [googleClientId]);
 
-    return () => {
-      active = false;
-    };
-  }, [googleClientId, googleLogin]);
+  const handleGoogleLogin = async () => {
+    let clientId = googleClientId;
 
-  const handleGoogleLogin = () => {
-    if (!googleClientId || !window.google?.accounts?.id) {
-      toast.error('تسجيل الدخول بجوجل غير متاح حاليًا');
+    if (!clientId) {
+      try {
+        const freshSettings = await refresh();
+        clientId = freshSettings?.googleClientId || '';
+      } catch {
+        clientId = '';
+      }
+    }
+
+    if (!clientId) {
+      toast.error('تسجيل الدخول بجوجل غير متاح حاليًا، تأكد من GOOGLE_CLIENT_ID وإعادة نشر السيرفر');
       return;
     }
 
-    window.google.accounts.id.prompt();
+    try {
+      await ensureGoogleReady(clientId);
+      window.google.accounts.id.prompt();
+    } catch {
+      toast.error('تعذر تحميل تسجيل الدخول بجوجل');
+    }
   };
 
   return <div className="social-login-stack icons-only-social-login">
