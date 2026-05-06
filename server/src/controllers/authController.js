@@ -3,7 +3,6 @@ import asyncHandler from 'express-async-handler';
 import { OAuth2Client } from 'google-auth-library';
 import User from '../models/User.js';
 import { generateToken } from '../utils/generateToken.js';
-import { ensureStoreSettings } from '../utils/storeSettings.js';
 
 const googleClient = new OAuth2Client();
 
@@ -24,9 +23,28 @@ const randomPassword = () => crypto.randomBytes(24).toString('hex');
 export const register = asyncHandler(async (req, res) => {
   const { name, email, password, phone } = req.body;
   const exists = await User.findOne({ email });
-  if (exists) return res.status(400).json({ message: 'البريد مستخدم من قبل' });
 
-  const user = await User.create({ name, email, password, phone });
+  if (exists) {
+    if (exists.googleId && !exists.hasManualPassword) {
+      exists.name = name || exists.name;
+      exists.password = password;
+      exists.phone = phone || exists.phone;
+      exists.hasManualPassword = true;
+      await exists.save();
+      return res.status(200).json(buildAuthResponse(exists));
+    }
+
+    return res.status(400).json({ message: 'البريد مستخدم من قبل' });
+  }
+
+  const user = await User.create({
+    name,
+    email,
+    password,
+    phone,
+    hasManualPassword: true
+  });
+
   res.status(201).json(buildAuthResponse(user));
 });
 
@@ -38,12 +56,20 @@ export const login = asyncHandler(async (req, res) => {
     return res.json(buildAuthResponse(user));
   }
 
+  if (user?.googleId && !user.hasManualPassword) {
+    return res.status(401).json({
+      message: 'هذا الحساب مسجل عبر Google فقط. استخدم Google أو أنشئ كلمة مرور بنفس البريد لربط الحساب.'
+    });
+  }
+
   res.status(401).json({ message: 'البريد أو كلمة المرور غير صحيحة' });
 });
 
 export const googleLogin = asyncHandler(async (req, res) => {
   const { credential } = req.body;
-  if (!credential) return res.status(400).json({ message: 'بيانات Google غير موجودة' });
+  if (!credential) {
+    return res.status(400).json({ message: 'بيانات Google غير موجودة' });
+  }
 
   const googleClientId = process.env.GOOGLE_CLIENT_ID;
   if (!googleClientId) {
@@ -72,6 +98,7 @@ export const googleLogin = asyncHandler(async (req, res) => {
       name: payload.name || payload.email.split('@')[0],
       email: payload.email,
       password: randomPassword(),
+      hasManualPassword: false,
       phone: '',
       googleId: payload.sub,
       avatar: payload.picture || ''
