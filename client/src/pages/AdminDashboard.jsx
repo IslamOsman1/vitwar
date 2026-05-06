@@ -106,6 +106,11 @@ const defaultSettingsForm = {
         expiresAt: ''
       }
     ]
+  },
+  adminControls: {
+    deleteConfirmationEnabled: false,
+    deletePassword: '',
+    hasDeletePassword: false
   }
 };
 
@@ -161,6 +166,11 @@ const normalizeSettings = (data) => ({
         expiresAt: item.expiresAt ? String(item.expiresAt).slice(0, 10) : ''
       }))
       : defaultSettingsForm.loyalty.discountCodes
+  },
+  adminControls: {
+    ...defaultSettingsForm.adminControls,
+    ...(data.adminControls || {}),
+    deletePassword: ''
   }
 });
 
@@ -506,7 +516,9 @@ export default function AdminDashboard() {
 
   const removeProduct = async (id) => {
     if (!window.confirm('حذف المنتج؟')) return;
-    await api.delete(`/products/${id}`);
+    const deletePassword = await requestDeletePassword();
+    if (deletePassword === null) return;
+    await api.delete(`/products/${id}`, { data: { deletePassword } });
     toast.success('تم حذف المنتج');
     load();
   };
@@ -615,10 +627,13 @@ export default function AdminDashboard() {
   };
 
   const removeCategoryGroup = (groupIndex) => {
-    setSettingsForm((current) => ({
-      ...current,
-      categoryGroups: current.categoryGroups.filter((_, index) => index !== groupIndex)
-    }));
+    requestDeletePassword().then((deletePassword) => {
+      if (deletePassword === null) return;
+      setSettingsForm((current) => ({
+        ...current,
+        categoryGroups: current.categoryGroups.filter((_, index) => index !== groupIndex)
+      }));
+    });
   };
 
   const addSectionToGroup = (groupIndex) => {
@@ -630,10 +645,13 @@ export default function AdminDashboard() {
   };
 
   const removeSectionFromGroup = (groupIndex, sectionIndex) => {
-    setSettingsForm((current) => {
-      const next = JSON.parse(JSON.stringify(current));
-      next.categoryGroups[groupIndex].sections = next.categoryGroups[groupIndex].sections.filter((_, index) => index !== sectionIndex);
-      return next;
+    requestDeletePassword().then((deletePassword) => {
+      if (deletePassword === null) return;
+      setSettingsForm((current) => {
+        const next = JSON.parse(JSON.stringify(current));
+        next.categoryGroups[groupIndex].sections = next.categoryGroups[groupIndex].sections.filter((_, index) => index !== sectionIndex);
+        return next;
+      });
     });
   };
 
@@ -648,13 +666,16 @@ export default function AdminDashboard() {
   };
 
   const removeGovernorate = (governorateIndex) => {
-    setSettingsForm((current) => ({
-      ...current,
-      checkout: {
-        ...current.checkout,
-        governorates: (current.checkout.governorates || []).filter((_, index) => index !== governorateIndex)
-      }
-    }));
+    requestDeletePassword().then((deletePassword) => {
+      if (deletePassword === null) return;
+      setSettingsForm((current) => ({
+        ...current,
+        checkout: {
+          ...current.checkout,
+          governorates: (current.checkout.governorates || []).filter((_, index) => index !== governorateIndex)
+        }
+      }));
+    });
   };
 
   const addCityToGovernorate = (governorateIndex) => {
@@ -666,14 +687,17 @@ export default function AdminDashboard() {
   };
 
   const removeCityFromGovernorate = (governorateIndex, cityIndex) => {
-    setSettingsForm((current) => {
-      const next = JSON.parse(JSON.stringify(current));
-      next.checkout.governorates[governorateIndex].cities = next.checkout.governorates[governorateIndex].cities
-        .filter((_, index) => index !== cityIndex);
-      if (!next.checkout.governorates[governorateIndex].cities.length) {
-        next.checkout.governorates[governorateIndex].cities = [''];
-      }
-      return next;
+    requestDeletePassword().then((deletePassword) => {
+      if (deletePassword === null) return;
+      setSettingsForm((current) => {
+        const next = JSON.parse(JSON.stringify(current));
+        next.checkout.governorates[governorateIndex].cities = next.checkout.governorates[governorateIndex].cities
+          .filter((_, index) => index !== cityIndex);
+        if (!next.checkout.governorates[governorateIndex].cities.length) {
+          next.checkout.governorates[governorateIndex].cities = [''];
+        }
+        return next;
+      });
     });
   };
 
@@ -701,13 +725,36 @@ export default function AdminDashboard() {
   };
 
   const removeDiscountCode = (discountIndex) => {
-    setSettingsForm((current) => ({
-      ...current,
-      loyalty: {
-        ...current.loyalty,
-        discountCodes: (current.loyalty?.discountCodes || []).filter((_, index) => index !== discountIndex)
-      }
-    }));
+    requestDeletePassword().then((deletePassword) => {
+      if (deletePassword === null) return;
+      setSettingsForm((current) => ({
+        ...current,
+        loyalty: {
+          ...current.loyalty,
+          discountCodes: (current.loyalty?.discountCodes || []).filter((_, index) => index !== discountIndex)
+        }
+      }));
+    });
+  };
+
+  const requestDeletePassword = async () => {
+    if (!settingsForm.adminControls?.deleteConfirmationEnabled) return '';
+
+    if (!settingsForm.adminControls?.hasDeletePassword) {
+      toast.error('فعّل كلمة مرور الحذف أولًا من إعدادات المتجر');
+      return null;
+    }
+
+    const password = window.prompt('أدخل كلمة مرور تأكيد الحذف');
+    if (!password) return null;
+
+    try {
+      await api.post('/settings/admin/verify-delete-password', { password });
+      return password;
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'كلمة مرور الحذف غير صحيحة');
+      return null;
+    }
   };
 
   const saveSettings = async (event) => {
@@ -955,6 +1002,35 @@ export default function AdminDashboard() {
                   <Field label="العنوان"><input value={settingsForm.address} onChange={(event) => changeSettingsField(['address'], event.target.value)} placeholder="العنوان" /></Field>
                   <Field label="مواعيد العمل"><input value={settingsForm.workingHours} onChange={(event) => changeSettingsField(['workingHours'], event.target.value)} placeholder="مواعيد العمل" /></Field>
                   <Field label="واتساب"><input value={settingsForm.whatsapp} onChange={(event) => changeSettingsField(['whatsapp'], event.target.value)} placeholder="رقم واتساب" /></Field>
+                </div>
+                <div className="admin-category-inventory">
+                  <div className="admin-category-inventory-head">
+                    <div>
+                      <strong>حماية الحذف</strong>
+                      <span>اضبط كلمة مرور خاصة لتأكيد أي عملية حذف داخل لوحة التحكم.</span>
+                    </div>
+                    <b>{settingsForm.adminControls?.hasDeletePassword ? 'مفعلة' : 'بدون كلمة مرور'}</b>
+                  </div>
+                  <div className="admin-dashboard-form-grid two-cols">
+                    <Field label="كلمة مرور الحذف الجديدة">
+                      <input
+                        type="password"
+                        value={settingsForm.adminControls?.deletePassword || ''}
+                        onChange={(event) => changeSettingsField(['adminControls', 'deletePassword'], event.target.value)}
+                        placeholder="اتركها فارغة إذا لا تريد التغيير"
+                      />
+                    </Field>
+                  </div>
+                  <div className="admin-toggle-row">
+                    <label className="admin-toggle-pill">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(settingsForm.adminControls?.deleteConfirmationEnabled)}
+                        onChange={(event) => changeSettingsField(['adminControls', 'deleteConfirmationEnabled'], event.target.checked)}
+                      />
+                      تفعيل طلب كلمة مرور قبل الحذف
+                    </label>
+                  </div>
                 </div>
                 <SaveSectionButton saving={settingsSaving} label="حفظ إعدادات المتجر" />
               </article>

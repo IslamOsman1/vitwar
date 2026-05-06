@@ -5,6 +5,7 @@ import {
   getPublicSettings,
   updateCategorySettings,
   updateSettings,
+  verifyDeletePassword,
   uploadBannerImage
 } from '../controllers/settingsController.js';
 import { admin, hasPermission, protect } from '../middleware/auth.js';
@@ -15,6 +16,7 @@ const router = express.Router();
 router.get('/public', getPublicSettings);
 router.get('/admin', protect, admin, getAdminSettings);
 router.get('/admin/categories', protect, hasPermission('manage_products'), getCategorySettings);
+router.post('/admin/verify-delete-password', protect, verifyDeletePassword);
 router.post('/admin/banner-upload', protect, admin, upload.single('image'), uploadBannerImage);
 router.put('/admin', protect, admin, updateSettings);
 router.put('/admin/categories', protect, hasPermission('manage_products'), updateCategorySettings);

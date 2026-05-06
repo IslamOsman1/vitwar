@@ -115,6 +115,11 @@ const defaultLoyaltySettings = {
   discountCodes: []
 };
 
+const defaultAdminControls = {
+  deleteConfirmationEnabled: false,
+  deletePasswordHash: ''
+};
+
 export const ensureStoreSettings = async () => {
   let settings = await StoreSettings.findOne({ singleton: 'default' });
   if (!settings) {
@@ -128,7 +133,8 @@ export const ensureStoreSettings = async () => {
       checkout: {
         governorates: defaultCheckoutGovernorates
       },
-      loyalty: defaultLoyaltySettings
+      loyalty: defaultLoyaltySettings,
+      adminControls: defaultAdminControls
     });
   } else {
     let changed = false;
@@ -184,6 +190,17 @@ export const ensureStoreSettings = async () => {
         };
         changed = true;
       }
+    }
+
+    if (!settings.adminControls) {
+      settings.adminControls = defaultAdminControls;
+      changed = true;
+    } else if (typeof settings.adminControls.deleteConfirmationEnabled !== 'boolean' || typeof settings.adminControls.deletePasswordHash !== 'string') {
+      settings.adminControls = {
+        ...defaultAdminControls,
+        ...settings.adminControls.toObject?.()
+      };
+      changed = true;
     }
 
     if (changed) await settings.save();

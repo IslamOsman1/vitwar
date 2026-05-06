@@ -8,22 +8,30 @@ import { calculateShippingForGovernorate } from '../utils/shipping.js';
 
 const checkoutDraftKey = 'checkout-draft';
 
+const buildInitialAddress = (user) => ({
+  fullName: user?.name || '',
+  phone: user?.phone || '',
+  city: '',
+  area: '',
+  street: user?.addresses?.[0]?.address || '',
+  notes: ''
+});
+
 export default function Checkout() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { items, totals } = useCart();
   const { settings } = useStoreSettings();
-  const [shippingAddress, setAddress] = useState({
-    fullName: '',
-    phone: '',
-    city: '',
-    area: '',
-    street: '',
-    notes: ''
-  });
+  const [shippingAddress, setAddress] = useState(() => buildInitialAddress(user));
+  const [selectedAddressId, setSelectedAddressId] = useState(() => user?.addresses?.[0]?._id || '');
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [discountCode, setDiscountCode] = useState('');
   const [redeemLoyaltyPoints, setRedeemLoyaltyPoints] = useState(false);
+
+  const savedAddresses = useMemo(
+    () => Array.isArray(user?.addresses) ? user.addresses.filter((item) => item?.address) : [],
+    [user]
+  );
 
   const availableGovernorates = useMemo(
     () => settings?.checkout?.governorates || [],
@@ -55,18 +63,36 @@ export default function Checkout() {
   );
 
   useEffect(() => {
+    setAddress((current) => ({
+      ...current,
+      fullName: current.fullName || user?.name || '',
+      phone: current.phone || user?.phone || '',
+      street: current.street || user?.addresses?.[0]?.address || ''
+    }));
+    if (!selectedAddressId && user?.addresses?.[0]?._id) {
+      setSelectedAddressId(user.addresses[0]._id);
+    }
+  }, [selectedAddressId, user]);
+
+  useEffect(() => {
     const draft = sessionStorage.getItem(checkoutDraftKey);
     if (!draft) return;
     try {
       const parsed = JSON.parse(draft);
-      if (parsed.shippingAddress) setAddress(parsed.shippingAddress);
+      if (parsed.shippingAddress) {
+        setAddress({
+          ...buildInitialAddress(user),
+          ...parsed.shippingAddress
+        });
+      }
+      if (parsed.selectedAddressId) setSelectedAddressId(parsed.selectedAddressId);
       if (parsed.paymentMethod) setPaymentMethod(parsed.paymentMethod);
       if (parsed.discountCode) setDiscountCode(parsed.discountCode);
       if (parsed.redeemLoyaltyPoints) setRedeemLoyaltyPoints(Boolean(parsed.redeemLoyaltyPoints));
     } catch {
       return;
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (!items.length) navigate('/cart');
@@ -100,10 +126,25 @@ export default function Checkout() {
     });
   };
 
+  const changeSavedAddress = (event) => {
+    const nextId = event.target.value;
+    setSelectedAddressId(nextId);
+    const selectedAddress = savedAddresses.find((item) => item._id === nextId);
+    if (!selectedAddress) return;
+
+    setAddress((current) => ({
+      ...current,
+      fullName: current.fullName || user?.name || '',
+      phone: current.phone || user?.phone || '',
+      street: selectedAddress.address || current.street
+    }));
+  };
+
   const submit = (event) => {
     event.preventDefault();
     const draft = {
       shippingAddress,
+      selectedAddressId,
       paymentMethod,
       discountCode,
       redeemLoyaltyPoints
@@ -123,6 +164,20 @@ export default function Checkout() {
 
       <div className="checkout-layout">
         <form className="checkout-form checkout-panel" onSubmit={submit}>
+          {savedAddresses.length ? (
+            <div className="checkout-loyalty-box">
+              <strong>العناوين المحفوظة</strong>
+              <select value={selectedAddressId} onChange={changeSavedAddress}>
+                <option value="">اختر عنوانًا محفوظًا</option>
+                {savedAddresses.map((address) => (
+                  <option key={address._id} value={address._id}>
+                    {address.label || 'عنوان محفوظ'}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+
           <input
             name="fullName"
             value={shippingAddress.fullName}

@@ -111,6 +111,10 @@ const storeSettingsSchema = new mongoose.Schema({
       default: []
     }
   },
+  adminControls: {
+    deleteConfirmationEnabled: { type: Boolean, default: false },
+    deletePasswordHash: { type: String, default: '' }
+  },
   integrations: {
     googleClientId: { type: String, default: '' }
   }

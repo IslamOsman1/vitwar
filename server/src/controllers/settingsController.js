@@ -1,5 +1,7 @@
 import asyncHandler from 'express-async-handler';
+import bcrypt from 'bcryptjs';
 import { ensureStoreSettings, serializePublicSettings } from '../utils/storeSettings.js';
+import { assertDeletePassword, getDeleteProtectionState } from '../utils/deleteProtection.js';
 import { uploadToCloudinary } from '../utils/uploadToCloudinary.js';
 
 const sanitizeHeroSlides = (slides = []) => slides
@@ -73,17 +75,27 @@ const sanitizeLoyaltySettings = (loyalty = {}) => ({
   discountCodes: sanitizeDiscountCodes(loyalty.discountCodes || [])
 });
 
-export const getPublicSettings = asyncHandler(async (req, res) => {
+const serializeAdminSettings = (settings) => {
+  const payload = settings.toObject();
+  payload.adminControls = {
+    deleteConfirmationEnabled: Boolean(settings.adminControls?.deleteConfirmationEnabled),
+    deletePasswordHash: '',
+    hasDeletePassword: Boolean(settings.adminControls?.deletePasswordHash)
+  };
+  return payload;
+};
+
+export const getPublicSettings = asyncHandler(async (_req, res) => {
   const settings = await ensureStoreSettings();
   res.json(serializePublicSettings(settings));
 });
 
-export const getAdminSettings = asyncHandler(async (req, res) => {
+export const getAdminSettings = asyncHandler(async (_req, res) => {
   const settings = await ensureStoreSettings();
-  res.json(settings);
+  res.json(serializeAdminSettings(settings));
 });
 
-export const getCategorySettings = asyncHandler(async (req, res) => {
+export const getCategorySettings = asyncHandler(async (_req, res) => {
   const settings = await ensureStoreSettings();
   res.json({ categoryGroups: settings.categoryGroups || [] });
 });
@@ -104,6 +116,7 @@ export const updateSettings = asyncHandler(async (req, res) => {
     checkout,
     payment,
     loyalty,
+    adminControls,
     integrations
   } = req.body;
 
@@ -159,6 +172,21 @@ export const updateSettings = asyncHandler(async (req, res) => {
     });
   }
 
+  if (adminControls) {
+    settings.adminControls = {
+      ...settings.adminControls?.toObject?.(),
+      deleteConfirmationEnabled: adminControls.deleteConfirmationEnabled === true,
+      deletePasswordHash: settings.adminControls?.deletePasswordHash || ''
+    };
+
+    if (typeof adminControls.deletePassword === 'string' && adminControls.deletePassword.trim()) {
+      if (adminControls.deletePassword.trim().length < 4) {
+        return res.status(400).json({ message: 'كلمة مرور الحذف يجب أن تكون 4 أحرف على الأقل' });
+      }
+      settings.adminControls.deletePasswordHash = await bcrypt.hash(adminControls.deletePassword.trim(), 10);
+    }
+  }
+
   if (integrations) {
     settings.integrations = {
       ...settings.integrations.toObject(),
@@ -167,7 +195,7 @@ export const updateSettings = asyncHandler(async (req, res) => {
   }
 
   await settings.save();
-  res.json(settings);
+  res.json(serializeAdminSettings(settings));
 });
 
 export const updateCategorySettings = asyncHandler(async (req, res) => {
@@ -184,4 +212,11 @@ export const uploadBannerImage = asyncHandler(async (req, res) => {
   if (!req.file) return res.status(400).json({ message: 'اختر صورة أولًا' });
   const result = await uploadToCloudinary(req.file.buffer, 'alwekala/banners');
   res.json({ url: result.secure_url, publicId: result.public_id });
+});
+
+export const verifyDeletePassword = asyncHandler(async (req, res) => {
+  const { password } = req.body;
+  await assertDeletePassword(password);
+  const state = await getDeleteProtectionState();
+  res.json({ ok: true, enabled: state.enabled });
 });
