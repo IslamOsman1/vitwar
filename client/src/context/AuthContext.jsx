@@ -39,6 +39,12 @@ export function AuthProvider({ children }) {
     toast.success('تم تسجيل الدخول بواسطة Google');
   };
 
+  const loginWithPhoneCode = async (phone, phoneVerificationToken) => {
+    const { data } = await api.post('/auth/login/phone', { phone, phoneVerificationToken });
+    saveSession(data);
+    toast.success('تم تسجيل الدخول برقم الهاتف');
+  };
+
   const setManualPassword = async (password) => {
     const { data } = await api.put('/auth/set-password', { password });
     saveSession(data);
@@ -61,7 +67,7 @@ export function AuthProvider({ children }) {
     refreshProfile().catch(() => logout());
   }, []);
 
-  return <AuthContext.Provider value={{ user, login, register, googleLogin, setManualPassword, logout, refreshProfile }}>
+  return <AuthContext.Provider value={{ user, login, loginWithPhoneCode, register, googleLogin, setManualPassword, logout, refreshProfile }}>
     {children}
   </AuthContext.Provider>;
 }

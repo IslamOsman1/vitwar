@@ -128,6 +128,30 @@ export const checkPhoneVerification = asyncHandler(async (req, res) => {
   });
 });
 
+export const loginWithPhoneCode = asyncHandler(async (req, res) => {
+  const phone = normalizePhone(req.body.phone);
+  const phoneVerificationToken = req.body.phoneVerificationToken;
+
+  if (!phone || !phoneVerificationToken) {
+    return res.status(400).json({ message: 'يجب تأكيد رقم الهاتف أولًا' });
+  }
+
+  try {
+    if (!validatePhoneVerificationToken(phoneVerificationToken, phone)) {
+      return res.status(400).json({ message: 'تعذر التحقق من تأكيد رقم الهاتف' });
+    }
+  } catch {
+    return res.status(400).json({ message: 'انتهت صلاحية تأكيد رقم الهاتف، أعد المحاولة' });
+  }
+
+  const user = await User.findOne({ phone });
+  if (!user) {
+    return res.status(404).json({ message: 'لا يوجد حساب مرتبط بهذا الرقم' });
+  }
+
+  res.json(buildAuthResponse(user));
+});
+
 export const register = asyncHandler(async (req, res) => {
   const { name, email, password, phoneVerificationToken } = req.body;
   const phone = normalizePhone(req.body.phone);
@@ -255,6 +279,39 @@ export const setManualPassword = asyncHandler(async (req, res) => {
   await req.user.save();
 
   res.json(buildAuthResponse(req.user));
+});
+
+export const resetPasswordWithPhone = asyncHandler(async (req, res) => {
+  const phone = normalizePhone(req.body.phone);
+  const phoneVerificationToken = req.body.phoneVerificationToken;
+  const password = req.body.password;
+
+  if (!phone || !phoneVerificationToken) {
+    return res.status(400).json({ message: 'يجب تأكيد رقم الهاتف أولًا' });
+  }
+
+  if (!password || String(password).trim().length < 6) {
+    return res.status(400).json({ message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' });
+  }
+
+  try {
+    if (!validatePhoneVerificationToken(phoneVerificationToken, phone)) {
+      return res.status(400).json({ message: 'تعذر التحقق من تأكيد رقم الهاتف' });
+    }
+  } catch {
+    return res.status(400).json({ message: 'انتهت صلاحية تأكيد رقم الهاتف، أعد المحاولة' });
+  }
+
+  const user = await User.findOne({ phone });
+  if (!user) {
+    return res.status(404).json({ message: 'لا يوجد حساب مرتبط بهذا الرقم' });
+  }
+
+  user.password = password;
+  user.hasManualPassword = true;
+  await user.save();
+
+  res.json({ success: true, message: 'تم تحديث كلمة المرور بنجاح' });
 });
 
 export const profile = asyncHandler(async (req, res) => res.json(serializeUser(req.user)));

@@ -509,6 +509,10 @@ body[data-theme='light'] .account-info-icon{background:#f8efdf;border-color:#ecd
 .otp-status-row{display:flex;justify-content:flex-start}
 .otp-status-chip{display:inline-flex;align-items:center;min-height:36px;padding:0 12px;border-radius:999px;background:#2b1616;color:#ffd6d6;font-size:.82rem;font-weight:800}
 .otp-status-chip.verified{background:#182816;color:#dff5d7}
+.auth-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.auth-mode-btn{min-height:44px;border-radius:16px;border:1px solid rgba(222,183,122,.14);background:#171717;color:#e8d3b2;font-weight:800}
+.auth-mode-btn.active{background:linear-gradient(135deg,#17120d,#3b2b18 55%,#d8a556 100%);color:#fff8ec;border-color:transparent}
+.auth-helper-links{margin:0;text-align:center}
 .password-setup-card{max-width:520px;margin:32px auto}
 .password-setup-user{display:grid;gap:4px;padding:14px 16px;border-radius:18px;background:#171717;border:1px solid rgba(222,183,122,.12)}
 .password-setup-user strong{color:#fff}
@@ -553,6 +557,8 @@ body[data-theme='light'] .auth-divider span{background:var(--surface)}
 body[data-theme='light'] .social-icon-btn{border-color:rgba(184,137,78,.16)}
 body[data-theme='light'] .otp-status-chip{background:#f7dfdf;color:#8a4141}
 body[data-theme='light'] .otp-status-chip.verified{background:#e5f3df;color:#3f6d2d}
+body[data-theme='light'] .auth-mode-btn{background:#fffaf2;color:#7a6448;border-color:rgba(184,137,78,.16)}
+body[data-theme='light'] .auth-mode-btn.active{color:#fff8ec}
 body[data-theme='light'] .password-setup-user{background:#fffaf2;border-color:rgba(184,137,78,.16)}
 body[data-theme='light'] .password-setup-user strong{color:#18130f}
 body[data-theme='light'] .payment-option-card,
@@ -576,6 +582,7 @@ body[data-theme='light'] .admin-form textarea{background:#f7f0e4;color:#18130f;b
   .admin-checkbox-row{display:grid;gap:10px}
   .otp-inline-row{grid-template-columns:1fr}
   .otp-action-btn{width:100%}
+  .auth-mode-switch{grid-template-columns:1fr}
 }
 .admin-dashboard-page{display:grid;gap:22px;background:transparent;box-shadow:none;padding:0;color:var(--ink)}
 .admin-dashboard-hero{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:stretch}

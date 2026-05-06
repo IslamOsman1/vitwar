@@ -18,6 +18,7 @@ import Cart from './pages/Cart.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import CompletePasswordPage from './pages/CompletePasswordPage.jsx';
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
 import Checkout from './pages/Checkout.jsx';
 import CheckoutReview from './pages/CheckoutReview.jsx';
 import CheckoutSuccess from './pages/CheckoutSuccess.jsx';
@@ -90,6 +91,7 @@ export default function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
         <Route path="/checkout/review" element={<PrivateRoute><CheckoutReview /></PrivateRoute>} />
         <Route path="/checkout/success" element={<PrivateRoute><CheckoutSuccess /></PrivateRoute>} />
