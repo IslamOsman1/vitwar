@@ -887,6 +887,27 @@ export default function AdminDashboard() {
               <button type="button" className="table-action-btn edit" onClick={addCategoryGroup}>إضافة فئة رئيسية</button>
               {filteredCategoryGroups.map(({ group, index }) => (
                 <article key={`group-${index}`} className="admin-setting-card">
+                  <div className="admin-category-inventory">
+                    <div className="admin-category-inventory-head">
+                      <div>
+                        <strong>{group.title || `فئة رئيسية ${index + 1}`}</strong>
+                        <span>{group.subtitle || 'أضف وصفًا مختصرًا لهذه الفئة ليسهل تمييزها داخل لوحة التحكم.'}</span>
+                      </div>
+                      <b>{(group.sections || []).filter((section) => section?.title).length} قسم</b>
+                    </div>
+                    {(group.sections || []).length ? (
+                      <div className="admin-category-inventory-list">
+                        {(group.sections || []).map((section, sectionIndex) => (
+                          <div key={`inventory-${index}-${sectionIndex}`} className="admin-category-chip">
+                            <strong>{section.title || `قسم ${sectionIndex + 1}`}</strong>
+                            <span>{section.sourceCategory || group.title || 'بدون فئة مصدر'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="muted">لا توجد أقسام بعد. أضف أول قسم وسيظهر هنا كجرد سريع.</p>
+                    )}
+                  </div>
                   <div className="admin-dashboard-form-grid two-cols">
                     <Field label="اسم الفئة"><input value={group.title} onChange={(event) => changeSettingsField(['categoryGroups', index, 'title'], event.target.value)} placeholder="اسم الفئة" /></Field>
                     <Field label="وصف مختصر"><input value={group.subtitle} onChange={(event) => changeSettingsField(['categoryGroups', index, 'subtitle'], event.target.value)} placeholder="وصف مختصر" /></Field>
