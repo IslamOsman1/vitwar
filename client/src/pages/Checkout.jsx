@@ -8,14 +8,17 @@ import { calculateShippingForGovernorate } from '../utils/shipping.js';
 
 const checkoutDraftKey = 'checkout-draft';
 
-const buildInitialAddress = (user) => ({
-  fullName: user?.name || '',
-  phone: user?.phone || '',
-  city: '',
-  area: '',
-  street: user?.addresses?.[0]?.address || '',
-  notes: ''
-});
+const buildInitialAddress = (user) => {
+  const firstAddress = user?.addresses?.[0];
+  return {
+    fullName: user?.name || '',
+    phone: user?.phone || '',
+    city: firstAddress?.governorate || '',
+    area: firstAddress?.city || '',
+    street: firstAddress?.street || firstAddress?.address || '',
+    notes: firstAddress?.notes || ''
+  };
+};
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -29,7 +32,7 @@ export default function Checkout() {
   const [redeemLoyaltyPoints, setRedeemLoyaltyPoints] = useState(false);
 
   const savedAddresses = useMemo(
-    () => Array.isArray(user?.addresses) ? user.addresses.filter((item) => item?.address) : [],
+    () => Array.isArray(user?.addresses) ? user.addresses.filter((item) => item?.street || item?.address) : [],
     [user]
   );
 
@@ -63,11 +66,15 @@ export default function Checkout() {
   );
 
   useEffect(() => {
+    const nextBase = buildInitialAddress(user);
     setAddress((current) => ({
       ...current,
-      fullName: current.fullName || user?.name || '',
-      phone: current.phone || user?.phone || '',
-      street: current.street || user?.addresses?.[0]?.address || ''
+      fullName: current.fullName || nextBase.fullName,
+      phone: current.phone || nextBase.phone,
+      city: current.city || nextBase.city,
+      area: current.area || nextBase.area,
+      street: current.street || nextBase.street,
+      notes: current.notes || nextBase.notes
     }));
     if (!selectedAddressId && user?.addresses?.[0]?._id) {
       setSelectedAddressId(user.addresses[0]._id);
@@ -136,7 +143,10 @@ export default function Checkout() {
       ...current,
       fullName: current.fullName || user?.name || '',
       phone: current.phone || user?.phone || '',
-      street: selectedAddress.address || current.street
+      city: selectedAddress.governorate || '',
+      area: selectedAddress.city || '',
+      street: selectedAddress.street || selectedAddress.address || '',
+      notes: selectedAddress.notes || ''
     }));
   };
 

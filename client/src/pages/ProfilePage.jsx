@@ -13,7 +13,9 @@ export default function ProfilePage() {
     <main className="app-shell home-screen market-home account-page-shell">
       <section className="panel-card account-hero profile-hero">
         <div className="account-hero-main">
-          <div className="profile-avatar-large">{initials}</div>
+          <div className="profile-avatar-large">
+            {user?.avatar ? <img src={user.avatar} alt={displayName} className="profile-avatar-large-image" /> : initials}
+          </div>
           <div className="account-copy">
             <span className="market-pill">الملف الشخصي</span>
             <h1>{displayName}</h1>

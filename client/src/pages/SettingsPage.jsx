@@ -1,24 +1,59 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { MapPin, Pencil, Plus, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import PasswordField from '../components/PasswordField.jsx';
 import api from '../api/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useStoreSettings } from '../context/StoreSettingsContext.jsx';
 
-const emptyAddress = () => ({ label: '', address: '' });
+const emptyAddress = () => ({
+  label: '',
+  governorate: '',
+  city: '',
+  street: '',
+  notes: '',
+  address: ''
+});
+
+const normalizeAddress = (item = {}) => ({
+  _id: item._id || '',
+  label: item.label || '',
+  governorate: item.governorate || '',
+  city: item.city || '',
+  street: item.street || item.address || '',
+  notes: item.notes || '',
+  address: item.address || item.street || ''
+});
 
 export default function SettingsPage() {
   const { refreshProfile } = useAuth();
+  const { settings } = useStoreSettings();
   const [form, setForm] = useState({
     name: '',
     email: '',
     phone: '',
     password: '',
     avatar: '',
-    addresses: [emptyAddress()]
+    addresses: []
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [addressEditor, setAddressEditor] = useState({
+    open: false,
+    index: null,
+    data: emptyAddress()
+  });
+
+  const availableGovernorates = useMemo(
+    () => settings?.checkout?.governorates || [],
+    [settings]
+  );
+
+  const availableCities = useMemo(() => {
+    const selectedGovernorate = availableGovernorates.find((item) => item.name === addressEditor.data.governorate);
+    return selectedGovernorate?.cities || [];
+  }, [addressEditor.data.governorate, availableGovernorates]);
 
   useEffect(() => {
     api.get('/users/me')
@@ -29,10 +64,7 @@ export default function SettingsPage() {
           phone: data.phone || '',
           password: '',
           avatar: data.avatar || '',
-          addresses: data.addresses?.length ? data.addresses.map((item) => ({
-            label: item.label || '',
-            address: item.address || ''
-          })) : [emptyAddress()]
+          addresses: data.addresses?.length ? data.addresses.map(normalizeAddress) : []
         });
       })
       .catch(() => toast.error('تعذر تحميل إعدادات الملف الشخصي'))
@@ -41,23 +73,62 @@ export default function SettingsPage() {
 
   const updateField = (key, value) => setForm((current) => ({ ...current, [key]: value }));
 
-  const updateAddress = (index, key, value) => {
-    setForm((current) => ({
-      ...current,
-      addresses: current.addresses.map((item, itemIndex) => itemIndex === index ? { ...item, [key]: value } : item)
-    }));
+  const openAddressEditor = (index = null) => {
+    setAddressEditor({
+      open: true,
+      index,
+      data: index === null ? emptyAddress() : normalizeAddress(form.addresses[index])
+    });
   };
 
-  const addAddress = () => {
-    setForm((current) => ({ ...current, addresses: [...current.addresses, emptyAddress()] }));
+  const closeAddressEditor = () => {
+    setAddressEditor({
+      open: false,
+      index: null,
+      data: emptyAddress()
+    });
+  };
+
+  const updateAddressDraft = (key, value) => {
+    setAddressEditor((current) => {
+      const nextData = { ...current.data, [key]: value };
+      if (key === 'governorate') nextData.city = '';
+      nextData.address = nextData.street;
+      return { ...current, data: nextData };
+    });
+  };
+
+  const saveAddressDraft = () => {
+    const nextAddress = normalizeAddress(addressEditor.data);
+
+    if (!nextAddress.label.trim()) {
+      toast.error('أدخل اسم العنوان أولًا');
+      return;
+    }
+
+    if (!nextAddress.governorate.trim() || !nextAddress.city.trim() || !nextAddress.street.trim()) {
+      toast.error('أكمل بيانات العنوان قبل الحفظ');
+      return;
+    }
+
+    setForm((current) => {
+      const nextAddresses = [...current.addresses];
+      if (addressEditor.index === null) {
+        nextAddresses.unshift(nextAddress);
+      } else {
+        nextAddresses[addressEditor.index] = nextAddress;
+      }
+      return { ...current, addresses: nextAddresses };
+    });
+
+    closeAddressEditor();
+    toast.success('تم تجهيز العنوان الجديد');
   };
 
   const removeAddress = (index) => {
     setForm((current) => ({
       ...current,
-      addresses: current.addresses.length === 1
-        ? [emptyAddress()]
-        : current.addresses.filter((_, itemIndex) => itemIndex !== index)
+      addresses: current.addresses.filter((_, itemIndex) => itemIndex !== index)
     }));
   };
 
@@ -93,7 +164,14 @@ export default function SettingsPage() {
         email: form.email,
         phone: form.phone,
         password: form.password,
-        addresses: form.addresses
+        addresses: form.addresses.map((item) => ({
+          label: item.label,
+          governorate: item.governorate,
+          city: item.city,
+          street: item.street,
+          notes: item.notes,
+          address: item.street
+        }))
       });
       await refreshProfile();
       updateField('password', '');
@@ -158,29 +236,128 @@ export default function SettingsPage() {
           <section className="settings-addresses-block">
             <div className="section-head compact">
               <h2>العناوين</h2>
-              <button type="button" className="secondary-btn settings-add-address" onClick={addAddress}>إضافة عنوان جديد</button>
+              <button type="button" className="secondary-btn settings-add-address" onClick={() => openAddressEditor()}>
+                <Plus size={16} />
+                <span>إضافة عنوان</span>
+              </button>
             </div>
 
-            <div className="settings-addresses-stack">
-              {form.addresses.map((item, index) => <div key={`address-${index}`} className="settings-address-card">
-                <div className="admin-field">
-                  <label className="admin-field-label">اسم العنوان</label>
-                  <input
-                    value={item.label}
-                    onChange={(event) => updateAddress(index, 'label', event.target.value)}
-                    placeholder="مثال: المنزل أو العمل"
-                  />
+            {addressEditor.open ? (
+              <div className="settings-address-editor">
+                <div className="settings-address-toolbar">
+                  <strong>{addressEditor.index === null ? 'عنوان جديد' : 'تعديل العنوان'}</strong>
+                  <button type="button" className="round-action settings-address-close" onClick={closeAddressEditor}>
+                    <X size={18} />
+                  </button>
                 </div>
+
+                <div className="settings-grid settings-address-grid">
+                  <div className="admin-field">
+                    <label className="admin-field-label">اسم العنوان</label>
+                    <input
+                      value={addressEditor.data.label}
+                      onChange={(event) => updateAddressDraft('label', event.target.value)}
+                      placeholder="مثال: المنزل أو العمل"
+                    />
+                  </div>
+
+                  <div className="admin-field">
+                    <label className="admin-field-label">المحافظة</label>
+                    {availableGovernorates.length ? (
+                      <select
+                        value={addressEditor.data.governorate}
+                        onChange={(event) => updateAddressDraft('governorate', event.target.value)}
+                      >
+                        <option value="">اختر المحافظة</option>
+                        {availableGovernorates.map((governorate) => (
+                          <option key={governorate.name} value={governorate.name}>{governorate.name}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        value={addressEditor.data.governorate}
+                        onChange={(event) => updateAddressDraft('governorate', event.target.value)}
+                        placeholder="ادخل اسم المحافظة"
+                      />
+                    )}
+                  </div>
+
+                  <div className="admin-field">
+                    <label className="admin-field-label">المدينة</label>
+                    {availableCities.length ? (
+                      <select
+                        value={addressEditor.data.city}
+                        onChange={(event) => updateAddressDraft('city', event.target.value)}
+                        disabled={!addressEditor.data.governorate}
+                      >
+                        <option value="">اختر المدينة</option>
+                        {availableCities.map((cityName) => (
+                          <option key={cityName} value={cityName}>{cityName}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        value={addressEditor.data.city}
+                        onChange={(event) => updateAddressDraft('city', event.target.value)}
+                        placeholder="ادخل اسم المدينة"
+                      />
+                    )}
+                  </div>
+
+                  <div className="admin-field">
+                    <label className="admin-field-label">العنوان التفصيلي</label>
+                    <input
+                      value={addressEditor.data.street}
+                      onChange={(event) => updateAddressDraft('street', event.target.value)}
+                      placeholder="الشارع ورقم العقار والدور"
+                    />
+                  </div>
+                </div>
+
                 <div className="admin-field">
-                  <label className="admin-field-label">العنوان</label>
+                  <label className="admin-field-label">ملاحظات</label>
                   <textarea
-                    value={item.address}
-                    onChange={(event) => updateAddress(index, 'address', event.target.value)}
-                    placeholder="اكتب العنوان بالتفصيل"
+                    value={addressEditor.data.notes}
+                    onChange={(event) => updateAddressDraft('notes', event.target.value)}
+                    placeholder="أي ملاحظات إضافية عن العنوان"
                   />
                 </div>
-                <button type="button" className="table-action-btn danger" onClick={() => removeAddress(index)}>حذف</button>
-              </div>)}
+
+                <div className="settings-inline-actions">
+                  <button type="button" className="secondary-btn" onClick={closeAddressEditor}>إلغاء</button>
+                  <button type="button" className="primary-btn" onClick={saveAddressDraft}>
+                    {addressEditor.index === null ? 'حفظ العنوان' : 'تحديث العنوان'}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            <div className="settings-addresses-stack">
+              {form.addresses.length ? form.addresses.map((item, index) => (
+                <article key={`address-${item._id || index}`} className="settings-address-summary">
+                  <div className="settings-address-icon">
+                    <MapPin size={18} />
+                  </div>
+                  <div className="settings-address-copy">
+                    <strong>{item.label || `عنوان ${index + 1}`}</strong>
+                    <p>{[item.governorate, item.city].filter(Boolean).join(' - ')}</p>
+                    <span>{item.street || item.address}</span>
+                    {item.notes ? <small>{item.notes}</small> : null}
+                  </div>
+                  <div className="settings-address-actions">
+                    <button type="button" className="table-action-btn edit" onClick={() => openAddressEditor(index)}>
+                      <Pencil size={15} />
+                      <span>تعديل</span>
+                    </button>
+                    <button type="button" className="table-action-btn danger" onClick={() => removeAddress(index)}>حذف</button>
+                  </div>
+                </article>
+              )) : (
+                <div className="settings-address-empty">
+                  <MapPin size={20} />
+                  <span>لم تضف أي عنوان بعد</span>
+                </div>
+              )}
             </div>
           </section>
 

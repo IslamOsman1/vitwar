@@ -12,7 +12,17 @@ const serializeUser = (user) => ({
   name: user.name,
   email: user.email,
   phone: user.phone,
-  addresses: Array.isArray(user.addresses) ? user.addresses : [],
+  addresses: Array.isArray(user.addresses)
+    ? user.addresses.map((item) => ({
+      _id: item._id,
+      label: item.label || '',
+      governorate: item.governorate || '',
+      city: item.city || '',
+      street: item.street || item.address || '',
+      notes: item.notes || '',
+      address: item.address || item.street || ''
+    }))
+    : [],
   role: user.role,
   permissions: user.permissions || [],
   avatar: user.avatar || '',

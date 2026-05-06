@@ -3,6 +3,10 @@ import bcrypt from 'bcryptjs';
 
 const addressSchema = new mongoose.Schema({
   label: { type: String, trim: true, default: '' },
+  governorate: { type: String, trim: true, default: '' },
+  city: { type: String, trim: true, default: '' },
+  street: { type: String, trim: true, default: '' },
+  notes: { type: String, trim: true, default: '' },
   address: { type: String, trim: true, default: '' }
 }, { _id: true });
 

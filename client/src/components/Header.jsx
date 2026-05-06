@@ -36,6 +36,13 @@ export default function Header({ theme, onToggleTheme }) {
     navigate(term ? `/categories?search=${encodeURIComponent(term)}` : '/categories');
   };
 
+  const handleMobileSearchOpen = (event) => {
+    if (window.innerWidth > 640 || searchOpen) return;
+    event.preventDefault();
+    setSearchOpen(true);
+    window.setTimeout(() => inputRef.current?.focus(), 10);
+  };
+
   return <header className="site-header">
     <div className="app-shell header-shell">
       <div className="header-card">
@@ -44,13 +51,16 @@ export default function Header({ theme, onToggleTheme }) {
         </Link>
 
         <form className={`search-box${searchOpen ? ' mobile-open' : ''}`} onSubmit={submitSearch}>
-          <button type="submit" className="search-submit" aria-label="البحث">
+          <button type="submit" className="search-submit" aria-label="البحث" onClick={handleMobileSearchOpen}>
             <Search size={24} />
           </button>
           <input
             ref={inputRef}
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
+            onFocus={() => {
+              if (window.innerWidth <= 640) setSearchOpen(true);
+            }}
             placeholder="ابحث عن منتجات، عروض، فئات..."
           />
         </form>

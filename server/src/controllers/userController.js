@@ -30,7 +30,17 @@ const serializeUser = (user) => ({
   name: user.name,
   email: user.email,
   phone: user.phone,
-  addresses: Array.isArray(user.addresses) ? user.addresses : [],
+  addresses: Array.isArray(user.addresses)
+    ? user.addresses.map((item) => ({
+      _id: item._id,
+      label: item.label || '',
+      governorate: item.governorate || '',
+      city: item.city || '',
+      street: item.street || '',
+      notes: item.notes || '',
+      address: item.address || item.street || ''
+    }))
+    : [],
   role: user.role,
   permissions: user.permissions || [],
   avatar: user.avatar || '',
@@ -131,12 +141,16 @@ export const updateMySettings = asyncHandler(async (req, res) => {
 
   if (Array.isArray(addresses)) {
     user.addresses = addresses
-      .filter((item) => item && (item.label || item.address))
+      .filter((item) => item && (item.label || item.address || item.street))
       .map((item) => ({
         label: String(item.label || '').trim(),
-        address: String(item.address || '').trim()
+        governorate: String(item.governorate || '').trim(),
+        city: String(item.city || '').trim(),
+        street: String(item.street || item.address || '').trim(),
+        notes: String(item.notes || '').trim(),
+        address: String(item.address || item.street || '').trim()
       }))
-      .filter((item) => item.address);
+      .filter((item) => item.street || item.address);
   }
 
   await user.save();
