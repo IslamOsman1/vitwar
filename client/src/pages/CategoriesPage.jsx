@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import api from '../api/api.js';
 import ProductCard from '../components/ProductCard.jsx';
@@ -8,6 +8,8 @@ import { getCategoryGroups, getSourceCategories } from '../utils/categoryHelpers
 
 export default function CategoriesPage() {
   const { settings } = useStoreSettings();
+  const [searchParams] = useSearchParams();
+  const searchTerm = searchParams.get('search')?.trim() || '';
   const categoryGroups = useMemo(() => getCategoryGroups(settings), [settings]);
   const allSourceCategories = useMemo(() => getSourceCategories(categoryGroups), [categoryGroups]);
   const [openGroup, setOpenGroup] = useState('');
@@ -17,20 +19,31 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     setLoading(true);
-    api.get('/products?limit=100')
+    const query = searchTerm
+      ? `/products?limit=100&keyword=${encodeURIComponent(searchTerm)}`
+      : '/products?limit=100';
+
+    api.get(query)
       .then(({ data }) => setProducts(Array.isArray(data.products) ? data.products : []))
       .catch(() => setProducts([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [searchTerm]);
 
   const visibleCategories = useMemo(() => {
-    if (!openGroup) return allSourceCategories;
+    const productCategories = [...new Set(products.map((product) => product.category).filter(Boolean))];
 
-    const selectedGroup = categoryGroups.find((group) => group.title === openGroup);
-    if (!selectedGroup) return allSourceCategories;
+    if (openGroup) {
+      const selectedGroup = categoryGroups.find((group) => group.title === openGroup);
+      if (!selectedGroup) return searchTerm ? productCategories : allSourceCategories;
 
-    return [...new Set((selectedGroup.sections || []).map((section) => section.sourceCategory))];
-  }, [allSourceCategories, categoryGroups, openGroup]);
+      const groupCategories = [...new Set((selectedGroup.sections || []).map((section) => section.sourceCategory))];
+      return searchTerm
+        ? groupCategories.filter((category) => productCategories.includes(category))
+        : groupCategories;
+    }
+
+    return searchTerm ? productCategories : allSourceCategories;
+  }, [allSourceCategories, categoryGroups, openGroup, products, searchTerm]);
 
   const productSections = useMemo(() => {
     return visibleCategories
@@ -90,8 +103,8 @@ export default function CategoriesPage() {
     <section className="panel-card products-panel">
       <div className="section-head">
         <div>
-          <h2>{openGroup || 'كل الفئات'}</h2>
-          <p>{openGroup ? 'المنتجات الظاهرة مرتبطة بالفئة المختارة.' : 'جميع الفئات مع المنتجات الموجودة داخلها.'}</p>
+          <h2>{searchTerm ? `نتائج البحث: ${searchTerm}` : openGroup || 'كل الفئات'}</h2>
+          <p>{searchTerm ? 'المنتجات الظاهرة مطابقة لكلمة البحث الحالية.' : openGroup ? 'المنتجات الظاهرة مرتبطة بالفئة المختارة.' : 'جميع الفئات مع المنتجات الموجودة داخلها.'}</p>
         </div>
       </div>
 
@@ -106,7 +119,7 @@ export default function CategoriesPage() {
           </div>
         </section>)}
 
-        {!productSections.length && <p className="muted">لا توجد منتجات متاحة للفئات الحالية.</p>}
+        {!productSections.length && <p className="muted">{searchTerm ? 'لا توجد منتجات مطابقة لكلمة البحث الحالية.' : 'لا توجد منتجات متاحة للفئات الحالية.'}</p>}
       </div>}
     </section>
   </main>;

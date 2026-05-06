@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Heart, UserRound, LayoutDashboard, LogOut, Search, Moon, Sun } from 'lucide-react';
 import Logo from './Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -8,9 +8,33 @@ import { useWishlist } from '../context/WishlistContext.jsx';
 export default function Header({ theme, onToggleTheme }) {
   const { user, logout } = useAuth();
   const { count } = useWishlist();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const inputRef = useRef(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const displayName = user?.name || 'User';
   const initials = displayName.trim().slice(0, 2).toUpperCase();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    setSearchTerm(params.get('search') || '');
+    setSearchOpen(false);
+  }, [location.pathname, location.search]);
+
+  const submitSearch = (event) => {
+    event.preventDefault();
+    const term = searchTerm.trim();
+
+    if (!term && window.innerWidth <= 640 && !searchOpen) {
+      setSearchOpen(true);
+      window.setTimeout(() => inputRef.current?.focus(), 10);
+      return;
+    }
+
+    navigate(term ? `/categories?search=${encodeURIComponent(term)}` : '/categories');
+  };
 
   return <header className="site-header">
     <div className="app-shell header-shell">
@@ -19,10 +43,17 @@ export default function Header({ theme, onToggleTheme }) {
           <Logo compact />
         </Link>
 
-        <div className="search-box">
-          <Search size={24} />
-          <input placeholder="ابحث عن منتجات، عروض، فئات..." />
-        </div>
+        <form className={`search-box${searchOpen ? ' mobile-open' : ''}`} onSubmit={submitSearch}>
+          <button type="submit" className="search-submit" aria-label="البحث">
+            <Search size={24} />
+          </button>
+          <input
+            ref={inputRef}
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="ابحث عن منتجات، عروض، فئات..."
+          />
+        </form>
 
         <div className="header-actions">
           <NavLink to="/wishlist" className="round-action cart-link" title="المفضلة" aria-label="المفضلة">
