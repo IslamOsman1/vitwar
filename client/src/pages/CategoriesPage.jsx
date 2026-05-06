@@ -53,6 +53,7 @@ export default function CategoriesPage() {
       }))
       .filter((section) => section.items.length);
   }, [products, visibleCategories]);
+  const activeGroup = categoryGroups.find((group) => group.title === openGroup);
 
   return <main className="app-shell home-screen market-home category-page-shell">
     <section className="primary-category-bar">
@@ -75,6 +76,22 @@ export default function CategoriesPage() {
         </button>)}
       </div>
     </section>
+
+    {!!activeGroup?.sections?.length && <section className="secondary-category-bar">
+      <div className="secondary-category-bar-track">
+        <Link to={`/category/${encodeURIComponent(activeGroup.title)}`} className="secondary-category-pill all">
+          كل {activeGroup.title}
+        </Link>
+
+        {activeGroup.sections.map((section) => <Link
+          key={section.title}
+          to={`/category/${encodeURIComponent(section.title)}`}
+          className="secondary-category-pill"
+        >
+          {section.title}
+        </Link>)}
+      </div>
+    </section>}
 
     <section className="panel-card category-directory search-style-directory">
       <div className="section-head compact">
