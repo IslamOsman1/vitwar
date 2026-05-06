@@ -8,6 +8,8 @@ import { getCategoryGroups } from '../utils/categoryHelpers.js';
 export default function AlWekalaProductsPage() {
   const { settings } = useStoreSettings();
   const categoryGroups = useMemo(() => getCategoryGroups(settings), [settings]);
+  const [openGroup, setOpenGroup] = useState('');
+  const [openSection, setOpenSection] = useState('');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,17 +21,24 @@ export default function AlWekalaProductsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const groupedProducts = useMemo(() => {
+  useEffect(() => {
+    setOpenSection('');
+  }, [openGroup]);
+
+  const activeGroup = categoryGroups.find((group) => group.title === openGroup);
+
+  const visibleSections = useMemo(() => {
+    const groupsToUse = activeGroup ? [activeGroup] : categoryGroups;
     const sections = [];
 
-    categoryGroups.forEach((group) => {
+    groupsToUse.forEach((group) => {
       (group.sections || []).forEach((section) => {
         const items = products.filter((product) =>
           product.category === section.sourceCategory &&
           (!product.subcategory || product.subcategory === section.title)
         );
 
-        if (items.length) {
+        if (items.length && (!openSection || openSection === section.title)) {
           sections.push({
             groupTitle: group.title,
             title: section.title,
@@ -40,29 +49,73 @@ export default function AlWekalaProductsPage() {
       });
     });
 
-    const uncategorized = products.filter((product) => !sections.some((section) =>
-      section.items.some((item) => item._id === product._id)
-    ));
+    if (!activeGroup && !openSection) {
+      const uncategorized = products.filter((product) => !sections.some((section) =>
+        section.items.some((item) => item._id === product._id)
+      ));
 
-    if (uncategorized.length) {
-      sections.push({
-        groupTitle: 'منتجات أخرى',
-        title: 'منتجات أخرى',
-        sourceCategory: '',
-        items: uncategorized
-      });
+      if (uncategorized.length) {
+        sections.push({
+          groupTitle: 'منتجات أخرى',
+          title: 'منتجات أخرى',
+          sourceCategory: '',
+          items: uncategorized
+        });
+      }
     }
 
     return sections;
-  }, [products, categoryGroups]);
+  }, [activeGroup, categoryGroups, openSection, products]);
 
   return <main className="app-shell home-screen market-home category-page-shell">
+    <section className="primary-category-bar">
+      <div className="primary-category-bar-track">
+        <button
+          type="button"
+          className={`primary-category-pill${!openGroup ? ' active' : ''}`}
+          onClick={() => setOpenGroup('')}
+        >
+          الكل
+        </button>
+
+        {categoryGroups.map((group) => <button
+          key={group.title}
+          type="button"
+          className={`primary-category-pill${openGroup === group.title ? ' active' : ''}`}
+          onClick={() => setOpenGroup((current) => (current === group.title ? '' : group.title))}
+        >
+          {group.title}
+        </button>)}
+      </div>
+    </section>
+
+    {!!activeGroup?.sections?.length && <section className="secondary-category-bar">
+      <div className="secondary-category-bar-track">
+        <button
+          type="button"
+          className={`secondary-category-pill all${!openSection ? ' active' : ''}`}
+          onClick={() => setOpenSection('')}
+        >
+          {`كل ${activeGroup.title}`}
+        </button>
+
+        {activeGroup.sections.map((section) => <button
+          key={section.title}
+          type="button"
+          className={`secondary-category-pill${openSection === section.title ? ' active' : ''}`}
+          onClick={() => setOpenSection((current) => (current === section.title ? '' : section.title))}
+        >
+          {section.title}
+        </button>)}
+      </div>
+    </section>}
+
     <section className="panel-card category-page-hero">
       <div className="section-head">
         <div>
           <span className="market-pill">منتجات الوكالة</span>
-          <h1>منتجات الوكالة</h1>
-          <p>المنتجات هنا مرتبطة بنفس الفئات والأقسام، ويتم اختيارها من لوحة التحكم لتظهر داخل هذا القسم بنفس أسلوب عرض صفحة الفئات.</p>
+          <h1>{openSection || openGroup || 'منتجات الوكالة'}</h1>
+          <p>منتجات مختارة من لوحة التحكم، مرتبة حسب الفئات والأقسام لعرض أوضح وأسهل في التصفح.</p>
         </div>
         <Link to="/" className="secondary-btn">العودة للرئيسية</Link>
       </div>
@@ -70,12 +123,12 @@ export default function AlWekalaProductsPage() {
 
     <section className="panel-card category-products-panel">
       <div className="section-head compact">
-        <h2>الفئات والأقسام</h2>
+        <h2>{openSection || openGroup || 'كل المنتجات'}</h2>
         <span>{loading ? 'جاري التحميل...' : `${products.length} منتج`}</span>
       </div>
 
-      {loading ? <p className="muted">جاري تحميل المنتجات...</p> : groupedProducts.length ? <div className="agency-product-sections">
-        {groupedProducts.map((section) => <section key={`${section.groupTitle}-${section.title}`} className="panel-card category-products-panel agency-product-section">
+      {loading ? <p className="muted">جاري تحميل المنتجات...</p> : visibleSections.length ? <div className="agency-product-sections">
+        {visibleSections.map((section) => <section key={`${section.groupTitle}-${section.title}`} className="panel-card category-products-panel agency-product-section">
           <div className="section-head compact">
             <div>
               <h3>{section.title}</h3>

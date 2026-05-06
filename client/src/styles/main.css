@@ -279,6 +279,7 @@ body[data-theme='light'] .profile-link-card span{color:#7a6448}
 .secondary-category-bar-track::-webkit-scrollbar{display:none}
 .secondary-category-pill{flex:0 0 auto;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid rgba(222,183,122,.14);background:rgba(17,17,17,.7);color:#f0dfc1;font-size:.84rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;transition:.2s}
 .secondary-category-pill:hover{background:rgba(222,183,122,.08);border-color:rgba(222,183,122,.24);color:#fff8ec}
+.secondary-category-pill.active{background:linear-gradient(135deg,#17120d,#3b2b18 55%,#d8a556 100%);color:#fff8ec;border-color:transparent;box-shadow:0 10px 22px rgba(43,31,16,.18)}
 .secondary-category-pill.all{background:#1d1711;color:var(--gold)}
 .category-page-hero{padding:26px 28px}
 .category-page-hero h1{margin:12px 0 10px;font-size:clamp(1.8rem,3vw,2.7rem)}
@@ -316,6 +317,7 @@ body[data-theme='light'] .primary-category-pill{background:#fffaf2;color:#7a6448
 body[data-theme='light'] .primary-category-pill:hover{color:#18130f;border-color:rgba(184,137,78,.28)}
 body[data-theme='light'] .secondary-category-pill{background:#fffaf2;color:#7a6448;border-color:rgba(184,137,78,.16)}
 body[data-theme='light'] .secondary-category-pill:hover{background:#f8efdf;color:#18130f;border-color:rgba(184,137,78,.28)}
+body[data-theme='light'] .secondary-category-pill.active{color:#fff8ec}
 body[data-theme='light'] .secondary-category-pill.all{background:#17120d;color:#f2d39f}
 @media(max-width:640px){.primary-category-bar{margin-top:-8px}.primary-category-bar-track{gap:10px;padding-bottom:2px}.primary-category-pill{min-height:44px;padding:0 14px;border-radius:15px;font-size:.84rem}.secondary-category-bar{margin-top:-16px}.secondary-category-bar-track{gap:8px}.secondary-category-pill{min-height:36px;padding:0 12px;font-size:.76rem}.category-directory-grid{grid-template-columns:1fr;gap:14px}.category-option-card{padding:18px}.category-section-chip{width:100%;justify-content:flex-start}}
 .search-options-list{display:grid;gap:14px}
