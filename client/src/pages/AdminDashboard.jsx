@@ -992,6 +992,27 @@ export default function AdminDashboard() {
                   <button type="button" className="table-action-btn edit" onClick={addGovernorate}>إضافة محافظة</button>
                   {filteredCheckoutGovernorates.map(({ governorate, index }) => (
                     <article key={`governorate-${index}`} className="admin-setting-card nested">
+                      <div className="admin-category-inventory">
+                        <div className="admin-category-inventory-head">
+                          <div>
+                            <strong>{governorate.name || `محافظة ${index + 1}`}</strong>
+                            <span>{Number(governorate.shippingFee ?? settingsForm.checkout.shippingFee)} ج.م رسوم شحن لهذه المحافظة</span>
+                          </div>
+                          <b>{(governorate.cities || []).filter(Boolean).length} مدينة</b>
+                        </div>
+                        {(governorate.cities || []).length ? (
+                          <div className="admin-category-inventory-list">
+                            {(governorate.cities || []).map((city, cityIndex) => (
+                              <div key={`governorate-inventory-${index}-${cityIndex}`} className="admin-category-chip">
+                                <strong>{city || `مدينة ${cityIndex + 1}`}</strong>
+                                <span>{governorate.name || 'محافظة بدون اسم'}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="muted">لا توجد مدن بعد. أضف أول مدينة وستظهر هنا كجرد سريع.</p>
+                        )}
+                      </div>
                       <div className="admin-dashboard-form-grid two-cols">
                         <Field label="اسم المحافظة">
                           <input
