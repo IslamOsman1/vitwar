@@ -12,7 +12,7 @@ export default function Footer() {
       <NavLink to="/"><Home size={24} /><span>الرئيسية</span></NavLink>
       <NavLink to="/categories"><Grid2X2 size={24} /><span>الفئات</span></NavLink>
       <NavLink to="/alwekala-products"><Package size={24} /><span>منتجات الوكالة</span></NavLink>
-      <NavLink to="/cart"><ShoppingCart size={24} /><span>السلة</span>{totals.count > 0 && <b>{totals.count}</b>}</NavLink>
+      <NavLink to="/offers"><Package size={24} /><span>العروض</span></NavLink>
 
       <div className={`bottom-more${moreOpen ? ' open' : ''}`}>
         <button type="button" className="bottom-more-trigger" onClick={() => setMoreOpen((current) => !current)}>
@@ -21,9 +21,10 @@ export default function Footer() {
         </button>
 
         {moreOpen && <div className="bottom-more-menu">
-          <Link to="/offers" className="bottom-more-item" onClick={() => setMoreOpen(false)}>
-            <Package size={18} />
-            <span>العروض</span>
+          <Link to="/cart" className="bottom-more-item" onClick={() => setMoreOpen(false)}>
+            <ShoppingCart size={18} />
+            <span>السلة</span>
+            {totals.count > 0 && <b>{totals.count}</b>}
           </Link>
           <Link to="/orders" className="bottom-more-item" onClick={() => setMoreOpen(false)}>
             <ClipboardList size={18} />

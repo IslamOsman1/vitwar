@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Heart, UserRound, LayoutDashboard, LogOut, Search, Moon, Sun } from 'lucide-react';
+import { ShoppingCart, UserRound, LayoutDashboard, LogOut, Search, Moon, Sun } from 'lucide-react';
 import Logo from './Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useWishlist } from '../context/WishlistContext.jsx';
+import { useCart } from '../context/CartContext.jsx';
 
 export default function Header({ theme, onToggleTheme }) {
   const { user, logout } = useAuth();
-  const { count } = useWishlist();
+  const { totals } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
   const inputRef = useRef(null);
@@ -56,11 +56,6 @@ export default function Header({ theme, onToggleTheme }) {
         </form>
 
         <div className="header-actions">
-          <NavLink to="/wishlist" className="round-action cart-link" title="المفضلة" aria-label="المفضلة">
-            <Heart size={22} />
-            {count > 0 && <b>{count}</b>}
-          </NavLink>
-
           <button
             type="button"
             className="round-action theme-toggle"
@@ -70,6 +65,11 @@ export default function Header({ theme, onToggleTheme }) {
           >
             {theme === 'dark' ? <Sun size={21} /> : <Moon size={21} />}
           </button>
+
+          <NavLink to="/cart" className="round-action cart-link" title="السلة" aria-label="السلة">
+            <ShoppingCart size={22} />
+            {totals.count > 0 && <b>{totals.count}</b>}
+          </NavLink>
 
           {(user?.role === 'admin' || (user?.role === 'employee' && user?.permissions?.length > 0)) && <NavLink to="/admin" className="round-action" title="لوحة التحكم">
             <LayoutDashboard size={22} />

@@ -14,7 +14,8 @@ const serializeUser = (user) => ({
   role: user.role,
   permissions: user.permissions || [],
   avatar: user.avatar || '',
-  walletBalance: Number(user.walletBalance || 0)
+  walletBalance: Number(user.walletBalance || 0),
+  hasManualPassword: Boolean(user.hasManualPassword)
 });
 
 const buildAuthResponse = (user) => ({
@@ -115,6 +116,20 @@ export const googleLogin = asyncHandler(async (req, res) => {
   }
 
   res.json(buildAuthResponse(user));
+});
+
+export const setManualPassword = asyncHandler(async (req, res) => {
+  const { password } = req.body;
+
+  if (!password || String(password).trim().length < 6) {
+    return res.status(400).json({ message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' });
+  }
+
+  req.user.password = password;
+  req.user.hasManualPassword = true;
+  await req.user.save();
+
+  res.json(buildAuthResponse(req.user));
 });
 
 export const profile = asyncHandler(async (req, res) => res.json(serializeUser(req.user)));

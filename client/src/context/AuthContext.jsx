@@ -39,6 +39,12 @@ export function AuthProvider({ children }) {
     toast.success('تم تسجيل الدخول بواسطة Google');
   };
 
+  const setManualPassword = async (password) => {
+    const { data } = await api.put('/auth/set-password', { password });
+    saveSession(data);
+    toast.success('تم حفظ كلمة المرور بنجاح');
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -55,7 +61,7 @@ export function AuthProvider({ children }) {
     refreshProfile().catch(() => logout());
   }, []);
 
-  return <AuthContext.Provider value={{ user, login, register, googleLogin, logout, refreshProfile }}>
+  return <AuthContext.Provider value={{ user, login, register, googleLogin, setManualPassword, logout, refreshProfile }}>
     {children}
   </AuthContext.Provider>;
 }

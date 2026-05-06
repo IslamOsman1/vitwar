@@ -17,6 +17,7 @@ import AlWekalaProductsPage from './pages/AlWekalaProductsPage.jsx';
 import Cart from './pages/Cart.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import CompletePasswordPage from './pages/CompletePasswordPage.jsx';
 import Checkout from './pages/Checkout.jsx';
 import CheckoutReview from './pages/CheckoutReview.jsx';
 import CheckoutSuccess from './pages/CheckoutSuccess.jsx';
@@ -34,10 +35,12 @@ function PrivateRoute({ children, adminOnly = false }) {
 
 export default function App() {
   const location = useLocation();
+  const { user } = useAuth();
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
   const [bootSplashVisible, setBootSplashVisible] = useState(true);
   const [routeSplashVisible, setRouteSplashVisible] = useState(false);
   const firstPathRef = useRef(location.pathname);
+  const requiresPasswordSetup = Boolean(user && !user.hasManualPassword);
 
   useEffect(() => {
     document.body.dataset.theme = theme;
@@ -68,6 +71,12 @@ export default function App() {
     />
     <main className={`app-main-shell${routeSplashVisible ? ' is-transitioning' : ''}`}>
       <Routes>
+        {requiresPasswordSetup
+          ? <>
+            <Route path="/complete-password" element={<CompletePasswordPage />} />
+            <Route path="*" element={<Navigate to="/complete-password" replace />} />
+          </>
+          : <>
         <Route path="/" element={<Home />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/category/:name" element={<CategoryPage />} />
@@ -86,6 +95,7 @@ export default function App() {
         <Route path="/checkout/success" element={<PrivateRoute><CheckoutSuccess /></PrivateRoute>} />
         <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
         <Route path="/admin" element={<PrivateRoute adminOnly><AdminDashboard /></PrivateRoute>} />
+          </>}
       </Routes>
     </main>
     <SupportChatWidget />
