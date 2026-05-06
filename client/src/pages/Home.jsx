@@ -47,6 +47,7 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [showAllExploreCategories, setShowAllExploreCategories] = useState(false);
   const { settings } = useStoreSettings();
   const categoryGroups = useMemo(() => getCategoryGroups(settings), [settings]);
 
@@ -118,6 +119,8 @@ export default function Home() {
       };
     });
   }, [categoryGroups, featuredCategories, products]);
+  const visibleExploreCategories = showAllExploreCategories ? exploreCategories : exploreCategories.slice(0, 4);
+  const hasMoreExploreCategories = exploreCategories.length > 4;
 
   return <main className="app-shell home-screen market-home">
     <section className={`market-hero image-promo-hero ${slide.accentClass || ''}`}>
@@ -198,7 +201,7 @@ export default function Home() {
       </div>
 
       <div className="explore-categories-grid">
-        {exploreCategories.map((item) => <Link
+        {visibleExploreCategories.map((item) => <Link
           to={`/category/${encodeURIComponent(item.target)}`}
           key={item.title}
           className="explore-category-card"
@@ -209,6 +212,16 @@ export default function Home() {
           </div>
         </Link>)}
       </div>
+
+      {hasMoreExploreCategories ? <div className="explore-categories-more">
+        <button
+          type="button"
+          className="explore-more-btn"
+          onClick={() => setShowAllExploreCategories((current) => !current)}
+        >
+          {showAllExploreCategories ? 'إخفاء' : 'المزيد'}
+        </button>
+      </div> : null}
     </section>
   </main>;
 }
