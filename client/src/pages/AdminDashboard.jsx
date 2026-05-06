@@ -160,6 +160,15 @@ function StatCard({ label, value }) {
   );
 }
 
+function SaveSectionButton({ saving, label }) {
+  return (
+    <button className="primary-btn admin-inline-save-btn" type="submit" disabled={saving}>
+      <Save size={16} />
+      <span>{saving ? 'جارٍ الحفظ...' : label}</span>
+    </button>
+  );
+}
+
 export default function AdminDashboard() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -817,13 +826,10 @@ export default function AdminDashboard() {
                     <button type="button" className="table-action-btn edit" onClick={() => addSectionToGroup(index)}>إضافة قسم</button>
                     <button type="button" className="table-action-btn danger" onClick={() => removeCategoryGroup(index)}>حذف الفئة</button>
                   </div>
+                  <SaveSectionButton saving={settingsSaving} label="حفظ الفئة والأقسام" />
                 </article>
               ))}
             </div>
-            <button className="primary-btn admin-submit-btn" disabled={settingsSaving}>
-              <Save size={16} />
-              <span>{settingsSaving ? 'جارٍ الحفظ...' : 'حفظ الفئات والأقسام'}</span>
-            </button>
           </form>
         </section>
 
@@ -849,13 +855,9 @@ export default function AdminDashboard() {
                   <Field label="مواعيد العمل"><input value={settingsForm.workingHours} onChange={(event) => changeSettingsField(['workingHours'], event.target.value)} placeholder="مواعيد العمل" /></Field>
                   <Field label="واتساب"><input value={settingsForm.whatsapp} onChange={(event) => changeSettingsField(['whatsapp'], event.target.value)} placeholder="رقم واتساب" /></Field>
                 </div>
+                <SaveSectionButton saving={settingsSaving} label="حفظ إعدادات المتجر" />
               </article>
             </div>
-
-            <button className="primary-btn admin-submit-btn" disabled={settingsSaving}>
-              <Save size={16} />
-              <span>{settingsSaving ? 'جارٍ الحفظ...' : 'حفظ إعدادات المتجر'}</span>
-            </button>
           </form>
         </section>
 
@@ -880,6 +882,7 @@ export default function AdminDashboard() {
                   <label className="admin-toggle-pill"><input type="checkbox" checked={settingsForm.checkout.notesEnabled} onChange={(event) => changeSettingsField(['checkout', 'notesEnabled'], event.target.checked)} /> إظهار حقل الملاحظات</label>
                   <label className="admin-toggle-pill"><input type="checkbox" checked={settingsForm.checkout.notesRequired} onChange={(event) => changeSettingsField(['checkout', 'notesRequired'], event.target.checked)} disabled={!settingsForm.checkout.notesEnabled} /> جعل الملاحظات مطلوبة</label>
                 </div>
+                <SaveSectionButton saving={settingsSaving} label="حفظ إعدادات الطلب" />
               </article>
 
               <article className="admin-setting-card">
@@ -923,16 +926,13 @@ export default function AdminDashboard() {
                         <button type="button" className="table-action-btn edit" onClick={() => addCityToGovernorate(index)}>إضافة مدينة</button>
                         <button type="button" className="table-action-btn danger" onClick={() => removeGovernorate(index)}>حذف المحافظة</button>
                       </div>
+                      <SaveSectionButton saving={settingsSaving} label="حفظ المحافظة والمدن" />
                     </article>
                   ))}
                 </div>
+                <SaveSectionButton saving={settingsSaving} label="حفظ المحافظات" />
               </article>
             </div>
-
-            <button className="primary-btn admin-submit-btn" disabled={settingsSaving}>
-              <Save size={16} />
-              <span>{settingsSaving ? 'جارٍ الحفظ...' : 'حفظ إعداد الطلب'}</span>
-            </button>
           </form>
         </section>
 
@@ -956,6 +956,7 @@ export default function AdminDashboard() {
                   <Field label="الرسالة"><textarea value={settingsForm.about.mission} onChange={(event) => changeSettingsField(['about', 'mission'], event.target.value)} /></Field>
                   <Field label="القيم"><textarea value={settingsForm.about.values} onChange={(event) => changeSettingsField(['about', 'values'], event.target.value)} /></Field>
                 </div>
+                <SaveSectionButton saving={settingsSaving} label="حفظ صفحة من نحن" />
               </article>
 
               <article className="admin-setting-card">
@@ -976,6 +977,7 @@ export default function AdminDashboard() {
                     </div>
                   ))}
                 </div>
+                <SaveSectionButton saving={settingsSaving} label="حفظ البنرات" />
               </article>
 
               <article className="admin-setting-card">
@@ -1000,13 +1002,9 @@ export default function AdminDashboard() {
                     </div>
                   ))}
                 </div>
+                <SaveSectionButton saving={settingsSaving} label="حفظ الفئات المميزة" />
               </article>
             </div>
-
-            <button className="primary-btn admin-submit-btn" disabled={settingsSaving}>
-              <Save size={16} />
-              <span>{settingsSaving ? 'جارٍ الحفظ...' : 'حفظ المحتوى والبنرات'}</span>
-            </button>
           </form>
         </section>
 
@@ -1033,12 +1031,9 @@ export default function AdminDashboard() {
                   <label className="admin-toggle-pill"><input type="checkbox" checked={settingsForm.payment.cashOnDeliveryEnabled} onChange={(event) => changeSettingsField(['payment', 'cashOnDeliveryEnabled'], event.target.checked)} /> تفعيل الدفع عند الاستلام</label>
                   <label className="admin-toggle-pill"><input type="checkbox" checked={settingsForm.payment.onlinePaymentEnabled} onChange={(event) => changeSettingsField(['payment', 'onlinePaymentEnabled'], event.target.checked)} /> تفعيل الدفع أونلاين</label>
                 </div>
+                <SaveSectionButton saving={settingsSaving} label="حفظ إعدادات الدفع" />
               </article>
             </div>
-            <button className="primary-btn admin-submit-btn" disabled={settingsSaving}>
-              <Save size={16} />
-              <span>{settingsSaving ? 'جارٍ الحفظ...' : 'حفظ إعدادات الدفع'}</span>
-            </button>
           </form>
         </section>
 

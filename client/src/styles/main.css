@@ -649,6 +649,7 @@ body[data-theme='light'] .admin-form textarea{background:#f7f0e4;color:#18130f;b
 .admin-toggle-pill,.admin-file-pill{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 14px;border-radius:999px;border:1px solid rgba(222,183,122,.16);background:#181818;color:#f1e2cb;font-weight:800}
 .admin-file-pill input{display:none}
 .admin-submit-btn{width:max-content}
+.admin-inline-save-btn{width:max-content;margin-top:14px}
 .admin-table-card{display:grid;gap:14px}
 .admin-table-wrap{background:#171717}
 .admin-table-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -705,7 +706,8 @@ body[data-theme='light'] .table-action-btn.danger{background:#f7dfdf;color:#8a41
   .admin-hero-copy{padding:20px;border-radius:22px}
   .admin-dashboard-tabs{display:grid;grid-template-columns:1fr 1fr}
   .dashboard-tab-btn{justify-content:center}
-  .admin-submit-btn{width:100%}
+  .admin-submit-btn,
+  .admin-inline-save-btn{width:100%}
 }
 @media(max-width:520px){
   .admin-dashboard-tabs{grid-template-columns:1fr}
