@@ -29,6 +29,15 @@ const categoryGroupSchema = new mongoose.Schema({
   }
 }, { _id: false });
 
+const checkoutGovernorateSchema = new mongoose.Schema({
+  name: { type: String, default: '' },
+  shippingFee: { type: Number, default: 35 },
+  cities: {
+    type: [String],
+    default: []
+  }
+}, { _id: false });
+
 const storeSettingsSchema = new mongoose.Schema({
   singleton: { type: String, default: 'default', unique: true },
   storeName: { type: String, default: 'Al Wekala Market' },
@@ -64,7 +73,13 @@ const storeSettingsSchema = new mongoose.Schema({
   },
   checkout: {
     shippingFee: { type: Number, default: 35 },
-    freeShippingThreshold: { type: Number, default: 500 }
+    freeShippingThreshold: { type: Number, default: 500 },
+    notesEnabled: { type: Boolean, default: true },
+    notesRequired: { type: Boolean, default: false },
+    governorates: {
+      type: [checkoutGovernorateSchema],
+      default: []
+    }
   },
   payment: {
     cashOnDeliveryEnabled: { type: Boolean, default: true },

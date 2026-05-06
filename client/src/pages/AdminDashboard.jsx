@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   CreditCard,
   FolderTree,
+  MapPin,
   MessageCircle,
   Package,
   Palette,
@@ -71,7 +72,12 @@ const defaultSettingsForm = {
   categoryGroups: defaultCategoryGroups,
   checkout: {
     shippingFee: 35,
-    freeShippingThreshold: 500
+    freeShippingThreshold: 500,
+    notesEnabled: true,
+    notesRequired: false,
+    governorates: [
+      { name: '', shippingFee: 35, cities: [''] }
+    ]
   },
   payment: {
     cashOnDeliveryEnabled: true,
@@ -87,6 +93,7 @@ const dashboardSections = [
   { id: 'products', label: 'المنتجات', icon: Package },
   { id: 'categories', label: 'الفئات والأقسام', icon: FolderTree },
   { id: 'store', label: 'إعدادات المتجر', icon: Store },
+  { id: 'checkout', label: 'إعداد الطلب', icon: MapPin },
   { id: 'content', label: 'المحتوى والبنرات', icon: Palette },
   { id: 'payments', label: 'الدفع والتكامل', icon: CreditCard },
   { id: 'orders', label: 'الطلبات', icon: ShoppingBag },
@@ -172,6 +179,7 @@ export default function AdminDashboard() {
     categories: '',
     store: '',
     content: '',
+    checkout: '',
     payments: '',
     orders: '',
     support: '',
@@ -261,6 +269,16 @@ export default function AdminDashboard() {
         item.image
       ].some((value) => normalizeText(value).includes(term)));
   }, [settingsForm.home.featuredCategories, searchTerms.content]);
+
+  const filteredCheckoutGovernorates = useMemo(() => {
+    const term = normalizeText(searchTerms.checkout);
+    return (settingsForm.checkout.governorates || [])
+      .map((governorate, index) => ({ governorate, index }))
+      .filter(({ governorate }) => !term || [
+        governorate.name,
+        ...(governorate.cities || [])
+      ].some((value) => normalizeText(value).includes(term)));
+  }, [settingsForm.checkout.governorates, searchTerms.checkout]);
 
   const filteredOrders = useMemo(() => {
     const term = normalizeText(searchTerms.orders);
@@ -563,6 +581,46 @@ export default function AdminDashboard() {
     });
   };
 
+  const addGovernorate = () => {
+    setSettingsForm((current) => ({
+      ...current,
+      checkout: {
+        ...current.checkout,
+        governorates: [{ name: '', shippingFee: 35, cities: [''] }, ...(current.checkout.governorates || [])]
+      }
+    }));
+  };
+
+  const removeGovernorate = (governorateIndex) => {
+    setSettingsForm((current) => ({
+      ...current,
+      checkout: {
+        ...current.checkout,
+        governorates: (current.checkout.governorates || []).filter((_, index) => index !== governorateIndex)
+      }
+    }));
+  };
+
+  const addCityToGovernorate = (governorateIndex) => {
+    setSettingsForm((current) => {
+      const next = JSON.parse(JSON.stringify(current));
+      next.checkout.governorates[governorateIndex].cities.unshift('');
+      return next;
+    });
+  };
+
+  const removeCityFromGovernorate = (governorateIndex, cityIndex) => {
+    setSettingsForm((current) => {
+      const next = JSON.parse(JSON.stringify(current));
+      next.checkout.governorates[governorateIndex].cities = next.checkout.governorates[governorateIndex].cities
+        .filter((_, index) => index !== cityIndex);
+      if (!next.checkout.governorates[governorateIndex].cities.length) {
+        next.checkout.governorates[governorateIndex].cities = [''];
+      }
+      return next;
+    });
+  };
+
   const saveSettings = async (event) => {
     event.preventDefault();
     setSettingsSaving(true);
@@ -792,19 +850,88 @@ export default function AdminDashboard() {
                   <Field label="واتساب"><input value={settingsForm.whatsapp} onChange={(event) => changeSettingsField(['whatsapp'], event.target.value)} placeholder="رقم واتساب" /></Field>
                 </div>
               </article>
+            </div>
 
+            <button className="primary-btn admin-submit-btn" disabled={settingsSaving}>
+              <Save size={16} />
+              <span>{settingsSaving ? 'جارٍ الحفظ...' : 'حفظ إعدادات المتجر'}</span>
+            </button>
+          </form>
+        </section>
+
+        <section className={`admin-dashboard-panel${activeSection === 'checkout' ? ' active' : ''}`}>
+          <div className="admin-section-head">
+            <div>
+              <h2>إعداد الطلب</h2>
+              <p>تحكم في بيانات فورم إتمام الطلب والمحافظات والمدن المتاحة للعميل أثناء الشراء.</p>
+            </div>
+            <MapPin size={18} />
+          </div>
+          <SearchBox value={searchTerms.checkout} onChange={(event) => changeSearch('checkout', event.target.value)} placeholder="ابحث عن محافظة أو مدينة..." />
+          <form className="admin-dashboard-form" onSubmit={saveSettings}>
+            <div className="admin-settings-cluster">
               <article className="admin-setting-card">
-                <div className="admin-setting-card-head"><Tag size={18} /><strong>الشحن</strong></div>
+                <div className="admin-setting-card-head"><Tag size={18} /><strong>إعدادات الشحن والنموذج</strong></div>
                 <div className="admin-dashboard-form-grid two-cols">
                   <Field label="رسوم الشحن"><input type="number" value={settingsForm.checkout.shippingFee} onChange={(event) => changeSettingsField(['checkout', 'shippingFee'], Number(event.target.value))} placeholder="0" /></Field>
                   <Field label="حد الشحن المجاني"><input type="number" value={settingsForm.checkout.freeShippingThreshold} onChange={(event) => changeSettingsField(['checkout', 'freeShippingThreshold'], Number(event.target.value))} placeholder="0" /></Field>
+                </div>
+                <div className="admin-toggle-row">
+                  <label className="admin-toggle-pill"><input type="checkbox" checked={settingsForm.checkout.notesEnabled} onChange={(event) => changeSettingsField(['checkout', 'notesEnabled'], event.target.checked)} /> إظهار حقل الملاحظات</label>
+                  <label className="admin-toggle-pill"><input type="checkbox" checked={settingsForm.checkout.notesRequired} onChange={(event) => changeSettingsField(['checkout', 'notesRequired'], event.target.checked)} disabled={!settingsForm.checkout.notesEnabled} /> جعل الملاحظات مطلوبة</label>
+                </div>
+              </article>
+
+              <article className="admin-setting-card">
+                <div className="admin-setting-card-head"><FolderTree size={18} /><strong>المحافظات والمدن المتاحة</strong></div>
+                <div className="admin-category-groups-stack">
+                  <button type="button" className="table-action-btn edit" onClick={addGovernorate}>إضافة محافظة</button>
+                  {filteredCheckoutGovernorates.map(({ governorate, index }) => (
+                    <article key={`governorate-${index}`} className="admin-setting-card nested">
+                      <div className="admin-dashboard-form-grid two-cols">
+                        <Field label="اسم المحافظة">
+                          <input
+                            value={governorate.name}
+                            onChange={(event) => changeSettingsField(['checkout', 'governorates', index, 'name'], event.target.value)}
+                            placeholder="اسم المحافظة"
+                          />
+                        </Field>
+                        <Field label="رسوم شحن المحافظة">
+                          <input
+                            type="number"
+                            value={governorate.shippingFee ?? settingsForm.checkout.shippingFee}
+                            onChange={(event) => changeSettingsField(['checkout', 'governorates', index, 'shippingFee'], Number(event.target.value))}
+                            placeholder="0"
+                          />
+                        </Field>
+                      </div>
+                      <div className="admin-subsections-stack">
+                        {(governorate.cities || []).map((city, cityIndex) => (
+                          <div key={`city-${index}-${cityIndex}`} className="admin-subsection-card">
+                            <Field label="اسم المدينة">
+                              <input
+                                value={city}
+                                onChange={(event) => changeSettingsField(['checkout', 'governorates', index, 'cities', cityIndex], event.target.value)}
+                                placeholder="اسم المدينة"
+                              />
+                            </Field>
+                            <button type="button" className="table-action-btn danger" onClick={() => removeCityFromGovernorate(index, cityIndex)}>حذف المدينة</button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="admin-table-actions">
+                        <button type="button" className="table-action-btn edit" onClick={() => addCityToGovernorate(index)}>إضافة مدينة</button>
+                        <button type="button" className="table-action-btn danger" onClick={() => removeGovernorate(index)}>حذف المحافظة</button>
+                      </div>
+                    </article>
+                  ))}
                 </div>
               </article>
             </div>
 
             <button className="primary-btn admin-submit-btn" disabled={settingsSaving}>
               <Save size={16} />
-              <span>{settingsSaving ? 'جارٍ الحفظ...' : 'حفظ إعدادات المتجر'}</span>
+              <span>{settingsSaving ? 'جارٍ الحفظ...' : 'حفظ إعداد الطلب'}</span>
             </button>
           </form>
         </section>

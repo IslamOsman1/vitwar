@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import { ensureStoreSettings } from '../utils/storeSettings.js';
+import { calculateShippingPrice } from '../utils/shipping.js';
 
 const getStripeClient = async () => {
   const settings = await ensureStoreSettings();
@@ -24,15 +25,6 @@ const getStripeClient = async () => {
     stripe: new Stripe(secretKey),
     settings
   };
-};
-
-const calculateShippingPrice = async (itemsPrice) => {
-  const settings = await ensureStoreSettings();
-  const shippingFee = Number(settings.checkout?.shippingFee ?? 35);
-  const freeShippingThreshold = Number(settings.checkout?.freeShippingThreshold ?? 500);
-
-  if (!itemsPrice || itemsPrice >= freeShippingThreshold) return 0;
-  return shippingFee;
 };
 
 const buildOrderItems = async (orderItems) => {
@@ -62,7 +54,7 @@ export const createStripeCheckoutSession = asyncHandler(async (req, res) => {
 
   const items = await buildOrderItems(orderItems);
   const itemsPrice = items.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const shippingPrice = await calculateShippingPrice(itemsPrice);
+  const shippingPrice = await calculateShippingPrice(itemsPrice, shippingAddress);
   const totalPrice = itemsPrice + shippingPrice;
 
   const { stripe, settings } = await getStripeClient();

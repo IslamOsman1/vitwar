@@ -3,17 +3,9 @@ import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import User from '../models/User.js';
 import { ensureStoreSettings } from '../utils/storeSettings.js';
+import { calculateShippingPrice } from '../utils/shipping.js';
 
 const CANCEL_WINDOW_MS = 5 * 60 * 1000;
-
-const calculateShippingPrice = async (itemsPrice) => {
-  const settings = await ensureStoreSettings();
-  const shippingFee = Number(settings.checkout?.shippingFee ?? 35);
-  const freeShippingThreshold = Number(settings.checkout?.freeShippingThreshold ?? 500);
-
-  if (!itemsPrice || itemsPrice >= freeShippingThreshold) return 0;
-  return shippingFee;
-};
 
 const buildOrderItems = async (orderItems) => {
   const ids = orderItems.map((item) => item.product);
@@ -57,7 +49,7 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   const items = await buildOrderItems(orderItems);
   const itemsPrice = items.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const shippingPrice = await calculateShippingPrice(itemsPrice);
+  const shippingPrice = await calculateShippingPrice(itemsPrice, shippingAddress);
 
   const order = await Order.create({
     user: req.user._id,

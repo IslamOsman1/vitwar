@@ -94,6 +94,19 @@ const defaultCategoryGroups = [
   }
 ];
 
+const defaultCheckoutGovernorates = [
+  {
+    name: 'القاهرة',
+    shippingFee: 35,
+    cities: ['مدينة نصر', 'مصر الجديدة', 'التجمع', 'المعادي']
+  },
+  {
+    name: 'الجيزة',
+    shippingFee: 40,
+    cities: ['الدقي', 'المهندسين', '6 أكتوبر', 'الهرم']
+  }
+];
+
 export const ensureStoreSettings = async () => {
   let settings = await StoreSettings.findOne({ singleton: 'default' });
   if (!settings) {
@@ -103,7 +116,10 @@ export const ensureStoreSettings = async () => {
         heroSlides: defaultHeroSlides,
         featuredCategories: defaultFeaturedCategories
       },
-      categoryGroups: defaultCategoryGroups
+      categoryGroups: defaultCategoryGroups,
+      checkout: {
+        governorates: defaultCheckoutGovernorates
+      }
     });
   } else {
     let changed = false;
@@ -120,6 +136,20 @@ export const ensureStoreSettings = async () => {
 
     if (!settings.categoryGroups?.length) {
       settings.categoryGroups = defaultCategoryGroups;
+      changed = true;
+    }
+
+    if (!settings.checkout?.governorates?.length) {
+      settings.checkout = settings.checkout || {};
+      settings.checkout.governorates = defaultCheckoutGovernorates;
+      changed = true;
+    }
+    if (settings.checkout?.governorates?.some((item) => typeof item.shippingFee !== 'number')) {
+      settings.checkout.governorates = settings.checkout.governorates.map((item) => ({
+        name: item.name,
+        shippingFee: Number(item.shippingFee ?? settings.checkout?.shippingFee ?? 35),
+        cities: item.cities || []
+      }));
       changed = true;
     }
 

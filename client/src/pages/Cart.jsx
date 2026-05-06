@@ -5,14 +5,38 @@ import { useCart } from '../context/CartContext.jsx';
 
 export default function Cart() {
   const { items, updateQty, removeFromCart, totals } = useCart();
-  return <div className="container page"><h1>سلة التسوق</h1>
-    {!items.length ? <p>السلة فارغة. <Link to="/">ابدأ التسوق</Link></p> : <div className="cart-layout">
-      <div className="cart-list">{items.map(item => <div className="cart-item" key={item._id}>
-        {item.image?.url && <img src={item.image.url} alt={item.name}/>}<div><h3>{item.name}</h3><p>{item.price} ج.م</p></div>
-        <input type="number" min="1" value={item.qty} onChange={e => updateQty(item._id, e.target.value)} />
-        <button onClick={() => removeFromCart(item._id)}><Trash2 size={18}/></button>
-      </div>)}</div>
-      <aside className="summary"><h2>ملخص الطلب</h2><p>المنتجات: {totals.itemsPrice} ج.م</p><p>الشحن: {totals.shipping} ج.م</p><strong>الإجمالي: {totals.total} ج.م</strong><Link className="primary-btn" to="/checkout">إتمام الشراء</Link></aside>
-    </div>}
-  </div>;
+
+  return (
+    <div className="container page">
+      <h1>سلة التسوق</h1>
+
+      {!items.length ? (
+        <p>السلة فارغة. <Link to="/">ابدأ التسوق</Link></p>
+      ) : (
+        <div className="cart-layout">
+          <div className="cart-list">
+            {items.map((item) => (
+              <div className="cart-item" key={item._id}>
+                {item.image?.url ? <img src={item.image.url} alt={item.name} /> : null}
+                <div>
+                  <h3>{item.name}</h3>
+                  <p>{item.price} ج.م</p>
+                </div>
+                <input type="number" min="1" value={item.qty} onChange={(event) => updateQty(item._id, event.target.value)} />
+                <button onClick={() => removeFromCart(item._id)}><Trash2 size={18} /></button>
+              </div>
+            ))}
+          </div>
+
+          <aside className="summary">
+            <h2>ملخص الطلب</h2>
+            <p>المنتجات: {totals.itemsPrice} ج.م</p>
+            <p>الشحن: يحدد حسب المحافظة</p>
+            <strong>الإجمالي المبدئي: {totals.itemsPrice} ج.م</strong>
+            <Link className="primary-btn" to="/checkout">إتمام الشراء</Link>
+          </aside>
+        </div>
+      )}
+    </div>
+  );
 }

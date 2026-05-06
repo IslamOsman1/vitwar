@@ -37,6 +37,19 @@ const sanitizeCategoryGroups = (groups = []) => groups
   }))
   .filter((group) => group.sections.length);
 
+const sanitizeCheckoutGovernorates = (items = []) => items
+  .filter((item) => item && item.name)
+  .map((item) => ({
+    name: String(item.name || '').trim(),
+    shippingFee: Number(item.shippingFee ?? 0) > 0 ? Number(item.shippingFee) : 0,
+    cities: Array.from(new Set(
+      (item.cities || [])
+        .map((city) => String(city || '').trim())
+        .filter(Boolean)
+    ))
+  }))
+  .filter((item) => item.name && item.cities.length);
+
 export const getPublicSettings = asyncHandler(async (req, res) => {
   const settings = await ensureStoreSettings();
   res.json(serializePublicSettings(settings));
@@ -101,7 +114,10 @@ export const updateSettings = asyncHandler(async (req, res) => {
   if (checkout) {
     settings.checkout = {
       ...settings.checkout.toObject(),
-      ...checkout
+      ...checkout,
+      governorates: checkout.governorates
+        ? sanitizeCheckoutGovernorates(checkout.governorates)
+        : settings.checkout.governorates
     };
   }
 
