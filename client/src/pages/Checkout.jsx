@@ -20,6 +20,15 @@ const buildInitialAddress = (user) => {
   };
 };
 
+const buildAddressFromSavedAddress = (address, user) => ({
+  fullName: user?.name || '',
+  phone: user?.phone || '',
+  city: address?.governorate || '',
+  area: address?.city || '',
+  street: address?.street || address?.address || '',
+  notes: address?.notes || ''
+});
+
 export default function Checkout() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -137,17 +146,16 @@ export default function Checkout() {
     const nextId = event.target.value;
     setSelectedAddressId(nextId);
     const selectedAddress = savedAddresses.find((item) => item._id === nextId);
-    if (!selectedAddress) return;
+    if (!selectedAddress) {
+      setAddress((current) => ({
+        ...current,
+        fullName: user?.name || current.fullName || '',
+        phone: user?.phone || current.phone || ''
+      }));
+      return;
+    }
 
-    setAddress((current) => ({
-      ...current,
-      fullName: current.fullName || user?.name || '',
-      phone: current.phone || user?.phone || '',
-      city: selectedAddress.governorate || '',
-      area: selectedAddress.city || '',
-      street: selectedAddress.street || selectedAddress.address || '',
-      notes: selectedAddress.notes || ''
-    }));
+    setAddress(buildAddressFromSavedAddress(selectedAddress, user));
   };
 
   const submit = (event) => {
