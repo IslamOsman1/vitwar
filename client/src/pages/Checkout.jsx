@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Check, MapPin } from 'lucide-react';
+import api from '../api/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
 import { useStoreSettings } from '../context/StoreSettingsContext.jsx';
@@ -8,16 +10,14 @@ import { calculateShippingForGovernorate } from '../utils/shipping.js';
 
 const checkoutDraftKey = 'checkout-draft';
 
-const buildInitialAddress = (user) => {
-  return {
-    fullName: user?.name || '',
-    phone: user?.phone || '',
-    city: '',
-    area: '',
-    street: '',
-    notes: ''
-  };
-};
+const buildInitialAddress = (user) => ({
+  fullName: user?.name || '',
+  phone: user?.phone || '',
+  city: '',
+  area: '',
+  street: '',
+  notes: ''
+});
 
 const buildAddressFromSavedAddress = (address, user) => ({
   fullName: user?.name || '',
@@ -33,6 +33,7 @@ export default function Checkout() {
   const { user } = useAuth();
   const { items, totals } = useCart();
   const { settings } = useStoreSettings();
+  const [profileUser, setProfileUser] = useState(user);
   const [shippingAddress, setAddress] = useState(() => buildInitialAddress(user));
   const [selectedAddressId, setSelectedAddressId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cod');
@@ -40,8 +41,8 @@ export default function Checkout() {
   const [redeemLoyaltyPoints, setRedeemLoyaltyPoints] = useState(false);
 
   const savedAddresses = useMemo(
-    () => Array.isArray(user?.addresses) ? user.addresses.filter((item) => item?.street || item?.address) : [],
-    [user]
+    () => Array.isArray(profileUser?.addresses) ? profileUser.addresses.filter((item) => item?.street || item?.address) : [],
+    [profileUser]
   );
 
   const availableGovernorates = useMemo(
@@ -74,7 +75,17 @@ export default function Checkout() {
   );
 
   useEffect(() => {
-    const nextBase = buildInitialAddress(user);
+    setProfileUser(user);
+  }, [user]);
+
+  useEffect(() => {
+    api.get('/users/me')
+      .then(({ data }) => setProfileUser(data))
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    const nextBase = buildInitialAddress(profileUser);
     setAddress((current) => ({
       ...current,
       fullName: current.fullName || nextBase.fullName,
@@ -84,7 +95,7 @@ export default function Checkout() {
       street: current.street || '',
       notes: current.notes || ''
     }));
-  }, [user]);
+  }, [profileUser]);
 
   useEffect(() => {
     const draft = sessionStorage.getItem(checkoutDraftKey);
@@ -93,7 +104,7 @@ export default function Checkout() {
       const parsed = JSON.parse(draft);
       if (parsed.shippingAddress) {
         setAddress({
-          ...buildInitialAddress(user),
+          ...buildInitialAddress(profileUser),
           ...parsed.shippingAddress
         });
       }
@@ -104,14 +115,14 @@ export default function Checkout() {
     } catch {
       return;
     }
-  }, [user]);
+  }, [profileUser]);
 
   useEffect(() => {
     if (!selectedAddressId) return;
     const selectedAddress = savedAddresses.find((item) => item._id === selectedAddressId);
     if (!selectedAddress) return;
-    setAddress(buildAddressFromSavedAddress(selectedAddress, user));
-  }, [savedAddresses, selectedAddressId, user]);
+    setAddress(buildAddressFromSavedAddress(selectedAddress, profileUser));
+  }, [profileUser, savedAddresses, selectedAddressId]);
 
   useEffect(() => {
     if (!items.length) navigate('/cart');
@@ -145,14 +156,17 @@ export default function Checkout() {
     });
   };
 
-  const changeSavedAddress = (event) => {
-    const nextId = event.target.value;
+  const selectSavedAddress = (nextId) => {
     setSelectedAddressId(nextId);
     if (!nextId) {
       setAddress((current) => ({
         ...current,
-        fullName: user?.name || current.fullName || '',
-        phone: user?.phone || current.phone || ''
+        fullName: profileUser?.name || current.fullName || '',
+        phone: profileUser?.phone || current.phone || '',
+        city: '',
+        area: '',
+        street: '',
+        notes: ''
       }));
     }
   };
@@ -184,14 +198,35 @@ export default function Checkout() {
           {savedAddresses.length ? (
             <div className="checkout-loyalty-box">
               <strong>العناوين المحفوظة</strong>
-              <select value={selectedAddressId} onChange={changeSavedAddress}>
-                <option value="">اختر عنوانًا محفوظًا</option>
+              <div className="checkout-saved-addresses">
+                <button
+                  type="button"
+                  className={`checkout-saved-address-card${selectedAddressId === '' ? ' active' : ''}`}
+                  onClick={() => selectSavedAddress('')}
+                >
+                  <div className="checkout-saved-address-head">
+                    <span>إدخال يدوي</span>
+                    {selectedAddressId === '' ? <Check size={16} /> : <MapPin size={16} />}
+                  </div>
+                  <small>اكتب عنوانًا جديدًا بنفسك</small>
+                </button>
+
                 {savedAddresses.map((address) => (
-                  <option key={address._id} value={address._id}>
-                    {address.label || 'عنوان محفوظ'}
-                  </option>
+                  <button
+                    key={address._id}
+                    type="button"
+                    className={`checkout-saved-address-card${selectedAddressId === address._id ? ' active' : ''}`}
+                    onClick={() => selectSavedAddress(address._id)}
+                  >
+                    <div className="checkout-saved-address-head">
+                      <span>{address.label || 'عنوان محفوظ'}</span>
+                      {selectedAddressId === address._id ? <Check size={16} /> : <MapPin size={16} />}
+                    </div>
+                    <small>{[address.governorate, address.city].filter(Boolean).join(' - ') || 'بدون مدينة محددة'}</small>
+                    <p>{address.street || address.address || 'بدون عنوان تفصيلي'}</p>
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
           ) : null}
 
@@ -276,10 +311,10 @@ export default function Checkout() {
                   type="checkbox"
                   checked={redeemLoyaltyPoints}
                   onChange={(event) => setRedeemLoyaltyPoints(event.target.checked)}
-                  disabled={Number(user?.loyaltyPoints || 0) < Number(settings?.loyalty?.minRedeemPoints || 0)}
+                  disabled={Number(profileUser?.loyaltyPoints || 0) < Number(settings?.loyalty?.minRedeemPoints || 0)}
                 />
                 استخدام نقاط الولاء
-                <span>({Number(user?.loyaltyPoints || 0)} نقطة)</span>
+                <span>({Number(profileUser?.loyaltyPoints || 0)} نقطة)</span>
               </label>
             ) : null}
           </div>

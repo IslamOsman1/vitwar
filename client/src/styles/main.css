@@ -636,6 +636,13 @@ body[data-theme='light'] .settings-address-empty{background:#fff8ec;border-color
 .checkout-payment-options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .checkout-loyalty-box{display:grid;gap:12px;padding:16px;border-radius:20px;background:#151515;border:1px solid rgba(222,183,122,.12)}
 .checkout-loyalty-box strong{color:var(--gold)}
+.checkout-saved-addresses{display:grid;gap:10px}
+.checkout-saved-address-card{width:100%;text-align:right;display:grid;gap:6px;padding:14px 16px;border-radius:18px;border:1px solid rgba(222,183,122,.14);background:#171717;color:#fff;transition:.2s}
+.checkout-saved-address-card:hover{transform:translateY(-1px);border-color:rgba(222,183,122,.28)}
+.checkout-saved-address-card.active{border-color:var(--gold);background:linear-gradient(135deg,rgba(222,183,122,.12),rgba(255,255,255,.02));box-shadow:0 12px 30px rgba(184,137,78,.12)}
+.checkout-saved-address-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:800;color:#fff}
+.checkout-saved-address-card small{color:var(--gold-2);font-size:.82rem}
+.checkout-saved-address-card p{margin:0;color:var(--muted);line-height:1.7}
 .checkout-points-toggle{justify-content:space-between;flex-wrap:wrap}
 .checkout-points-toggle span{color:var(--muted);font-size:.85rem}
 .payment-option-card{display:grid;gap:8px;padding:16px;border-radius:18px;border:1px solid rgba(222,183,122,.14);background:#171717;color:#fff}
@@ -765,6 +772,10 @@ body[data-theme='light'] .admin-search-box{background:#fffaf2;border-color:rgba(
 body[data-theme='light'] .admin-search-box input{color:#18130f}
 body[data-theme='light'] .admin-search-box input::placeholder{color:#7a6448}
 body[data-theme='light'] .checkout-loyalty-box{background:#fffaf2;border-color:rgba(184,137,78,.16)}
+body[data-theme='light'] .checkout-saved-address-card{background:#fffdf9;border-color:rgba(184,137,78,.14);color:#18130f}
+body[data-theme='light'] .checkout-saved-address-head{color:#18130f}
+body[data-theme='light'] .checkout-saved-address-card p{color:#7b6954}
+body[data-theme='light'] .checkout-saved-address-card.active{background:linear-gradient(135deg,rgba(184,137,78,.14),rgba(255,255,255,.82))}
 body[data-theme='light'] .admin-section-head h2,
 body[data-theme='light'] .admin-section-head h3{color:#18130f}
 body[data-theme='light'] .admin-field-label{color:#7a6448}
