@@ -2,8 +2,10 @@ import express from 'express';
 import {
   getAdminSettings,
   getCategorySettings,
+  getLoyaltySettings,
   getPublicSettings,
   updateCategorySettings,
+  updateLoyaltySettings,
   updateSettings,
   verifyDeletePassword,
   uploadBannerImage
@@ -16,9 +18,11 @@ const router = express.Router();
 router.get('/public', getPublicSettings);
 router.get('/admin', protect, admin, getAdminSettings);
 router.get('/admin/categories', protect, hasPermission('manage_products'), getCategorySettings);
+router.get('/admin/loyalty', protect, hasPermission(['manage_loyalty']), getLoyaltySettings);
 router.post('/admin/verify-delete-password', protect, verifyDeletePassword);
 router.post('/admin/banner-upload', protect, admin, upload.single('image'), uploadBannerImage);
 router.put('/admin', protect, admin, updateSettings);
 router.put('/admin/categories', protect, hasPermission('manage_products'), updateCategorySettings);
+router.put('/admin/loyalty', protect, hasPermission(['manage_loyalty']), updateLoyaltySettings);
 
 export default router;

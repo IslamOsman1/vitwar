@@ -112,6 +112,13 @@ export const getCategorySettings = asyncHandler(async (_req, res) => {
   res.json({ categoryGroups: settings.categoryGroups || [] });
 });
 
+export const getLoyaltySettings = asyncHandler(async (_req, res) => {
+  const settings = await ensureStoreSettings();
+  res.json({
+    loyalty: sanitizeLoyaltySettings(settings.loyalty?.toObject?.() || settings.loyalty || {})
+  });
+});
+
 export const updateSettings = asyncHandler(async (req, res) => {
   const settings = await ensureStoreSettings();
   const {
@@ -233,6 +240,19 @@ export const updateCategorySettings = asyncHandler(async (req, res) => {
   await settings.save();
 
   res.json({ categoryGroups: settings.categoryGroups });
+});
+
+export const updateLoyaltySettings = asyncHandler(async (req, res) => {
+  const settings = await ensureStoreSettings();
+  const { loyalty } = req.body;
+
+  settings.loyalty = sanitizeLoyaltySettings({
+    ...settings.loyalty?.toObject?.(),
+    ...(loyalty || {})
+  });
+
+  await settings.save();
+  res.json({ loyalty: settings.loyalty });
 });
 
 export const uploadBannerImage = asyncHandler(async (req, res) => {

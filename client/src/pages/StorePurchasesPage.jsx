@@ -44,7 +44,7 @@ export default function StorePurchasesPage() {
   const qrReaderRef = useRef(null);
   const qrControlsRef = useRef(null);
 
-  const canManageCustomers = user?.role === 'admin' || user?.permissions?.includes('manage_customers');
+  const canManageCustomers = user?.role === 'admin' || user?.permissions?.includes('manage_customers') || user?.permissions?.includes('manage_store_purchases');
 
   const selectedCustomer = useMemo(
     () => customerResults.find((entry) => entry._id === selectedCustomerId) || null,

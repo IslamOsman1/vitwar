@@ -70,7 +70,15 @@ const userSchema = new mongoose.Schema({
   permissions: {
     type: [String],
     default: [],
-    enum: ['manage_products', 'manage_orders', 'manage_support', 'manage_customers']
+    enum: [
+      'manage_products',
+      'manage_orders',
+      'manage_support',
+      'manage_customers',
+      'manage_customer_care',
+      'manage_store_purchases',
+      'manage_loyalty'
+    ]
   },
   role: { type: String, enum: ['user', 'admin', 'employee'], default: 'user' }
 }, { timestamps: true });

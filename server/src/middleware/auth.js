@@ -25,6 +25,10 @@ export const admin = (req, res, next) => {
 
 export const hasPermission = (permission) => (req, res, next) => {
   if (req.user?.role === 'admin') return next();
-  if (req.user?.role === 'employee' && req.user.permissions?.includes(permission)) return next();
+  const requiredPermissions = Array.isArray(permission) ? permission : [permission];
+  if (
+    req.user?.role === 'employee'
+    && requiredPermissions.some((item) => req.user.permissions?.includes(item))
+  ) return next();
   res.status(403).json({ message: 'غير مصرح بهذه العملية' });
 };

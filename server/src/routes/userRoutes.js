@@ -16,8 +16,8 @@ const router = express.Router();
 router.get('/me', protect, getMySettings);
 router.put('/me', protect, updateMySettings);
 router.post('/me/avatar', protect, upload.single('image'), uploadMyAvatar);
-router.get('/customer-care', protect, hasPermission('manage_customers'), searchCustomerCareUsers);
-router.post('/:id/customer-care', protect, hasPermission('manage_customers'), applyCustomerCareAction);
+router.get('/customer-care', protect, hasPermission(['manage_customers', 'manage_customer_care', 'manage_store_purchases']), searchCustomerCareUsers);
+router.post('/:id/customer-care', protect, hasPermission(['manage_customers', 'manage_customer_care', 'manage_store_purchases', 'manage_loyalty']), applyCustomerCareAction);
 router.get('/', protect, admin, allUsers);
 router.put('/:id/role', protect, admin, updateUserRole);
 

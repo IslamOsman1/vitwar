@@ -167,7 +167,10 @@ const dashboardSections = [
 const permissionOptions = [
   { key: 'manage_products', label: 'إدارة المنتجات' },
   { key: 'manage_orders', label: 'إدارة الطلبات' },
-  { key: 'manage_support', label: 'إدارة الدعم' }
+  { key: 'manage_support', label: 'إدارة الدعم' },
+  { key: 'manage_store_purchases', label: 'تسجيل الشراء من المحل' },
+  { key: 'manage_loyalty', label: 'النقاط وأكواد الخصم' },
+  { key: 'manage_customer_care', label: 'إرضاء العميل' }
 ];
 
 const policyDefinitions = [
@@ -331,7 +334,10 @@ export default function AdminDashboard() {
   const { refresh } = useStoreSettings();
   const isEmployee = user?.role === 'employee';
   const canManageSupport = user?.role === 'admin' || user?.permissions?.includes('manage_support');
-  const canManageCustomers = user?.role === 'admin' || user?.permissions?.includes('manage_customers');
+  const canManageCustomerCare = user?.role === 'admin' || user?.permissions?.includes('manage_customers') || user?.permissions?.includes('manage_customer_care');
+  const canManageStorePurchases = user?.role === 'admin' || user?.permissions?.includes('manage_customers') || user?.permissions?.includes('manage_store_purchases');
+  const canManageLoyalty = user?.role === 'admin' || user?.permissions?.includes('manage_loyalty');
+  const canSearchCustomerAccounts = canManageCustomerCare || canManageStorePurchases;
   const qrVideoRef = React.useRef(null);
   const qrReaderRef = React.useRef(null);
   const qrControlsRef = React.useRef(null);
@@ -340,9 +346,10 @@ export default function AdminDashboard() {
     () => isEmployee
       ? dashboardSections.filter((section) =>
         (section.id === 'products' && user?.permissions?.includes('manage_products')) ||
-        (section.id === 'customer-care' && user?.permissions?.includes('manage_customers')) ||
-        (section.id === 'store-purchases' && user?.permissions?.includes('manage_customers')) ||
+        (section.id === 'customer-care' && (user?.permissions?.includes('manage_customers') || user?.permissions?.includes('manage_customer_care'))) ||
+        (section.id === 'store-purchases' && (user?.permissions?.includes('manage_customers') || user?.permissions?.includes('manage_store_purchases'))) ||
         (section.id === 'categories' && user?.permissions?.includes('manage_products')) ||
+        (section.id === 'loyalty' && user?.permissions?.includes('manage_loyalty')) ||
         (section.id === 'orders' && user?.permissions?.includes('manage_orders')) ||
         (section.id === 'support' && user?.permissions?.includes('manage_support'))
       )
@@ -523,6 +530,13 @@ export default function AdminDashboard() {
           ? categorySettings.categoryGroups
           : defaultCategoryGroups;
       }
+      if (user?.permissions?.includes('manage_loyalty')) {
+        const { data: loyaltySettings } = await api.get('/settings/admin/loyalty');
+        employeeSettings.loyalty = {
+          ...employeeSettings.loyalty,
+          ...(loyaltySettings?.loyalty || {})
+        };
+      }
       setSettingsForm(employeeSettings);
       if (canManageSupport) {
         const { data: supportData } = await api.get('/support/inbox');
@@ -565,7 +579,7 @@ export default function AdminDashboard() {
   };
 
   const loadCustomerCareUsers = async (query = '') => {
-    if (!canManageCustomers) return;
+    if (!canSearchCustomerAccounts) return;
     if (!query.trim()) {
       setCustomerResults([]);
       setSelectedCustomerId('');
@@ -602,12 +616,12 @@ export default function AdminDashboard() {
   }, [activeSection, canManageSupport]);
 
   useEffect(() => {
-    if (!['customer-care', 'store-purchases'].includes(activeSection) || !canManageCustomers) return undefined;
+    if (!['customer-care', 'store-purchases'].includes(activeSection) || !canSearchCustomerAccounts) return undefined;
     const timer = window.setTimeout(() => {
       loadCustomerCareUsers(customerSearch);
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [activeSection, customerSearch, canManageCustomers]);
+  }, [activeSection, customerSearch, canSearchCustomerAccounts]);
 
   useEffect(() => {
     if (!visibleDashboardSections.some((section) => section.id === activeSection)) {
@@ -951,7 +965,13 @@ export default function AdminDashboard() {
     setSettingsSaving(true);
     try {
       if (isEmployee) {
-        await api.put('/settings/admin/categories', { categoryGroups: settingsForm.categoryGroups });
+        if (activeSection === 'categories') {
+          await api.put('/settings/admin/categories', { categoryGroups: settingsForm.categoryGroups });
+        } else if (activeSection === 'loyalty') {
+          await api.put('/settings/admin/loyalty', { loyalty: settingsForm.loyalty });
+        } else {
+          throw new Error('EMPLOYEE_SECTION_NOT_ALLOWED');
+        }
       } else {
         await api.put('/settings/admin', settingsForm);
         await refresh();
@@ -1208,7 +1228,7 @@ export default function AdminDashboard() {
                       <td>{product.name}</td>
                       <td>{product.category || '-'}</td>
                       <td>{product.subcategory || '-'}</td>
-                      <td>{product.price} ?.?</td>
+                      <td>{product.price} ج.م</td>
                       <td>{product.countInStock}</td>
                       <td>
                         <div className="admin-table-actions">
@@ -1225,7 +1245,7 @@ export default function AdminDashboard() {
         </section>
 
         <section className={`admin-dashboard-panel${activeSection === 'customer-care' ? ' active' : ''}`}>
-          {canManageCustomers ? (
+          {canManageCustomerCare ? (
             <>
               <div className="admin-section-head">
                 <div>
@@ -1412,7 +1432,7 @@ export default function AdminDashboard() {
         </section>
 
         <section className={`admin-dashboard-panel${activeSection === 'store-purchases' ? ' active' : ''}`}>
-          {canManageCustomers ? (
+          {canManageStorePurchases ? (
             <>
               <div className="admin-section-head">
                 <div>

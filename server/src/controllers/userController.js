@@ -113,6 +113,11 @@ const ensureUsersHaveCodes = async (users = []) => {
   return users;
 };
 
+const employeeHasAnyPermission = (reqUser, permissions = []) => (
+  reqUser?.role === 'admin'
+  || (reqUser?.role === 'employee' && permissions.some((permission) => reqUser.permissions?.includes(permission)))
+);
+
 export const allUsers = asyncHandler(async (_req, res) => {
   const users = await User.find({})
     .select('name email phone role permissions avatar walletBalance loyaltyPoints hasManualPassword createdAt googleId addresses customerCode privateDiscountCodes inStoreSpentTotal')
@@ -159,6 +164,20 @@ export const applyCustomerCareAction = asyncHandler(async (req, res) => {
 
   if (!['wallet_credit', 'points_credit', 'discount_code', 'store_purchase'].includes(actionType)) {
     return res.status(400).json({ message: 'نوع العملية غير صالح' });
+  }
+
+  if (
+    ['wallet_credit', 'points_credit', 'discount_code'].includes(actionType)
+    && !employeeHasAnyPermission(req.user, ['manage_customers', 'manage_customer_care', 'manage_loyalty'])
+  ) {
+    return res.status(403).json({ message: 'ØºÙŠØ± Ù…ØµØ±Ø­ Ø¨Ù‡Ø°Ù‡ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©' });
+  }
+
+  if (
+    actionType === 'store_purchase'
+    && !employeeHasAnyPermission(req.user, ['manage_customers', 'manage_store_purchases'])
+  ) {
+    return res.status(403).json({ message: 'ØºÙŠØ± Ù…ØµØ±Ø­ Ø¨Ù‡Ø°Ù‡ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©' });
   }
 
   if (actionType === 'wallet_credit') {
@@ -300,7 +319,15 @@ export const applyCustomerCareAction = asyncHandler(async (req, res) => {
 export const updateUserRole = asyncHandler(async (req, res) => {
   const { role, permissions } = req.body;
   const allowedRoles = ['admin', 'user', 'employee'];
-  const allowedPermissions = ['manage_products', 'manage_orders', 'manage_support', 'manage_customers'];
+  const allowedPermissions = [
+    'manage_products',
+    'manage_orders',
+    'manage_support',
+    'manage_customers',
+    'manage_customer_care',
+    'manage_store_purchases',
+    'manage_loyalty'
+  ];
 
   if (!allowedRoles.includes(role)) {
     return res.status(400).json({ message: 'نوع الحساب غير صالح' });
