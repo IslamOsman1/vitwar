@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, UserRound, LayoutDashboard, LogOut, Search, Camera, Moon, Sun, X } from 'lucide-react';
+import { Camera, LayoutDashboard, LogOut, Moon, Search, ShoppingCart, Sun, UserRound, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Logo from './Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -18,6 +18,7 @@ export default function Header({ theme, onToggleTheme }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [scannerStarting, setScannerStarting] = useState(false);
   const [scannerStatus, setScannerStatus] = useState('');
 
   const displayName = user?.name || 'User';
@@ -64,31 +65,46 @@ export default function Header({ theme, onToggleTheme }) {
   const closeScanner = () => {
     stopScanner();
     setScannerOpen(false);
+    setScannerStarting(false);
     setScannerStatus('');
   };
 
   const openBarcodeResult = (code) => {
     stopScanner();
     setScannerOpen(false);
+    setScannerStarting(false);
     setScannerStatus('');
     setSearchTerm(code);
     navigate(`/categories?search=${encodeURIComponent(code)}`);
     toast.success(`تم العثور على الباركود: ${code}`);
   };
 
+  const openScanner = () => {
+    setScannerOpen(true);
+    setScannerStarting(false);
+    setScannerStatus('للبدء اضغط على زر السماح بالكاميرا ثم وافق على طلب المتصفح.');
+  };
+
+  const requestCameraAccess = () => {
+    setScannerStarting(true);
+    setScannerStatus('جارٍ طلب إذن الكاميرا...');
+  };
+
   useEffect(() => {
-    if (!scannerOpen) return undefined;
+    if (!scannerOpen || !scannerStarting) return undefined;
 
     let cancelled = false;
 
     const startScanner = async () => {
       if (!navigator.mediaDevices?.getUserMedia) {
         setScannerStatus('المتصفح لا يدعم فتح الكاميرا.');
+        setScannerStarting(false);
         return;
       }
 
       if (!('BarcodeDetector' in window)) {
         setScannerStatus('جهازك لا يدعم قراءة الباركود مباشرة من المتصفح.');
+        setScannerStarting(false);
         return;
       }
 
@@ -136,6 +152,7 @@ export default function Header({ theme, onToggleTheme }) {
         frameRef.current = window.requestAnimationFrame(scanFrame);
       } catch {
         setScannerStatus('تعذر تشغيل الكاميرا. تأكد من منح الإذن للمتصفح.');
+        setScannerStarting(false);
       }
     };
 
@@ -145,7 +162,7 @@ export default function Header({ theme, onToggleTheme }) {
       cancelled = true;
       stopScanner();
     };
-  }, [scannerOpen, navigate]);
+  }, [scannerOpen, scannerStarting, navigate]);
 
   return (
     <>
@@ -157,7 +174,7 @@ export default function Header({ theme, onToggleTheme }) {
             </Link>
 
             <form className={`search-box${searchOpen ? ' mobile-open' : ''}`} onSubmit={submitSearch}>
-              <button type="button" className="search-icon-btn" aria-label="مسح الباركود بالكاميرا" onClick={() => setScannerOpen(true)}>
+              <button type="button" className="search-icon-btn" aria-label="مسح الباركود بالكاميرا" onClick={openScanner}>
                 <Camera size={18} />
               </button>
               <button type="submit" className="search-submit" aria-label="البحث" onClick={handleMobileSearchOpen}>
@@ -222,7 +239,7 @@ export default function Header({ theme, onToggleTheme }) {
             <div className="barcode-scanner-head">
               <div>
                 <strong>مسح الباركود بالكاميرا</strong>
-                <span>{scannerStatus || 'جاري تجهيز الكاميرا...'}</span>
+                <span>{scannerStatus || 'جارٍ تجهيز الكاميرا...'}</span>
               </div>
               <button type="button" className="barcode-scanner-close" onClick={closeScanner} aria-label="إغلاق">
                 <X size={18} />
@@ -233,6 +250,12 @@ export default function Header({ theme, onToggleTheme }) {
               <video ref={videoRef} className="barcode-scanner-video" playsInline muted autoPlay />
               <div className="barcode-scanner-target" />
             </div>
+
+            {!scannerStarting ? (
+              <button type="button" className="primary-btn barcode-scanner-allow" onClick={requestCameraAccess}>
+                السماح بالكاميرا
+              </button>
+            ) : null}
 
             <button type="button" className="secondary-btn barcode-scanner-cancel" onClick={closeScanner}>
               إلغاء
