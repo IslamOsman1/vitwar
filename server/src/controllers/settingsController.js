@@ -75,6 +75,18 @@ const sanitizeLoyaltySettings = (loyalty = {}) => ({
   discountCodes: sanitizeDiscountCodes(loyalty.discountCodes || [])
 });
 
+const sanitizePolicyPage = (policy = {}, fallbackTitle = '') => ({
+  title: String(policy.title || fallbackTitle).trim(),
+  description: String(policy.description || '').trim(),
+  sections: (policy.sections || [])
+    .filter((section) => section && (section.title || section.body))
+    .map((section) => ({
+      title: String(section.title || '').trim(),
+      body: String(section.body || '').trim()
+    }))
+    .filter((section) => section.title || section.body)
+});
+
 const serializeAdminSettings = (settings) => {
   const payload = settings.toObject();
   payload.adminControls = {
@@ -111,6 +123,7 @@ export const updateSettings = asyncHandler(async (req, res) => {
     workingHours,
     whatsapp,
     about,
+    policies,
     home,
     categoryGroups,
     checkout,
@@ -132,6 +145,16 @@ export const updateSettings = asyncHandler(async (req, res) => {
     settings.about = {
       ...settings.about.toObject(),
       ...about
+    };
+  }
+
+  if (policies) {
+    settings.policies = {
+      ...settings.policies?.toObject?.(),
+      privacy: policies.privacy ? sanitizePolicyPage(policies.privacy, settings.policies?.privacy?.title || 'سياسة الخصوصية') : settings.policies?.privacy,
+      terms: policies.terms ? sanitizePolicyPage(policies.terms, settings.policies?.terms?.title || 'الشروط والأحكام') : settings.policies?.terms,
+      shipping: policies.shipping ? sanitizePolicyPage(policies.shipping, settings.policies?.shipping?.title || 'سياسة الشحن والتوصيل') : settings.policies?.shipping,
+      refund: policies.refund ? sanitizePolicyPage(policies.refund, settings.policies?.refund?.title || 'سياسة الاسترجاع والاستبدال') : settings.policies?.refund
     };
   }
 

@@ -139,6 +139,14 @@ export default function CheckoutReview() {
             </div>
           </div>
 
+          <div className="checkout-review-block">
+            <strong>سياسات مهمة قبل التأكيد</strong>
+            <p className="checkout-policy-copy">
+              بإتمام الطلب فأنت توافق على <Link to="/policies/terms">الشروط والأحكام</Link> و<Link to="/policies/privacy">سياسة الخصوصية</Link>،
+              كما يمكنك مراجعة <Link to="/policies/shipping">سياسة الشحن</Link> و<Link to="/policies/refund">سياسة الاسترجاع</Link>.
+            </p>
+          </div>
+
           <div className="checkout-review-actions">
             <Link to="/checkout" className="secondary-btn">العودة للتعديل</Link>
             <button type="button" className="primary-btn" onClick={submit} disabled={submitting}>

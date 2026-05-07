@@ -48,6 +48,9 @@ export default function Register() {
       <SocialLoginButtons />
 
       <p>لديك حساب بالفعل؟ <Link to="/login">سجل الدخول</Link></p>
+      <p className="auth-policy-links">
+        بإنشائك للحساب فأنت توافق على <Link to="/policies/terms">الشروط والأحكام</Link> و<Link to="/policies/privacy">سياسة الخصوصية</Link>
+      </p>
     </div>
   );
 }

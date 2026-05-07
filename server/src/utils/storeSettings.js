@@ -120,6 +120,45 @@ const defaultAdminControls = {
   deletePasswordHash: ''
 };
 
+const defaultPolicies = {
+  privacy: {
+    title: 'سياسة الخصوصية',
+    description: 'نوضح هنا كيفية جمع بياناتك واستخدامها وحمايتها أثناء استخدام متجر الوكالة.',
+    sections: [
+      { title: 'البيانات التي نجمعها', body: 'نقوم بجمع بيانات الحساب الأساسية مثل الاسم والبريد الإلكتروني ورقم الهاتف والعناوين اللازمة لإتمام الطلبات وإدارة الحساب.' },
+      { title: 'استخدام البيانات', body: 'تُستخدم البيانات لإتمام الطلبات والتواصل مع العميل وتحسين تجربة الاستخدام وتقديم الدعم الفني وإدارة نقاط الولاء والخدمات المرتبطة.' },
+      { title: 'حماية المعلومات', body: 'نلتزم بحماية بيانات العميل وعدم مشاركتها إلا في حدود تشغيل الخدمة مثل الشحن أو الدفع أو الدعم الفني حسب الحاجة.' }
+    ]
+  },
+  terms: {
+    title: 'الشروط والأحكام',
+    description: 'هذه الصفحة توضح القواعد المنظمة لاستخدام الموقع والطلبات والحسابات.',
+    sections: [
+      { title: 'استخدام الموقع', body: 'يجب استخدام الموقع بصورة قانونية وعدم إساءة استخدام الخدمات أو محاولة تعطيلها أو العبث بمحتواها أو بياناتها.' },
+      { title: 'الطلبات والدفع', body: 'يخضع قبول الطلب لتوافر المنتجات وصحة بيانات الشحن ونجاح عملية الدفع بحسب الوسيلة المختارة داخل الموقع.' },
+      { title: 'إدارة الحساب', body: 'العميل مسؤول عن صحة بيانات حسابه والحفاظ على سرية بيانات الدخول ويحق للمتجر تحديث الشروط متى لزم الأمر.' }
+    ]
+  },
+  shipping: {
+    title: 'سياسة الشحن والتوصيل',
+    description: 'تفاصيل المحافظات المتاحة واحتساب الرسوم ومدة التوصيل التقديرية.',
+    sections: [
+      { title: 'نطاق التوصيل', body: 'يظهر للعميل داخل فورم الطلب فقط المحافظات والمدن المفعلة حاليًا من لوحة التحكم.' },
+      { title: 'مدة التسليم', body: 'مدة التوصيل تقديرية وتختلف حسب المنطقة وحالة التشغيل وتوقيت الطلب وقد يتم التواصل مع العميل لتأكيد الموعد.' },
+      { title: 'رسوم الشحن', body: 'تُحتسب رسوم الشحن تلقائيًا حسب المحافظة أو الإعدادات الحالية ويظهر الإجمالي قبل تأكيد الطلب النهائي.' }
+    ]
+  },
+  refund: {
+    title: 'سياسة الاسترجاع والاستبدال',
+    description: 'القواعد الأساسية الخاصة بإلغاء الطلبات والاستبدال والاسترجاع ومعالجة الشكاوى.',
+    sections: [
+      { title: 'الاسترجاع والاستبدال', body: 'يمكن طلب المراجعة أو الاستبدال عند وجود مشكلة واضحة في المنتج أو عند وصول منتج غير مطابق حسب حالة الطلب.' },
+      { title: 'إلغاء الطلب', body: 'الإلغاء متاح وفق حالة الطلب والمدة المسموح بها في النظام وقد تختلف المعالجة للطلبات المدفوعة أونلاين.' },
+      { title: 'آلية المعالجة', body: 'يقوم فريق الدعم بمراجعة كل حالة وتحديد الحل المناسب سواء استبدال أو إضافة رصيد للمحفظة أو أي معالجة أخرى.' }
+    ]
+  }
+};
+
 export const ensureStoreSettings = async () => {
   let settings = await StoreSettings.findOne({ singleton: 'default' });
   if (!settings) {
@@ -130,6 +169,7 @@ export const ensureStoreSettings = async () => {
         featuredCategories: defaultFeaturedCategories
       },
       categoryGroups: defaultCategoryGroups,
+      policies: defaultPolicies,
       checkout: {
         governorates: defaultCheckoutGovernorates
       },
@@ -152,6 +192,25 @@ export const ensureStoreSettings = async () => {
     if (!settings.categoryGroups?.length) {
       settings.categoryGroups = defaultCategoryGroups;
       changed = true;
+    }
+
+    if (!settings.policies) {
+      settings.policies = defaultPolicies;
+      changed = true;
+    } else {
+      for (const key of Object.keys(defaultPolicies)) {
+        const currentPolicy = settings.policies[key];
+        if (!currentPolicy?.title || !Array.isArray(currentPolicy?.sections) || !currentPolicy.sections.length) {
+          settings.policies[key] = {
+            ...defaultPolicies[key],
+            ...(currentPolicy?.toObject?.() || currentPolicy || {})
+          };
+          if (!Array.isArray(settings.policies[key].sections) || !settings.policies[key].sections.length) {
+            settings.policies[key].sections = defaultPolicies[key].sections;
+          }
+          changed = true;
+        }
+      }
     }
 
     if (!settings.checkout?.governorates?.length) {
@@ -218,6 +277,7 @@ export const serializePublicSettings = (settings) => ({
   workingHours: settings.workingHours,
   whatsapp: settings.whatsapp,
   about: settings.about,
+  policies: settings.policies,
   home: settings.home,
   categoryGroups: settings.categoryGroups,
   checkout: settings.checkout,

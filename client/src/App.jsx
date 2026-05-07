@@ -14,6 +14,11 @@ import ProfilePage from './pages/ProfilePage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import ContactPage from './pages/ContactPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
+import PoliciesPage from './pages/PoliciesPage.jsx';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx';
+import TermsPage from './pages/TermsPage.jsx';
+import ShippingPolicyPage from './pages/ShippingPolicyPage.jsx';
+import RefundPolicyPage from './pages/RefundPolicyPage.jsx';
 import AlWekalaProductsPage from './pages/AlWekalaProductsPage.jsx';
 import Cart from './pages/Cart.jsx';
 import Login from './pages/Login.jsx';
@@ -90,6 +95,11 @@ export default function App() {
         <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/policies" element={<PoliciesPage />} />
+        <Route path="/policies/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/policies/terms" element={<TermsPage />} />
+        <Route path="/policies/shipping" element={<ShippingPolicyPage />} />
+        <Route path="/policies/refund" element={<RefundPolicyPage />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

@@ -50,6 +50,20 @@ const discountCodeSchema = new mongoose.Schema({
   expiresAt: { type: Date, default: null }
 }, { _id: false });
 
+const policySectionSchema = new mongoose.Schema({
+  title: { type: String, default: '' },
+  body: { type: String, default: '' }
+}, { _id: false });
+
+const policyPageSchema = new mongoose.Schema({
+  title: { type: String, default: '' },
+  description: { type: String, default: '' },
+  sections: {
+    type: [policySectionSchema],
+    default: []
+  }
+}, { _id: false });
+
 const storeSettingsSchema = new mongoose.Schema({
   singleton: { type: String, default: 'default', unique: true },
   storeName: { type: String, default: 'Al Wekala Market' },
@@ -68,6 +82,12 @@ const storeSettingsSchema = new mongoose.Schema({
     vision: { type: String, default: 'تقديم تجربة شراء بسيطة وواضحة تساعد العميل يصل إلى ما يحتاجه بسرعة.' },
     mission: { type: String, default: 'توفير المنتجات اليومية والعروض في واجهة سهلة ومريحة على الموبايل والكمبيوتر.' },
     values: { type: String, default: 'الوضوح، السرعة، سهولة الاستخدام، والاهتمام بتجربة العميل في كل خطوة.' }
+  },
+  policies: {
+    privacy: { type: policyPageSchema, default: () => ({}) },
+    terms: { type: policyPageSchema, default: () => ({}) },
+    shipping: { type: policyPageSchema, default: () => ({}) },
+    refund: { type: policyPageSchema, default: () => ({}) }
   },
   home: {
     heroSlides: {

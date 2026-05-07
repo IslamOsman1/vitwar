@@ -48,6 +48,11 @@ export default function Login() {
       <SocialLoginButtons />
 
       <p>ليس لديك حساب؟ <Link to="/register">أنشئ حساب</Link></p>
+      <p className="auth-policy-links">
+        <Link to="/policies/terms">الشروط والأحكام</Link>
+        <span>•</span>
+        <Link to="/policies/privacy">سياسة الخصوصية</Link>
+      </p>
     </div>
   );
 }

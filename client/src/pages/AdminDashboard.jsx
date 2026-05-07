@@ -9,6 +9,7 @@ import {
   Palette,
   Save,
   Search,
+  ShieldCheck,
   ShoppingBag,
   Store,
   Tag,
@@ -56,6 +57,12 @@ const defaultSettingsForm = {
     vision: '',
     mission: '',
     values: ''
+  },
+  policies: {
+    privacy: { title: 'سياسة الخصوصية', description: '', sections: [{ title: '', body: '' }] },
+    terms: { title: 'الشروط والأحكام', description: '', sections: [{ title: '', body: '' }] },
+    shipping: { title: 'سياسة الشحن والتوصيل', description: '', sections: [{ title: '', body: '' }] },
+    refund: { title: 'سياسة الاسترجاع والاستبدال', description: '', sections: [{ title: '', body: '' }] }
   },
   home: {
     heroSlides: [
@@ -143,6 +150,28 @@ const normalizeSettings = (data) => ({
   about: {
     ...defaultSettingsForm.about,
     ...(data.about || {})
+  },
+  policies: {
+    privacy: {
+      ...defaultSettingsForm.policies.privacy,
+      ...(data.policies?.privacy || {}),
+      sections: data.policies?.privacy?.sections?.length ? data.policies.privacy.sections : defaultSettingsForm.policies.privacy.sections
+    },
+    terms: {
+      ...defaultSettingsForm.policies.terms,
+      ...(data.policies?.terms || {}),
+      sections: data.policies?.terms?.sections?.length ? data.policies.terms.sections : defaultSettingsForm.policies.terms.sections
+    },
+    shipping: {
+      ...defaultSettingsForm.policies.shipping,
+      ...(data.policies?.shipping || {}),
+      sections: data.policies?.shipping?.sections?.length ? data.policies.shipping.sections : defaultSettingsForm.policies.shipping.sections
+    },
+    refund: {
+      ...defaultSettingsForm.policies.refund,
+      ...(data.policies?.refund || {}),
+      sections: data.policies?.refund?.sections?.length ? data.policies.refund.sections : defaultSettingsForm.policies.refund.sections
+    }
   },
   home: {
     heroSlides: [...(data.home?.heroSlides || []), ...defaultSettingsForm.home.heroSlides].slice(0, 3),
@@ -734,6 +763,38 @@ export default function AdminDashboard() {
           discountCodes: (current.loyalty?.discountCodes || []).filter((_, index) => index !== discountIndex)
         }
       }));
+    });
+  };
+
+  const addPolicySection = (policyKey) => {
+    setSettingsForm((current) => ({
+      ...current,
+      policies: {
+        ...current.policies,
+        [policyKey]: {
+          ...current.policies[policyKey],
+          sections: [{ title: '', body: '' }, ...(current.policies?.[policyKey]?.sections || [])]
+        }
+      }
+    }));
+  };
+
+  const removePolicySection = (policyKey, sectionIndex) => {
+    requestDeletePassword().then((deletePassword) => {
+      if (deletePassword === null) return;
+      setSettingsForm((current) => {
+        const nextSections = (current.policies?.[policyKey]?.sections || []).filter((_, index) => index !== sectionIndex);
+        return {
+          ...current,
+          policies: {
+            ...current.policies,
+            [policyKey]: {
+              ...current.policies[policyKey],
+              sections: nextSections.length ? nextSections : [{ title: '', body: '' }]
+            }
+          }
+        };
+      });
     });
   };
 
