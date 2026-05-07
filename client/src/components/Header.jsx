@@ -13,9 +13,9 @@ export default function Header({ theme, onToggleTheme }) {
   const location = useLocation();
   const inputRef = useRef(null);
   const videoRef = useRef(null);
-  const fileInputRef = useRef(null);
   const streamRef = useRef(null);
   const frameRef = useRef(0);
+  const detectorRef = useRef(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -30,6 +30,16 @@ export default function Header({ theme, onToggleTheme }) {
     setSearchTerm(params.get('search') || '');
     setSearchOpen(false);
   }, [location.pathname, location.search]);
+
+  useEffect(() => () => {
+    if (frameRef.current) {
+      window.cancelAnimationFrame(frameRef.current);
+    }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+    }
+  }, []);
 
   const submitSearch = (event) => {
     event.preventDefault();
@@ -80,127 +90,76 @@ export default function Header({ theme, onToggleTheme }) {
     toast.success(`تم العثور على الباركود: ${code}`);
   };
 
-  const openScanner = () => {
-    setScannerOpen(true);
-    setScannerStarting(false);
-    setScannerStatus('للبدء اضغط على زر السماح بالكاميرا ثم وافق على طلب المتصفح.');
-  };
-
-  const requestCameraAccess = () => {
-    setScannerStarting(true);
-    setScannerStatus('جارٍ طلب إذن الكاميرا...');
-  };
-
-  const handleCaptureFallback = async (event) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-
-    if (!file) return;
-
-    if (!('BarcodeDetector' in window)) {
-      setScannerStatus('تم فتح الكاميرا البديلة، لكن هذا المتصفح لا يدعم قراءة الباركود من الصور تلقائيًا.');
-      return;
-    }
+  const scanFrame = async () => {
+    if (!videoRef.current || !detectorRef.current) return;
 
     try {
-      const detector = new window.BarcodeDetector({
-        formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code']
-      });
-      const bitmap = await createImageBitmap(file);
-      const barcodes = await detector.detect(bitmap);
+      const barcodes = await detectorRef.current.detect(videoRef.current);
       const foundCode = barcodes.find((item) => item.rawValue)?.rawValue;
 
       if (foundCode) {
         openBarcodeResult(foundCode);
         return;
       }
-
-      setScannerStatus('تم التقاط الصورة، لكن لم يتم العثور على باركود واضح. حاول الاقتراب أكثر من الكود.');
     } catch {
-      setScannerStatus('تعذر قراءة الباركود من الصورة الملتقطة.');
+      setScannerStatus('تعذر قراءة الباركود حاليًا، حاول تقريب الكاميرا أو تحسين الإضاءة.');
+    }
+
+    frameRef.current = window.requestAnimationFrame(scanFrame);
+  };
+
+  const requestCameraAccess = async () => {
+    setScannerStarting(true);
+    setScannerStatus('جارٍ طلب إذن الكاميرا...');
+
+    if (!window.isSecureContext) {
+      setScannerStatus('فتح الكاميرا على iPhone يتطلب رابط https مباشر للموقع.');
+      setScannerStarting(false);
+      return;
+    }
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setScannerStatus('المتصفح لا يدعم فتح الكاميرا.');
+      setScannerStarting(false);
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false
+      });
+
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play().catch(() => undefined);
+      }
+
+      if (!('BarcodeDetector' in window)) {
+        setScannerStatus('تم فتح الكاميرا، لكن Safari على iPhone لا يدعم قراءة الباركود تلقائيًا من المتصفح حاليًا.');
+        setScannerStarting(false);
+        return;
+      }
+
+      detectorRef.current = new window.BarcodeDetector({
+        formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code']
+      });
+
+      setScannerStatus('وجّه الكاميرا نحو الباركود...');
+      frameRef.current = window.requestAnimationFrame(scanFrame);
+    } catch {
+      setScannerStatus('تعذر تشغيل الكاميرا. تأكد أن الرابط المباشر للموقع مفتوح في Safari وتم السماح بالكاميرا.');
+      setScannerStarting(false);
     }
   };
 
-  useEffect(() => {
-    if (!scannerOpen || !scannerStarting) return undefined;
-
-    let cancelled = false;
-
-    const startScanner = async () => {
-      if (!window.isSecureContext) {
-        setScannerStatus('على iPhone لن تعمل الكاميرا من رابط غير آمن. افتح الموقع عبر https أو localhost.');
-        setScannerStarting(false);
-        return;
-      }
-
-      if (!navigator.mediaDevices?.getUserMedia) {
-        setScannerStatus('المتصفح لا يدعم فتح الكاميرا.');
-        setScannerStarting(false);
-        return;
-      }
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' } },
-          audio: false
-        });
-
-        if (cancelled) {
-          stream.getTracks().forEach((track) => track.stop());
-          return;
-        }
-
-        streamRef.current = stream;
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play().catch(() => undefined);
-        }
-
-        if (!('BarcodeDetector' in window)) {
-          setScannerStatus('تم فتح الكاميرا، لكن Safari أو هذا الجهاز لا يدعم قراءة الباركود تلقائيًا من المتصفح.');
-          setScannerStarting(false);
-          return;
-        }
-
-        const detector = new window.BarcodeDetector({
-          formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code']
-        });
-
-        setScannerStatus('وجّه الكاميرا نحو الباركود...');
-
-        const scanFrame = async () => {
-          if (cancelled || !videoRef.current) return;
-
-          try {
-            const barcodes = await detector.detect(videoRef.current);
-            const foundCode = barcodes.find((item) => item.rawValue)?.rawValue;
-
-            if (foundCode) {
-              openBarcodeResult(foundCode);
-              return;
-            }
-          } catch {
-            setScannerStatus('تعذر قراءة الباركود حاليًا، حاول تقريب الكاميرا أو تحسين الإضاءة.');
-          }
-
-          frameRef.current = window.requestAnimationFrame(scanFrame);
-        };
-
-        frameRef.current = window.requestAnimationFrame(scanFrame);
-      } catch {
-        setScannerStatus('تعذر تشغيل الكاميرا. تأكد من منح الإذن للمتصفح وأن الصفحة تعمل عبر https أو localhost.');
-        setScannerStarting(false);
-      }
-    };
-
-    startScanner();
-
-    return () => {
-      cancelled = true;
-      stopScanner();
-    };
-  }, [scannerOpen, scannerStarting, navigate]);
+  const openScanner = () => {
+    setScannerOpen(true);
+    setScannerStarting(false);
+    setScannerStatus('للبدء اضغط على زر السماح بالكاميرا.');
+  };
 
   return (
     <>
@@ -290,28 +249,14 @@ export default function Header({ theme, onToggleTheme }) {
             </div>
 
             {!scannerStarting ? (
-              <>
-                <button type="button" className="primary-btn barcode-scanner-allow" onClick={requestCameraAccess}>
-                  السماح بالكاميرا
-                </button>
-                <button type="button" className="secondary-btn barcode-scanner-capture" onClick={() => fileInputRef.current?.click()}>
-                  التقاط صورة للباركود
-                </button>
-              </>
+              <button type="button" className="primary-btn barcode-scanner-allow" onClick={requestCameraAccess}>
+                السماح بالكاميرا
+              </button>
             ) : null}
 
             <button type="button" className="secondary-btn barcode-scanner-cancel" onClick={closeScanner}>
               إلغاء
             </button>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="visually-hidden"
-              onChange={handleCaptureFallback}
-            />
           </div>
         </div>
       ) : null}
