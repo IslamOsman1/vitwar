@@ -168,7 +168,7 @@ export default function Home() {
           to={`/category/${encodeURIComponent(item.category)}`}
           key={item.title}
           className={`market-category-card${item.image ? ' visual' : ''}`}
-          style={item.image ? { backgroundImage: `url(${item.image})` } : undefined}
+          style={item.image ? { '--category-image': `url(${item.image})` } : undefined}
         >
           {!item.image && item.emoji ? <span className="market-category-emoji" aria-hidden="true">{item.emoji}</span> : null}
           <strong>{item.title}</strong>

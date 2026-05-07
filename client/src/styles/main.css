@@ -133,8 +133,9 @@ body[data-theme='light'] .theme-toggle:hover{color:var(--dark)}
 .market-category-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
 .market-category-card{background:#fffdf9;border:1px solid #f0e2ca;border-radius:28px;padding:18px 16px;display:grid;gap:8px;text-align:center;transition:.2s;box-shadow:0 16px 36px rgba(41,31,16,.06);min-height:176px;align-content:center}
 .market-category-card:hover{transform:translateY(-4px);border-color:#e2bf84}
-.market-category-card.visual{position:relative;background-size:cover;background-position:center;overflow:hidden;border-color:rgba(222,183,122,.14);min-height:200px;isolation:isolate}
-.market-category-card.visual::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.18) 42%,rgba(0,0,0,.58))}
+.market-category-card.visual{position:relative;overflow:hidden;border-color:rgba(222,183,122,.14);min-height:200px;isolation:isolate;background:#17120d}
+.market-category-card.visual::before{content:'';position:absolute;inset:0;background-image:var(--category-image);background-size:cover;background-position:center center;background-repeat:no-repeat;transform:translateZ(0);will-change:transform;z-index:0}
+.market-category-card.visual::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.18) 42%,rgba(0,0,0,.58));z-index:0}
 .market-category-emoji{width:56px;height:56px;border-radius:18px;background:linear-gradient(180deg,#fff3df,#f2e0bf);display:grid;place-items:center;margin:0 auto;font-size:1.7rem;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
 .market-category-card strong{color:#17120d;font-size:.95rem}
 .market-category-card small{color:#7b6954;line-height:1.55;font-size:.86rem}
