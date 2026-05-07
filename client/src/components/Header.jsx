@@ -102,17 +102,7 @@ export default function Header({ theme, onToggleTheme }) {
         return;
       }
 
-      if (!('BarcodeDetector' in window)) {
-        setScannerStatus('جهازك لا يدعم قراءة الباركود مباشرة من المتصفح.');
-        setScannerStarting(false);
-        return;
-      }
-
       try {
-        const detector = new window.BarcodeDetector({
-          formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code']
-        });
-
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: 'environment' } },
           audio: false
@@ -124,12 +114,23 @@ export default function Header({ theme, onToggleTheme }) {
         }
 
         streamRef.current = stream;
-        setScannerStatus('وجّه الكاميرا نحو الباركود...');
 
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           await videoRef.current.play().catch(() => undefined);
         }
+
+        if (!('BarcodeDetector' in window)) {
+          setScannerStatus('تم فتح الكاميرا، لكن Safari أو هذا الجهاز لا يدعم قراءة الباركود تلقائيًا من المتصفح.');
+          setScannerStarting(false);
+          return;
+        }
+
+        const detector = new window.BarcodeDetector({
+          formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code']
+        });
+
+        setScannerStatus('وجّه الكاميرا نحو الباركود...');
 
         const scanFrame = async () => {
           if (cancelled || !videoRef.current) return;
@@ -143,7 +144,7 @@ export default function Header({ theme, onToggleTheme }) {
               return;
             }
           } catch {
-            setScannerStatus('تعذر قراءة الباركود حاليًا، حاول تقريب الكاميرا.');
+            setScannerStatus('تعذر قراءة الباركود حاليًا، حاول تقريب الكاميرا أو تحسين الإضاءة.');
           }
 
           frameRef.current = window.requestAnimationFrame(scanFrame);
@@ -151,7 +152,7 @@ export default function Header({ theme, onToggleTheme }) {
 
         frameRef.current = window.requestAnimationFrame(scanFrame);
       } catch {
-        setScannerStatus('تعذر تشغيل الكاميرا. تأكد من منح الإذن للمتصفح.');
+        setScannerStatus('تعذر تشغيل الكاميرا. تأكد من منح الإذن للمتصفح وأن الصفحة تعمل عبر https أو localhost.');
         setScannerStarting(false);
       }
     };
