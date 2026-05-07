@@ -814,6 +814,24 @@ body[data-theme='light'] .admin-form textarea{background:#f7f0e4;color:#18130f;b
 .customer-care-history-item strong{color:#fff;text-transform:capitalize}
 .customer-care-history-item span{color:var(--gold)}
 .customer-care-history-item p{margin:0;color:var(--muted);line-height:1.7}
+.store-purchases-mobile-page{padding:18px}
+.store-purchases-mobile-shell{display:grid;gap:18px}
+.store-purchases-mobile-hero{display:grid;gap:14px;padding:18px;border-radius:28px;background:linear-gradient(135deg,#13100c,#1f1811 58%,#342617 100%);border:1px solid rgba(222,183,122,.14)}
+.store-purchases-mobile-hero h1{margin:10px 0 8px;color:#fff;font-size:clamp(1.6rem,4vw,2.4rem)}
+.store-purchases-mobile-hero p{margin:0;color:#e6d2b2;line-height:1.8}
+.store-purchases-mobile-back{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;width:max-content;padding:0 16px;border-radius:999px;border:1px solid rgba(222,183,122,.16);background:#17120d;color:#f4dfbf;font-weight:800}
+.store-purchases-mobile-stage{display:grid;gap:14px}
+.store-purchases-mobile-search-card,.store-purchases-mobile-state,.store-purchases-mobile-customer-card,.store-purchases-mobile-form{border-radius:24px}
+.store-purchases-mobile-search-card{display:grid;gap:10px;padding:18px;background:#171717;border:1px solid rgba(222,183,122,.12);box-shadow:var(--shadow)}
+.store-purchases-mobile-search-box{min-height:56px;padding:0 14px;border-radius:18px}
+.store-purchases-mobile-state{display:grid;gap:12px}
+.store-purchases-mobile-results{display:grid;gap:10px}
+.store-purchases-mobile-customer{display:grid;gap:14px}
+.store-purchases-mobile-customer-card{display:grid;gap:16px;padding:18px;background:linear-gradient(135deg,rgba(222,183,122,.12),rgba(255,255,255,.02));border:1px solid rgba(222,183,122,.16);box-shadow:var(--shadow)}
+.store-purchases-mobile-meta{grid-template-columns:repeat(2,minmax(0,1fr))}
+.store-purchases-mobile-reset{min-height:44px;width:100%;border-radius:16px;border:1px solid rgba(222,183,122,.14);background:#181818;color:#f2dfc1;font-weight:800}
+.store-purchases-mobile-form{gap:14px}
+.store-purchases-mobile-submit{width:100%;justify-content:center;min-height:52px}
 .admin-settings-cluster{display:grid;gap:16px}
 .admin-setting-card.nested{background:#141414;border:1px solid rgba(222,183,122,.1)}
 .admin-setting-card{background:#171717;border:1px solid rgba(222,183,122,.12);border-radius:24px;padding:18px;display:grid;gap:16px}
@@ -887,6 +905,13 @@ body[data-theme='light'] .customer-care-user-card span,
 body[data-theme='light'] .customer-care-meta-grid div,
 body[data-theme='light'] .customer-care-discount-chip span,
 body[data-theme='light'] .customer-care-history-item span{color:#8a622e}
+body[data-theme='light'] .store-purchases-mobile-hero{background:linear-gradient(135deg,#fffaf1,#f4e8d4 54%,#e8cb9b 100%);border-color:rgba(184,137,78,.16)}
+body[data-theme='light'] .store-purchases-mobile-hero h1{color:#18130f}
+body[data-theme='light'] .store-purchases-mobile-hero p{color:#604b34}
+body[data-theme='light'] .store-purchases-mobile-back,
+body[data-theme='light'] .store-purchases-mobile-search-card,
+body[data-theme='light'] .store-purchases-mobile-customer-card{background:#fffaf2;color:#18130f;border-color:rgba(184,137,78,.16)}
+body[data-theme='light'] .store-purchases-mobile-reset{background:#fffdf8;color:#5b4833;border-color:rgba(184,137,78,.16)}
 @media(max-width:1100px){
   .admin-dashboard-hero{grid-template-columns:1fr}
   .admin-dashboard-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -907,6 +932,13 @@ body[data-theme='light'] .customer-care-history-item span{color:#8a622e}
   .admin-category-inventory-head{display:grid}
   .admin-submit-btn,
   .admin-inline-save-btn{width:100%}
+  .store-purchases-mobile-page{width:min(100%,96%);padding:14px;border-radius:22px}
+  .store-purchases-mobile-hero{padding:16px;border-radius:22px}
+  .store-purchases-mobile-back{width:100%}
+  .store-purchases-mobile-search-card{position:sticky;top:94px;z-index:4;padding:14px;border-radius:22px}
+  .store-purchases-mobile-customer-card,
+  .store-purchases-mobile-form{padding:16px;border-radius:22px}
+  .store-purchases-mobile-meta{grid-template-columns:1fr}
 }
 @media(max-width:520px){
   .admin-dashboard-tabs{grid-template-columns:1fr}

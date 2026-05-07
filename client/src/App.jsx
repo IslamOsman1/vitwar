@@ -30,6 +30,7 @@ import CheckoutReview from './pages/CheckoutReview.jsx';
 import CheckoutSuccess from './pages/CheckoutSuccess.jsx';
 import Orders from './pages/Orders.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
+import StorePurchasesPage from './pages/StorePurchasesPage.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 
 function PrivateRoute({ children, adminOnly = false }) {
@@ -113,6 +114,7 @@ export default function App() {
         <Route path="/checkout/success" element={<PrivateRoute><CheckoutSuccess /></PrivateRoute>} />
         <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
         <Route path="/admin" element={<PrivateRoute adminOnly><AdminDashboard /></PrivateRoute>} />
+        <Route path="/admin/store-purchases" element={<PrivateRoute adminOnly><StorePurchasesPage /></PrivateRoute>} />
           </>}
       </Routes>
     </main>

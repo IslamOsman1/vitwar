@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { BrowserQRCodeReader } from '@zxing/browser';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { getCategoryGroups, getSourceCategories } from '../utils/categoryHelpers.js';
@@ -127,6 +128,7 @@ function PlaceholderPanel({ title }) {
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
@@ -421,6 +423,14 @@ export default function AdminDashboard() {
   };
 
   const sectionClass = (id) => `dashboard-tab-btn${activeSection === id ? ' active' : ''}`;
+  const handleSectionChange = (sectionId) => {
+    if (sectionId === 'store-purchases' && window.matchMedia('(max-width: 760px)').matches) {
+      navigate('/admin/store-purchases');
+      return;
+    }
+
+    setActiveSection(sectionId);
+  };
 
   if (!user) return null;
 
@@ -445,7 +455,7 @@ export default function AdminDashboard() {
         {dashboardSections.map((section) => {
           const Icon = section.icon;
           return (
-            <button key={section.id} type="button" className={sectionClass(section.id)} onClick={() => setActiveSection(section.id)}>
+            <button key={section.id} type="button" className={sectionClass(section.id)} onClick={() => handleSectionChange(section.id)}>
               <Icon size={18} />
               <span>{section.label}</span>
             </button>
