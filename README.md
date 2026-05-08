@@ -186,7 +186,7 @@ Important Render backend values:
 - `FACEBOOK_APP_SECRET=...`
 - `STRIPE_SECRET_KEY=...`
 - `SMTP_HOST=...`
-- `SMTP_PORT=587`
+- `SMTP_PORT=2525`
 - `SMTP_SECURE=false`
 - `SMTP_USER=...`
 - `SMTP_PASS=...`
