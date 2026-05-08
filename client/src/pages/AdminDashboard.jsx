@@ -9,6 +9,7 @@ import {
   MessageCircle,
   Package,
   Palette,
+  Printer,
   Save,
   Search,
   ShieldCheck,
@@ -24,6 +25,7 @@ import {
   X
 } from 'lucide-react';
 import { BrowserQRCodeReader } from '@zxing/browser';
+import QRCode from 'qrcode';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/api.js';
@@ -183,6 +185,7 @@ const policyDefinitions = [
 const orderStatuses = ['جديد', 'قيد التجهيز', 'في الطريق', 'تم التسليم', 'ملغي'];
 
 const normalizeText = (value) => String(value || '').toLowerCase();
+const generateProductBarcode = () => `PRD-${Date.now().toString(36).toUpperCase()}`;
 const customerCareTypeLabel = (value) => ({
   wallet_credit: 'إضافة للمحفظة',
   points_credit: 'إضافة نقاط',
@@ -297,6 +300,8 @@ export default function AdminDashboard() {
   const [supportConversations, setSupportConversations] = useState([]);
   const [users, setUsers] = useState([]);
   const [productForm, setProductForm] = useState(emptyProduct);
+  const [productQrImage, setProductQrImage] = useState('');
+  const [productQrPreview, setProductQrPreview] = useState({ open: false, product: null, image: '' });
   const [settingsForm, setSettingsForm] = useState(defaultSettingsForm);
   const [image, setImage] = useState(null);
   const [editing, setEditing] = useState(null);
@@ -502,6 +507,25 @@ export default function AdminDashboard() {
       ].some((value) => normalizeText(value).includes(term)));
   }, [supportConversations, searchTerms.support]);
 
+  useEffect(() => {
+    const qrValue = String(productForm.barcode || '').trim();
+    if (!qrValue) {
+      setProductQrImage('');
+      return;
+    }
+
+    QRCode.toDataURL(qrValue, {
+      margin: 1,
+      width: 220,
+      color: {
+        dark: '#111111',
+        light: '#FFF7EA'
+      }
+    })
+      .then(setProductQrImage)
+      .catch(() => setProductQrImage(''));
+  }, [productForm.barcode]);
+
   const totalSupportUnread = useMemo(
     () => supportConversations.reduce((sum, conversation) => sum + Number(conversation.supportUnreadCount || 0), 0),
     [supportConversations]
@@ -642,6 +666,96 @@ export default function AdminDashboard() {
     });
   };
 
+  const ensureProductBarcode = () => {
+    setProductForm((current) => {
+      if (String(current.barcode || '').trim()) return current;
+      return { ...current, barcode: generateProductBarcode() };
+    });
+  };
+
+  const buildQrImage = async (value) => {
+    const code = String(value || '').trim();
+    if (!code) return '';
+    return QRCode.toDataURL(code, {
+      margin: 1,
+      width: 280,
+      color: {
+        dark: '#111111',
+        light: '#FFF7EA'
+      }
+    });
+  };
+
+  const openProductQrPreview = async (product) => {
+    const barcode = String(product?.barcode || '').trim();
+    if (!barcode) {
+      toast.error('هذا المنتج لا يحتوي على QR بعد');
+      return;
+    }
+
+    try {
+      const image = await buildQrImage(barcode);
+      setProductQrPreview({ open: true, product, image });
+    } catch {
+      toast.error('تعذر تجهيز QR للعرض');
+    }
+  };
+
+  const closeProductQrPreview = () => {
+    setProductQrPreview({ open: false, product: null, image: '' });
+  };
+
+  const printProductQr = async (product) => {
+    const barcode = String(product?.barcode || '').trim();
+    if (!barcode) {
+      toast.error('هذا المنتج لا يحتوي على QR للطباعة');
+      return;
+    }
+
+    try {
+      const image = productQrPreview.product?._id === product._id && productQrPreview.image
+        ? productQrPreview.image
+        : await buildQrImage(barcode);
+      const printWindow = window.open('', '_blank', 'width=520,height=720');
+      if (!printWindow) {
+        toast.error('المتصفح منع نافذة الطباعة');
+        return;
+      }
+
+      printWindow.document.write(`<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <title>طباعة QR - ${product.name}</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:24px;margin:0;color:#111;text-align:center}
+      .sheet{max-width:360px;margin:0 auto;border:1px solid #ddd;border-radius:18px;padding:24px}
+      img{width:240px;height:240px;display:block;margin:0 auto 18px}
+      h1{font-size:24px;margin:0 0 10px}
+      p{margin:6px 0;font-size:16px}
+      .code{font-weight:700;letter-spacing:.08em}
+    </style>
+  </head>
+  <body>
+    <div class="sheet">
+      <img src="${image}" alt="QR ${barcode}" />
+      <h1>${product.name}</h1>
+      <p>${product.category || ''}${product.subcategory ? ` - ${product.subcategory}` : ''}</p>
+      <p class="code">${barcode}</p>
+    </div>
+    <script>
+      window.onload = function() {
+        window.print();
+      };
+    </script>
+  </body>
+</html>`);
+      printWindow.document.close();
+    } catch {
+      toast.error('تعذر تجهيز QR للطباعة');
+    }
+  };
+
   const submitProduct = async (event) => {
     event.preventDefault();
     const formData = new FormData();
@@ -657,6 +771,7 @@ export default function AdminDashboard() {
 
       toast.success(editing ? 'تم تعديل المنتج' : 'تمت إضافة المنتج');
       setProductForm(emptyProduct);
+      setProductQrImage('');
       setImage(null);
       setEditing(null);
       load();
@@ -1197,6 +1312,29 @@ export default function AdminDashboard() {
               <Field label="صورة المنتج"><input type="file" accept="image/*" onChange={(event) => setImage(event.target.files?.[0] || null)} /></Field>
             </div>
 
+            <Field label="QR / Barcode المنتج">
+              <div className="admin-qr-field">
+                <input
+                  name="barcode"
+                  value={productForm.barcode}
+                  onChange={changeProduct}
+                  onBlur={ensureProductBarcode}
+                  placeholder="سيتم توليده تلقائيًا إذا تُرك فارغًا"
+                />
+                <button type="button" className="secondary-btn" onClick={ensureProductBarcode}>توليد QR</button>
+              </div>
+            </Field>
+
+            <div className="admin-product-qr-preview">
+              <div className="admin-product-qr-copy">
+                <strong>معاينة QR المنتج</strong>
+                <span>{productForm.barcode ? `سيُحفظ هذا الكود مع المنتج: ${productForm.barcode}` : 'اكتب كود المنتج أو اضغط توليد QR لإنشاء كود تلقائي.'}</span>
+              </div>
+              <div className="admin-product-qr-box">
+                {productQrImage ? <img src={productQrImage} alt={`QR ${productForm.barcode}`} /> : <div className="admin-product-qr-empty">QR</div>}
+              </div>
+            </div>
+
             <div className="admin-checkbox-row">
               <label className="admin-toggle-pill"><input type="checkbox" name="featured" checked={productForm.featured} onChange={changeProduct} /> منتج مميز</label>
               <label className="admin-toggle-pill"><input type="checkbox" name="isDeal" checked={productForm.isDeal} onChange={changeProduct} /> ضمن العروض</label>
@@ -1217,6 +1355,7 @@ export default function AdminDashboard() {
                     <th>المنتج</th>
                     <th>الفئة</th>
                     <th>القسم</th>
+                    <th>QR</th>
                     <th>السعر</th>
                     <th>المخزون</th>
                     <th>الإجراءات</th>
@@ -1228,10 +1367,16 @@ export default function AdminDashboard() {
                       <td>{product.name}</td>
                       <td>{product.category || '-'}</td>
                       <td>{product.subcategory || '-'}</td>
+                      <td>{product.barcode || '-'}</td>
                       <td>{product.price} ج.م</td>
                       <td>{product.countInStock}</td>
                       <td>
                         <div className="admin-table-actions">
+                          <button type="button" className="table-action-btn" onClick={() => openProductQrPreview(product)}>QR</button>
+                          <button type="button" className="table-action-btn" onClick={() => printProductQr(product)}>
+                            <Printer size={14} />
+                            <span>طباعة</span>
+                          </button>
                           <button type="button" className="table-action-btn edit" onClick={() => editProduct(product)}>تعديل</button>
                           <button type="button" className="table-action-btn danger" onClick={() => removeProduct(product._id)}>حذف</button>
                         </div>
@@ -2237,6 +2382,41 @@ export default function AdminDashboard() {
           </div>
         </section>
       </div>
+
+      {productQrPreview.open && productQrPreview.product ? (
+        <div className="barcode-scanner-overlay" onClick={closeProductQrPreview}>
+          <div className="barcode-scanner-modal product-qr-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="barcode-scanner-head">
+              <div>
+                <strong>QR المنتج</strong>
+                <span>{productQrPreview.product.name}</span>
+              </div>
+              <button type="button" className="barcode-scanner-close" onClick={closeProductQrPreview} aria-label="إغلاق">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="product-qr-modal-card">
+              <div className="product-qr-modal-image">
+                {productQrPreview.image ? <img src={productQrPreview.image} alt={`QR ${productQrPreview.product.barcode}`} /> : <div className="admin-product-qr-empty">QR</div>}
+              </div>
+              <strong>{productQrPreview.product.name}</strong>
+              <span>{productQrPreview.product.category || '-'}</span>
+              <code>{productQrPreview.product.barcode}</code>
+            </div>
+
+            <div className="product-qr-modal-actions">
+              <button type="button" className="primary-btn" onClick={() => printProductQr(productQrPreview.product)}>
+                <Printer size={16} />
+                <span>طباعة QR</span>
+              </button>
+              <button type="button" className="secondary-btn" onClick={closeProductQrPreview}>
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {qrScannerOpen ? (
         <div className="barcode-scanner-overlay" onClick={closeQrScanner}>

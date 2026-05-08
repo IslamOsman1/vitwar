@@ -5,13 +5,20 @@ import { assertDeletePassword } from '../utils/deleteProtection.js';
 import { uploadToCloudinary } from '../utils/uploadToCloudinary.js';
 
 const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const generateProductBarcode = () => `PRD-${Date.now().toString(36).toUpperCase()}`;
 
 export const getProducts = asyncHandler(async (req, res) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 12;
   const keyword = req.query.keyword
     ? {
-      name: { $regex: escapeRegex(req.query.keyword), $options: 'i' }
+      $or: [
+        { name: { $regex: escapeRegex(req.query.keyword), $options: 'i' } },
+        { description: { $regex: escapeRegex(req.query.keyword), $options: 'i' } },
+        { category: { $regex: escapeRegex(req.query.keyword), $options: 'i' } },
+        { subcategory: { $regex: escapeRegex(req.query.keyword), $options: 'i' } },
+        { barcode: { $regex: escapeRegex(req.query.keyword), $options: 'i' } }
+      ]
     }
     : {};
   const category = req.query.category ? { category: req.query.category } : {};
@@ -38,7 +45,7 @@ export const getCategories = asyncHandler(async (_req, res) => {
 export const createProduct = asyncHandler(async (req, res) => {
   const data = {
     ...req.body,
-    barcode: String(req.body.barcode || '').trim(),
+    barcode: String(req.body.barcode || '').trim() || generateProductBarcode(),
     inAgencyCollection: req.body.inAgencyCollection ?? req.body.featured ?? false
   };
 

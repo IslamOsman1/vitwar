@@ -779,7 +779,7 @@ body[data-theme='light'] .admin-form textarea{background:#f7f0e4;color:#18130f;b
 .admin-table-card{display:grid;gap:14px}
 .admin-table-wrap{background:#171717}
 .admin-table-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.table-action-btn{min-height:34px;padding:0 12px;border-radius:999px;background:#20170f;color:#e6c89b;border:1px solid rgba(222,183,122,.14);font-weight:800}
+.table-action-btn{min-height:34px;padding:0 12px;border-radius:999px;background:#20170f;color:#e6c89b;border:1px solid rgba(222,183,122,.14);font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .table-action-btn.edit{background:#1c1814}
 .table-action-btn.danger{background:#2b1616;color:#ffd2d2;border-color:rgba(208,110,110,.16)}
 .customer-care-layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:18px;align-items:start}
@@ -1025,9 +1025,46 @@ body[data-theme='light'] .policy-section-card h2{color:#18130f}
 body[data-theme='light'] .policy-card p,
 body[data-theme='light'] .policy-list,
 body[data-theme='light'] .auth-policy-links{color:#6f5a41}
+.admin-qr-field{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.admin-product-qr-preview{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px 18px;border-radius:22px;background:rgba(222,183,122,.06);border:1px solid rgba(222,183,122,.14);margin-bottom:18px}
+.admin-product-qr-copy{display:grid;gap:8px}
+.admin-product-qr-copy strong{color:#fff}
+.admin-product-qr-copy span{color:var(--muted);line-height:1.8}
+.admin-product-qr-box,.admin-product-qr-empty{width:110px;height:110px;border-radius:18px;background:#fff7ea;display:grid;place-items:center;overflow:hidden;flex:0 0 auto}
+.admin-product-qr-box img{width:100%;height:100%;object-fit:cover}
+.admin-product-qr-empty{color:#18130f;font-weight:800;letter-spacing:.08em}
+.product-qr-modal{max-width:420px}
+.product-qr-modal-card{display:grid;justify-items:center;gap:10px;padding:18px;border-radius:22px;background:rgba(222,183,122,.06);border:1px solid rgba(222,183,122,.14);text-align:center}
+.product-qr-modal-card strong{color:#fff;font-size:1.08rem}
+.product-qr-modal-card span{color:var(--muted)}
+.product-qr-modal-card code{color:var(--gold);font-weight:800}
+.product-qr-modal-image{width:220px;height:220px;border-radius:22px;background:#fff7ea;display:grid;place-items:center;overflow:hidden}
+.product-qr-modal-image img{width:100%;height:100%;object-fit:cover}
+.product-qr-modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.product-detail-qr-card{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px 18px;border-radius:24px;background:#171717;border:1px solid rgba(222,183,122,.12);margin:8px 0}
+.product-detail-qr-copy{display:grid;gap:10px}
+.product-detail-qr-head{display:flex;align-items:center;gap:10px;color:var(--gold)}
+.product-detail-qr-copy strong{color:#fff}
+.product-detail-qr-copy span{color:var(--muted);font-weight:800}
+.product-detail-qr-box{width:132px;height:132px;border-radius:22px;background:#fff7ea;display:grid;place-items:center;overflow:hidden;flex:0 0 auto}
+.product-detail-qr-box img{width:100%;height:100%;object-fit:cover}
+.product-detail-print-btn{width:max-content}
+.search-box .search-icon-btn{color:inherit}
+body[data-theme='light'] .admin-product-qr-preview{background:#fffaf2;border-color:rgba(184,137,78,.16)}
+body[data-theme='light'] .admin-product-qr-copy strong{color:#18130f}
+body[data-theme='light'] .product-qr-modal-card,
+body[data-theme='light'] .product-detail-qr-card{background:#fffaf2;border-color:rgba(184,137,78,.16)}
+body[data-theme='light'] .product-qr-modal-card strong,
+body[data-theme='light'] .product-detail-qr-copy strong{color:#18130f}
 @media(max-width:640px){
+  .search-box{width:92px}
+  .search-box.mobile-open{grid-template-columns:auto minmax(0,1fr) auto}
   .barcode-scanner-overlay{padding:12px}
   .barcode-scanner-modal{padding:14px;border-radius:22px}
+  .admin-qr-field{grid-template-columns:1fr}
+  .admin-product-qr-preview{display:grid;justify-items:center;text-align:center}
+  .product-qr-modal-actions{grid-template-columns:1fr}
+  .product-detail-qr-card{display:grid;justify-items:center;text-align:center}
   .support-chat-widget{left:14px;bottom:96px}
   .support-chat-panel{width:min(340px,calc(100vw - 20px))}
   .support-chat-toolbar,
