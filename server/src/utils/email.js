@@ -25,17 +25,27 @@ export const sendEmail = async ({ to, subject, html, text }) => {
     host: config.host,
     port: config.port,
     secure: config.secure,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
     auth: {
       user: config.user,
       pass: config.pass
     }
   });
 
-  await transporter.sendMail({
-    from: config.from,
-    to,
-    subject,
-    text,
-    html
-  });
+  try {
+    await transporter.sendMail({
+      from: config.from,
+      to,
+      subject,
+      text,
+      html
+    });
+  } catch (error) {
+    const emailError = new Error('تعذر إرسال البريد الإلكتروني. تحقق من إعدادات SMTP على Render أو من مزود البريد.');
+    emailError.statusCode = 502;
+    emailError.cause = error;
+    throw emailError;
+  }
 };
