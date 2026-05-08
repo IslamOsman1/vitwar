@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AppSplash from './components/AppSplash.jsx';
 import Header from './components/Header.jsx';
 import Footer from './components/Footer.jsx';
+import SiteNotificationPrompt from './components/SiteNotificationPrompt.jsx';
 import SupportChatWidget from './components/SupportChatWidget.jsx';
 import Home from './pages/Home.jsx';
 import CategoriesPage from './pages/CategoriesPage.jsx';
@@ -81,6 +82,7 @@ export default function App() {
       theme={theme}
       onToggleTheme={() => setTheme(current => current === 'dark' ? 'light' : 'dark')}
     />
+    <SiteNotificationPrompt />
     <main className={`app-main-shell${routeSplashVisible ? ' is-transitioning' : ''}`}>
       <Routes>
         {requiresPasswordSetup

@@ -187,6 +187,9 @@ const orderStatuses = ['جديد', 'قيد التجهيز', 'في الطريق',
 
 const normalizeText = (value) => String(value || '').toLowerCase();
 const generateProductBarcode = () => `PRD-${Date.now().toString(36).toUpperCase()}`;
+const isDeliveredOrder = (order) => order?.status === 'ØªÙ… Ø§Ù„ØªØ³Ù„ÙŠÙ…';
+const isCancelledOrder = (order) => order?.status === 'Ù…Ù„ØºÙŠ';
+const isActiveOrder = (order) => !isDeliveredOrder(order) && !isCancelledOrder(order);
 const startOfDay = (value = new Date()) => new Date(value.getFullYear(), value.getMonth(), value.getDate());
 const shiftDays = (value, days) => {
   const next = new Date(value);
@@ -387,10 +390,12 @@ export default function AdminDashboard() {
   const stats = useMemo(() => ({
     totalOrders: orders.length,
     paidOrders: orders.filter((order) => order.isPaid).length,
-    openOrders: orders.filter((order) => order.status !== 'تم التسليم' && order.status !== 'ملغي').length,
+    openOrders: orders.filter(isActiveOrder).length,
     totalProducts: products.length,
     totalUsers: users.length
   }), [orders, products, users]);
+
+  const undeliveredOrdersCount = useMemo(() => orders.filter(isActiveOrder).length, [orders]);
 
   const accountingData = useMemo(() => {
     const todayStart = startOfDay();
@@ -614,7 +619,24 @@ export default function AdminDashboard() {
   const filteredOrders = useMemo(() => {
     const term = normalizeText(searchTerms.orders);
     return [...orders]
-      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+      .sort((a, b) => {
+        const aActive = isActiveOrder(a) ? 1 : 0;
+        const bActive = isActiveOrder(b) ? 1 : 0;
+
+        if (aActive !== bActive) {
+          return bActive - aActive;
+        }
+
+        if (isDeliveredOrder(a) !== isDeliveredOrder(b)) {
+          return isDeliveredOrder(a) ? 1 : -1;
+        }
+
+        if (isCancelledOrder(a) !== isCancelledOrder(b)) {
+          return isCancelledOrder(a) ? 1 : -1;
+        }
+
+        return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      })
       .filter((order) => !term || [
         order.user?.name,
         order.paymentMethod,
@@ -1416,6 +1438,7 @@ export default function AdminDashboard() {
             <button key={section.id} type="button" className={sectionClass(section.id)} onClick={() => handleSectionChange(section.id)}>
               <Icon size={18} />
               <span>{section.label}</span>
+              {section.id === 'orders' && undeliveredOrdersCount > 0 ? <b>{undeliveredOrdersCount}</b> : null}
               {section.id === 'support' && totalSupportUnread > 0 ? <b>{totalSupportUnread}</b> : null}
             </button>
           );
