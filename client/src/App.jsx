@@ -44,7 +44,7 @@ function PrivateRoute({ children, adminOnly = false }) {
 export default function App() {
   const location = useLocation();
   const { user } = useAuth();
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const [bootSplashVisible, setBootSplashVisible] = useState(true);
   const [routeSplashVisible, setRouteSplashVisible] = useState(false);
   const firstPathRef = useRef(location.pathname);
