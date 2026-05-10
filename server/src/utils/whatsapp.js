@@ -11,6 +11,13 @@ const twilioClient = TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN
 
 export const isWhatsAppConfigured = () => Boolean(twilioClient && TWILIO_WHATSAPP_FROM);
 
+const warnWhatsAppSkip = (reason, details = {}) => {
+  console.warn('WhatsApp notification skipped', {
+    reason,
+    ...details
+  });
+};
+
 const normalizeWhatsAppPhone = (phone = '') => {
   const cleaned = String(phone || '').trim().replace(/[^\d+]/g, '');
   if (!cleaned) return '';
@@ -89,10 +96,23 @@ const buildCustomerOrdersUrl = () => {
 };
 
 export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippingAddress }) => {
-  if (!isWhatsAppConfigured()) return;
+  if (!isWhatsAppConfigured()) {
+    warnWhatsAppSkip('missing-config', {
+      hasAccountSid: Boolean(TWILIO_ACCOUNT_SID),
+      hasAuthToken: Boolean(TWILIO_AUTH_TOKEN),
+      hasFrom: Boolean(TWILIO_WHATSAPP_FROM),
+      orderId: String(order?._id || '')
+    });
+    return;
+  }
 
   const recipients = await collectOrderManagers();
-  if (!recipients.length) return;
+  if (!recipients.length) {
+    warnWhatsAppSkip('no-manager-recipients', {
+      orderId: String(order?._id || '')
+    });
+    return;
+  }
 
   const itemsText = formatOrderItems(order.orderItems || []);
   const message = [
@@ -122,10 +142,25 @@ export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippi
 };
 
 export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, shippingAddress }) => {
-  if (!isWhatsAppConfigured()) return;
+  if (!isWhatsAppConfigured()) {
+    warnWhatsAppSkip('missing-config', {
+      hasAccountSid: Boolean(TWILIO_ACCOUNT_SID),
+      hasAuthToken: Boolean(TWILIO_AUTH_TOKEN),
+      hasFrom: Boolean(TWILIO_WHATSAPP_FROM),
+      orderId: String(order?._id || '')
+    });
+    return;
+  }
 
   const recipientPhone = normalizeWhatsAppPhone(customer?.phone || shippingAddress?.phone || '');
-  if (!recipientPhone) return;
+  if (!recipientPhone) {
+    warnWhatsAppSkip('invalid-customer-phone', {
+      orderId: String(order?._id || ''),
+      customerPhone: customer?.phone || '',
+      shippingPhone: shippingAddress?.phone || ''
+    });
+    return;
+  }
 
   const ordersUrl = buildCustomerOrdersUrl();
   const messageLines = [
