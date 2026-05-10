@@ -22,23 +22,23 @@ const serviceCards = [
 const fallbackSlides = [
   {
     id: 'promo-1',
-    title: 'عرض منتج جديد',
-    tag: 'جديد',
-    note: 'بانر دعائي لمنتج أو حملة جديدة',
+    title: 'عروض يومية على احتياجات البيت',
+    tag: 'وفر أكثر',
+    note: 'اختيارات متنوعة من السوبر ماركت بأسعار مناسبة وتحديثات مستمرة على المنتجات.',
     accentClass: 'promo-red'
   },
   {
     id: 'promo-2',
-    title: 'خصم لفترة محدودة',
-    tag: 'خصم خاص',
-    note: 'استخدم السلايدر لعرض منتج مميز أو تخفيض قوي',
+    title: 'تسوق أسرع لكل احتياجاتك اليومية',
+    tag: 'توصيل سريع',
+    note: 'خضار وفاكهة وبقالة وألبان في مكان واحد مع تجربة طلب سهلة من أي جهاز.',
     accentClass: 'promo-gold'
   },
   {
     id: 'promo-3',
-    title: 'الأكثر طلبًا اليوم',
-    tag: 'مميز',
-    note: 'مساحة واضحة لعرض صورة المنتج فقط',
+    title: 'الأكثر طلبًا في ماركت الوكالة',
+    tag: 'الأفضل مبيعًا',
+    note: 'منتجات مختارة يفضلها العملاء يوميًا داخل الماركت مع أسعار واضحة وعروض جاهزة.',
     accentClass: 'promo-dark'
   }
 ];
@@ -161,7 +161,7 @@ export default function Home() {
     <section className="panel-card market-categories" id="featured">
       <div className="section-head compact">
         <h2>الفئات المميزة</h2>
-        <span>ادخل إلى صفحة الفئات لتصفح الأقسام والمنتجات</span>
+        <span>اختر القسم المناسب وابدأ تصفح منتجات الماركت بسرعة وسهولة.</span>
       </div>
       <div className="market-category-grid">
         {featuredCategories.map((item) => <Link
@@ -181,7 +181,7 @@ export default function Home() {
       <div className="section-head">
         <div>
           <h2>الأكثر مبيعًا</h2>
-          <p>اختيارات مميزة من أكثر المنتجات طلبًا.</p>
+          <p>منتجات يطلبها العملاء كثيرًا داخل الماركت ومناسبة للطلب اليومي السريع.</p>
         </div>
         <Link to="/categories" className="section-link">اذهب إلى الفئات</Link>
       </div>
@@ -190,14 +190,14 @@ export default function Home() {
         {!!bestSellers.length && <section className="product-section">
           <div className="products-grid">{bestSellers.map((product) => <ProductCard key={`best-${product._id}`} product={product} />)}</div>
         </section>}
-        {!bestSellers.length && <p className="muted">لا توجد منتجات معلمة حاليًا لهذا القسم.</p>}
+        {!bestSellers.length && <p className="muted">لا توجد منتجات مميزة حاليًا لهذا القسم.</p>}
       </div>}
     </section>
 
     <section className="panel-card explore-categories-panel" id="explore-categories">
       <div className="explore-categories-head">
         <h2>استكشف فئاتنا</h2>
-        <p>تصفح أقسام المتجر بسهولة واختر الفئة التي تناسب طلبك.</p>
+        <p>تصفح أقسام الماركت بسهولة واختر الفئة المناسبة لاحتياجات البيت اليومية.</p>
       </div>
 
       <div className="explore-categories-grid">

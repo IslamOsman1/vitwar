@@ -197,7 +197,7 @@ export default function SupportChatWidget() {
                   </article>
                 )) : (
                   <div className="support-chat-empty">
-                    <p>ابدأ المحادثة الآن وسيتم ربطك بموظف دعم للرد عليك.</p>
+                    <p>اسأل عن طلبك أو منتجك أو العروض المتاحة، وسيقوم فريق الماركت بالرد عليك بأسرع وقت.</p>
                   </div>
                 )}
               </div>
@@ -217,7 +217,7 @@ export default function SupportChatWidget() {
             </>
           ) : (
             <div className="support-chat-guest">
-              <p>سجل الدخول أولًا حتى نربط محادثتك بموظف دعم ونحفظها داخل حسابك.</p>
+              <p>سجل الدخول أولًا حتى نربط رسائلك بحسابك ونساعدك في الطلبات والعروض وخدمة ما بعد الشراء.</p>
               <div className="support-chat-guest-actions">
                 <Link to="/login" className="primary-btn" onClick={() => setOpen(false)}>تسجيل الدخول</Link>
                 {settings?.whatsapp ? (

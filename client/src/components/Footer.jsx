@@ -117,7 +117,7 @@ export default function Footer() {
               <Store size={20} />
               <strong>{settings?.storeName || 'Al Wekala Market'}</strong>
             </div>
-            <p>{settings?.storeTagline || 'متجر إلكتروني سريع لشراء المنتجات اليومية بسهولة.'}</p>
+            <p>{settings?.storeTagline || 'ماركت يومي يوفر احتياجات البيت من المنتجات الأساسية والعروض في تجربة شراء سريعة وواضحة.'}</p>
             <div className="footer-contact-list">
               {settings?.supportPhone ? (
                 <a href={`tel:${settings.supportPhone}`} className="footer-inline-link">
