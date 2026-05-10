@@ -212,7 +212,7 @@ export const verifyStripeCheckoutSession = asyncHandler(async (req, res) => {
     });
     console.log('WhatsApp admin notification attempt finished', {
       orderId: String(order._id || ''),
-      result: adminWhatsAppResult
+      result: JSON.stringify(adminWhatsAppResult, null, 2)
     });
 
     const customerWhatsAppResult = await sendCustomerOrderWhatsAppNotification({
@@ -228,7 +228,7 @@ export const verifyStripeCheckoutSession = asyncHandler(async (req, res) => {
     });
     console.log('WhatsApp customer notification attempt finished', {
       orderId: String(order._id || ''),
-      result: customerWhatsAppResult
+      result: JSON.stringify(customerWhatsAppResult, null, 2)
     });
   }
 

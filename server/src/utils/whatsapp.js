@@ -65,11 +65,12 @@ const sendWhatsAppText = async ({ to, body }) => {
     to,
     from: buildFromAddress()
   });
-  await twilioClient.messages.create({
+  const message = await twilioClient.messages.create({
     body,
     from: buildFromAddress(),
     to: buildToAddress(to)
   });
+  return message;
 };
 
 const sendWhatsAppTemplate = async ({ to, contentSid, variables = {} }) => {
@@ -80,12 +81,13 @@ const sendWhatsAppTemplate = async ({ to, contentSid, variables = {} }) => {
     contentSid,
     variables
   });
-  await twilioClient.messages.create({
+  const message = await twilioClient.messages.create({
     from: buildFromAddress(),
     to: buildToAddress(to),
     contentSid,
     contentVariables: JSON.stringify(variables)
   });
+  return message;
 };
 
 const collectOrderManagers = async () => {
@@ -168,13 +170,14 @@ export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippi
 
   const results = await Promise.all(recipients.map(async (recipient) => {
     try {
+      let message;
       if (TWILIO_WHATSAPP_ORDER_ADMIN_TEMPLATE_SID) {
         console.log('WhatsApp admin template selected', {
           orderId: String(order?._id || ''),
           recipient: recipient.phone,
           contentSid: TWILIO_WHATSAPP_ORDER_ADMIN_TEMPLATE_SID
         });
-        await sendWhatsAppTemplate({
+        message = await sendWhatsAppTemplate({
           to: recipient.phone,
           contentSid: TWILIO_WHATSAPP_ORDER_ADMIN_TEMPLATE_SID,
           variables: templateVariables
@@ -184,9 +187,16 @@ export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippi
           recipient: recipient.phone,
           orderId: String(order?._id || '')
         });
-        await sendWhatsAppText({ to: recipient.phone, body: textMessage });
+        message = await sendWhatsAppText({ to: recipient.phone, body: textMessage });
       }
-      return { phone: recipient.phone, ok: true };
+      return {
+        phone: recipient.phone,
+        ok: true,
+        sid: message?.sid || '',
+        status: message?.status || '',
+        errorCode: message?.errorCode || null,
+        errorMessage: message?.errorMessage || ''
+      };
     } catch (error) {
       console.error('WhatsApp order notification failed', {
         recipient: recipient.phone,
@@ -257,13 +267,14 @@ export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, s
   };
 
   try {
+    let message;
     if (TWILIO_WHATSAPP_ORDER_CUSTOMER_TEMPLATE_SID) {
       console.log('WhatsApp customer template selected', {
         orderId: String(order?._id || ''),
         recipient: recipientPhone,
         contentSid: TWILIO_WHATSAPP_ORDER_CUSTOMER_TEMPLATE_SID
       });
-      await sendWhatsAppTemplate({
+      message = await sendWhatsAppTemplate({
         to: recipientPhone,
         contentSid: TWILIO_WHATSAPP_ORDER_CUSTOMER_TEMPLATE_SID,
         variables: templateVariables
@@ -273,7 +284,7 @@ export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, s
         recipient: recipientPhone,
         orderId: String(order?._id || '')
       });
-      await sendWhatsAppText({
+      message = await sendWhatsAppText({
         to: recipientPhone,
         body: textMessageLines.join('\n')
       });
@@ -281,7 +292,14 @@ export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, s
     return {
       sent: true,
       reason: 'completed',
-      results: [{ phone: recipientPhone, ok: true }]
+      results: [{
+        phone: recipientPhone,
+        ok: true,
+        sid: message?.sid || '',
+        status: message?.status || '',
+        errorCode: message?.errorCode || null,
+        errorMessage: message?.errorMessage || ''
+      }]
     };
   } catch (error) {
     console.error('WhatsApp customer order notification failed', {
