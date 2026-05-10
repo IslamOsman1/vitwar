@@ -193,6 +193,11 @@ export const createOrder = asyncHandler(async (req, res) => {
   }
 
   await notifyOrderManagers(order, req.user);
+  console.log('WhatsApp hook reached for createOrder', {
+    orderId: String(order._id || ''),
+    customerId: String(req.user?._id || ''),
+    paymentMethod: order.paymentMethod
+  });
   await sendNewOrderWhatsAppNotification({
     order,
     customer: req.user,
@@ -203,6 +208,9 @@ export const createOrder = asyncHandler(async (req, res) => {
       message: error.message
     });
   });
+  console.log('WhatsApp admin notification attempt finished', {
+    orderId: String(order._id || '')
+  });
   await sendCustomerOrderWhatsAppNotification({
     order,
     customer: req.user,
@@ -212,6 +220,9 @@ export const createOrder = asyncHandler(async (req, res) => {
       orderId: String(order._id || ''),
       message: error.message
     });
+  });
+  console.log('WhatsApp customer notification attempt finished', {
+    orderId: String(order._id || '')
   });
 
   res.status(201).json(order);

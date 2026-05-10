@@ -194,6 +194,11 @@ export const verifyStripeCheckoutSession = asyncHandler(async (req, res) => {
 
     const customer = await User.findById(payload.userId).select('name phone');
 
+    console.log('WhatsApp hook reached for verifyStripeCheckoutSession', {
+      orderId: String(order._id || ''),
+      customerId: String(payload.userId || ''),
+      paymentMethod: order.paymentMethod
+    });
     await sendNewOrderWhatsAppNotification({
       order,
       customer,
@@ -203,6 +208,9 @@ export const verifyStripeCheckoutSession = asyncHandler(async (req, res) => {
         orderId: String(order._id || ''),
         message: error.message
       });
+    });
+    console.log('WhatsApp admin notification attempt finished', {
+      orderId: String(order._id || '')
     });
 
     await sendCustomerOrderWhatsAppNotification({
@@ -214,6 +222,9 @@ export const verifyStripeCheckoutSession = asyncHandler(async (req, res) => {
         orderId: String(order._id || ''),
         message: error.message
       });
+    });
+    console.log('WhatsApp customer notification attempt finished', {
+      orderId: String(order._id || '')
     });
   }
 
