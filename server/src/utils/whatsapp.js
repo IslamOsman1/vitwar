@@ -60,6 +60,11 @@ const buildToAddress = (to) => (
 );
 
 const sendWhatsAppText = async ({ to, body }) => {
+  console.log('WhatsApp send mode', {
+    mode: 'text',
+    to,
+    from: buildFromAddress()
+  });
   await twilioClient.messages.create({
     body,
     from: buildFromAddress(),
@@ -68,6 +73,13 @@ const sendWhatsAppText = async ({ to, body }) => {
 };
 
 const sendWhatsAppTemplate = async ({ to, contentSid, variables = {} }) => {
+  console.log('WhatsApp send mode', {
+    mode: 'template',
+    to,
+    from: buildFromAddress(),
+    contentSid,
+    variables
+  });
   await twilioClient.messages.create({
     from: buildFromAddress(),
     to: buildToAddress(to),
@@ -157,6 +169,11 @@ export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippi
   const results = await Promise.all(recipients.map(async (recipient) => {
     try {
       if (TWILIO_WHATSAPP_ORDER_ADMIN_TEMPLATE_SID) {
+        console.log('WhatsApp admin template selected', {
+          orderId: String(order?._id || ''),
+          recipient: recipient.phone,
+          contentSid: TWILIO_WHATSAPP_ORDER_ADMIN_TEMPLATE_SID
+        });
         await sendWhatsAppTemplate({
           to: recipient.phone,
           contentSid: TWILIO_WHATSAPP_ORDER_ADMIN_TEMPLATE_SID,
@@ -241,6 +258,11 @@ export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, s
 
   try {
     if (TWILIO_WHATSAPP_ORDER_CUSTOMER_TEMPLATE_SID) {
+      console.log('WhatsApp customer template selected', {
+        orderId: String(order?._id || ''),
+        recipient: recipientPhone,
+        contentSid: TWILIO_WHATSAPP_ORDER_CUSTOMER_TEMPLATE_SID
+      });
       await sendWhatsAppTemplate({
         to: recipientPhone,
         contentSid: TWILIO_WHATSAPP_ORDER_CUSTOMER_TEMPLATE_SID,
