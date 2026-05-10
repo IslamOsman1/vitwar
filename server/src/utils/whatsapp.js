@@ -115,21 +115,23 @@ const buildCustomerOrdersUrl = () => {
 
 export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippingAddress }) => {
   if (!isWhatsAppConfigured()) {
-    warnWhatsAppSkip('missing-config', {
+    const details = {
       hasAccountSid: Boolean(TWILIO_ACCOUNT_SID),
       hasAuthToken: Boolean(TWILIO_AUTH_TOKEN),
       hasFrom: Boolean(TWILIO_WHATSAPP_FROM),
       orderId: String(order?._id || '')
-    });
-    return;
+    };
+    warnWhatsAppSkip('missing-config', details);
+    return { sent: false, reason: 'missing-config', details };
   }
 
   const recipients = await collectOrderManagers();
   if (!recipients.length) {
-    warnWhatsAppSkip('no-manager-recipients', {
+    const details = {
       orderId: String(order?._id || '')
-    });
-    return;
+    };
+    warnWhatsAppSkip('no-manager-recipients', details);
+    return { sent: false, reason: 'no-manager-recipients', details };
   }
 
   const itemsText = formatOrderItems(order.orderItems || []);
@@ -152,7 +154,7 @@ export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippi
     6: String(`${shippingAddress?.city || ''} ${shippingAddress?.area || ''} ${shippingAddress?.street || ''}`.trim())
   };
 
-  await Promise.all(recipients.map(async (recipient) => {
+  const results = await Promise.all(recipients.map(async (recipient) => {
     try {
       if (TWILIO_WHATSAPP_ORDER_ADMIN_TEMPLATE_SID) {
         await sendWhatsAppTemplate({
@@ -167,6 +169,7 @@ export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippi
         });
         await sendWhatsAppText({ to: recipient.phone, body: textMessage });
       }
+      return { phone: recipient.phone, ok: true };
     } catch (error) {
       console.error('WhatsApp order notification failed', {
         recipient: recipient.phone,
@@ -175,29 +178,44 @@ export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippi
         status: error?.status,
         message: error?.message
       });
+      return {
+        phone: recipient.phone,
+        ok: false,
+        code: error?.code,
+        status: error?.status,
+        message: error?.message
+      };
     }
   }));
+
+  return {
+    sent: results.some((item) => item.ok),
+    reason: results.some((item) => item.ok) ? 'completed' : 'all-failed',
+    results
+  };
 };
 
 export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, shippingAddress }) => {
   if (!isWhatsAppConfigured()) {
-    warnWhatsAppSkip('missing-config', {
+    const details = {
       hasAccountSid: Boolean(TWILIO_ACCOUNT_SID),
       hasAuthToken: Boolean(TWILIO_AUTH_TOKEN),
       hasFrom: Boolean(TWILIO_WHATSAPP_FROM),
       orderId: String(order?._id || '')
-    });
-    return;
+    };
+    warnWhatsAppSkip('missing-config', details);
+    return { sent: false, reason: 'missing-config', details };
   }
 
   const recipientPhone = normalizeWhatsAppPhone(customer?.phone || shippingAddress?.phone || '');
   if (!recipientPhone) {
-    warnWhatsAppSkip('invalid-customer-phone', {
+    const details = {
       orderId: String(order?._id || ''),
       customerPhone: customer?.phone || '',
       shippingPhone: shippingAddress?.phone || ''
-    });
-    return;
+    };
+    warnWhatsAppSkip('invalid-customer-phone', details);
+    return { sent: false, reason: 'invalid-customer-phone', details };
   }
 
   const ordersUrl = buildCustomerOrdersUrl();
@@ -238,6 +256,11 @@ export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, s
         body: textMessageLines.join('\n')
       });
     }
+    return {
+      sent: true,
+      reason: 'completed',
+      results: [{ phone: recipientPhone, ok: true }]
+    };
   } catch (error) {
     console.error('WhatsApp customer order notification failed', {
       recipient: recipientPhone,
@@ -246,5 +269,16 @@ export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, s
       status: error?.status,
       message: error?.message
     });
+    return {
+      sent: false,
+      reason: 'failed',
+      results: [{
+        phone: recipientPhone,
+        ok: false,
+        code: error?.code,
+        status: error?.status,
+        message: error?.message
+      }]
+    };
   }
 };

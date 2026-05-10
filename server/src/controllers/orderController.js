@@ -198,7 +198,7 @@ export const createOrder = asyncHandler(async (req, res) => {
     customerId: String(req.user?._id || ''),
     paymentMethod: order.paymentMethod
   });
-  await sendNewOrderWhatsAppNotification({
+  const adminWhatsAppResult = await sendNewOrderWhatsAppNotification({
     order,
     customer: req.user,
     shippingAddress
@@ -207,11 +207,13 @@ export const createOrder = asyncHandler(async (req, res) => {
       orderId: String(order._id || ''),
       message: error.message
     });
+    return { sent: false, reason: 'threw', message: error.message };
   });
   console.log('WhatsApp admin notification attempt finished', {
-    orderId: String(order._id || '')
+    orderId: String(order._id || ''),
+    result: adminWhatsAppResult
   });
-  await sendCustomerOrderWhatsAppNotification({
+  const customerWhatsAppResult = await sendCustomerOrderWhatsAppNotification({
     order,
     customer: req.user,
     shippingAddress
@@ -220,9 +222,11 @@ export const createOrder = asyncHandler(async (req, res) => {
       orderId: String(order._id || ''),
       message: error.message
     });
+    return { sent: false, reason: 'threw', message: error.message };
   });
   console.log('WhatsApp customer notification attempt finished', {
-    orderId: String(order._id || '')
+    orderId: String(order._id || ''),
+    result: customerWhatsAppResult
   });
 
   res.status(201).json(order);

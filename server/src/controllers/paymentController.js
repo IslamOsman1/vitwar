@@ -199,7 +199,7 @@ export const verifyStripeCheckoutSession = asyncHandler(async (req, res) => {
       customerId: String(payload.userId || ''),
       paymentMethod: order.paymentMethod
     });
-    await sendNewOrderWhatsAppNotification({
+    const adminWhatsAppResult = await sendNewOrderWhatsAppNotification({
       order,
       customer,
       shippingAddress: payload.shippingAddress
@@ -208,12 +208,14 @@ export const verifyStripeCheckoutSession = asyncHandler(async (req, res) => {
         orderId: String(order._id || ''),
         message: error.message
       });
+      return { sent: false, reason: 'threw', message: error.message };
     });
     console.log('WhatsApp admin notification attempt finished', {
-      orderId: String(order._id || '')
+      orderId: String(order._id || ''),
+      result: adminWhatsAppResult
     });
 
-    await sendCustomerOrderWhatsAppNotification({
+    const customerWhatsAppResult = await sendCustomerOrderWhatsAppNotification({
       order,
       customer,
       shippingAddress: payload.shippingAddress
@@ -222,9 +224,11 @@ export const verifyStripeCheckoutSession = asyncHandler(async (req, res) => {
         orderId: String(order._id || ''),
         message: error.message
       });
+      return { sent: false, reason: 'threw', message: error.message };
     });
     console.log('WhatsApp customer notification attempt finished', {
-      orderId: String(order._id || '')
+      orderId: String(order._id || ''),
+      result: customerWhatsAppResult
     });
   }
 
