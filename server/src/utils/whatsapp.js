@@ -157,7 +157,8 @@ export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippi
     `العنوان: ${`${shippingAddress?.city || ''} ${shippingAddress?.area || ''} ${shippingAddress?.street || ''}`.trim() || 'غير متوفر'}`,
     `الدفع: ${order.paymentMethod || 'غير محدد'}`,
     `الإجمالي: ${Number(order.totalPrice || 0).toFixed(2)} ج.م`,
-    itemsText ? `المنتجات:\n${itemsText}` : 'المنتجات: غير متوفرة'
+    itemsText ? `المنتجات:\n${itemsText}` : 'المنتجات: غير متوفرة',
+    'يرجى مراجعة الطلب والتواصل مع العميل إذا لزم الأمر.'
   ].join('\n');
   const templateVariables = {
     1: String(order?._id || ''),
@@ -247,16 +248,22 @@ export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, s
 
   const ordersUrl = buildCustomerOrdersUrl();
   const textMessageLines = [
-    `شكراً لك ${customer?.name || shippingAddress?.fullName || 'عميلنا العزيز'}`,
-    'تم استلام طلبك بنجاح في متجر الوكالة.',
-    `رقم الطلب: ${order._id}`,
-    `إجمالي الطلب: ${Number(order.totalPrice || 0).toFixed(2)} ج.م`,
-    `طريقة الدفع: ${order.paymentMethod || 'غير محدد'}`
+    `مرحبًا ${customer?.name || shippingAddress?.fullName || 'عميلنا العزيز'}`,
+    '',
+    `تم استلام طلبك رقم ${order._id} من Al Wekala.`,
+    '',
+    `إجمالي الطلب: ${Number(order.totalPrice || 0).toFixed(2)}`,
+    `طريقة الدفع: ${order.paymentMethod || 'غير محدد'}`,
+    '',
+    'يمكنك متابعة طلبك من هنا:'
   ];
 
   if (ordersUrl) {
-    textMessageLines.push(`تابع حالة طلبك من هنا: ${ordersUrl}`);
+    textMessageLines.push(ordersUrl);
+    textMessageLines.push('');
   }
+
+  textMessageLines.push('شكرًا لاختيارك Al Wekala.');
 
   const templateVariables = {
     1: String(customer?.name || shippingAddress?.fullName || 'عميلنا العزيز'),
