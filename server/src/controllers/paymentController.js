@@ -89,6 +89,7 @@ export const createStripeCheckoutSession = asyncHandler(async (req, res) => {
 
   const payload = JSON.stringify({
     userId: req.user._id.toString(),
+    clientUrl: origin,
     shippingAddress,
     items,
     discountCode: pricing.discountCode,
@@ -218,7 +219,8 @@ export const verifyStripeCheckoutSession = asyncHandler(async (req, res) => {
     const customerWhatsAppResult = await sendCustomerOrderWhatsAppNotification({
       order,
       customer,
-      shippingAddress: payload.shippingAddress
+      shippingAddress: payload.shippingAddress,
+      clientUrl: payload.clientUrl
     }).catch((error) => {
       console.error('WhatsApp customer notification error', {
         orderId: String(order._id || ''),

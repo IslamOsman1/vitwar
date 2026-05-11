@@ -11,6 +11,7 @@ import { ensureStoreSettings } from '../utils/storeSettings.js';
 import { calculateEarnedLoyaltyPoints, calculateOrderPricing, incrementDiscountCodeUsage } from '../utils/pricing.js';
 
 const CANCEL_WINDOW_MS = 5 * 60 * 1000;
+const resolveClientUrl = (req) => process.env.CLIENT_URL || req.headers.origin || 'http://localhost:5173';
 
 const buildOrderItems = async (orderItems) => {
   const ids = orderItems.map((item) => item.product);
@@ -216,7 +217,8 @@ export const createOrder = asyncHandler(async (req, res) => {
   const customerWhatsAppResult = await sendCustomerOrderWhatsAppNotification({
     order,
     customer: req.user,
-    shippingAddress
+    shippingAddress,
+    clientUrl: resolveClientUrl(req)
   }).catch((error) => {
     console.error('WhatsApp customer notification error', {
       orderId: String(order._id || ''),

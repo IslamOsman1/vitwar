@@ -121,8 +121,10 @@ const formatOrderItems = (items = []) => (
     .join('\n')
 );
 
-const buildCustomerOrdersUrl = () => {
-  const baseUrl = String(process.env.CLIENT_URL || '').trim().replace(/\/+$/, '');
+const normalizeBaseUrl = (value = '') => String(value || '').trim().replace(/\/+$/, '');
+
+const buildCustomerOrdersUrl = (baseUrlOverride = '') => {
+  const baseUrl = normalizeBaseUrl(baseUrlOverride) || normalizeBaseUrl(process.env.CLIENT_URL);
   if (!baseUrl) return '';
   return `${baseUrl}/orders`;
 };
@@ -223,7 +225,7 @@ export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippi
   };
 };
 
-export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, shippingAddress }) => {
+export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, shippingAddress, clientUrl = '' }) => {
   if (!isWhatsAppConfigured()) {
     const details = {
       hasAccountSid: Boolean(TWILIO_ACCOUNT_SID),
@@ -246,7 +248,7 @@ export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, s
     return { sent: false, reason: 'invalid-customer-phone', details };
   }
 
-  const ordersUrl = buildCustomerOrdersUrl();
+  const ordersUrl = buildCustomerOrdersUrl(clientUrl);
   const textMessageLines = [
     `مرحبًا ${customer?.name || shippingAddress?.fullName || 'عميلنا العزيز'}`,
     '',
