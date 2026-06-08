@@ -46,16 +46,15 @@ function PrivateRoute({ children, adminOnly = false }) {
 export default function App() {
   const location = useLocation();
   const { user } = useAuth();
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const [bootSplashVisible, setBootSplashVisible] = useState(true);
   const [routeSplashVisible, setRouteSplashVisible] = useState(false);
   const firstPathRef = useRef(location.pathname);
   const requiresPasswordSetup = Boolean(user && !user.hasManualPassword);
 
   useEffect(() => {
-    document.body.dataset.theme = theme;
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    document.body.dataset.theme = 'dark';
+    localStorage.removeItem('theme');
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setBootSplashVisible(false), 1500);
@@ -85,10 +84,7 @@ export default function App() {
 
   return <div className="app-root">
     <AppSplash visible={bootSplashVisible || routeSplashVisible} routeChanging={!bootSplashVisible && routeSplashVisible} />
-    <Header
-      theme={theme}
-      onToggleTheme={() => setTheme(current => current === 'dark' ? 'light' : 'dark')}
-    />
+    <Header />
     <SiteNotificationPrompt />
     <main className={`app-main-shell${routeSplashVisible ? ' is-transitioning' : ''}`}>
       <Routes>

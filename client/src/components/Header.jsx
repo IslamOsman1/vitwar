@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { BrowserQRCodeReader } from '@zxing/browser';
-import { Camera, LayoutDashboard, Moon, Search, ShoppingCart, Sun, UserRound, X } from 'lucide-react';
+import { Camera, LayoutDashboard, Search, ShoppingCart, UserRound, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Logo from './Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
 
-export default function Header({ theme, onToggleTheme }) {
+export default function Header() {
   const { user } = useAuth();
   const { totals } = useCart();
   const navigate = useNavigate();
@@ -161,16 +161,6 @@ export default function Header({ theme, onToggleTheme }) {
             </form>
 
             <div className="header-actions">
-              <button
-                type="button"
-                className="round-action theme-toggle"
-                onClick={onToggleTheme}
-                title={theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'}
-                aria-label={theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'}
-              >
-                {theme === 'dark' ? <Sun size={21} /> : <Moon size={21} />}
-              </button>
-
               <NavLink to="/cart" className="round-action cart-link" title="السلة" aria-label="السلة">
                 <ShoppingCart size={22} />
                 {totals.count > 0 && <b>{totals.count}</b>}

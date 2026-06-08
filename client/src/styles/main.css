@@ -122,9 +122,6 @@ body[data-theme='light'] .brand-banner p{color:#5f4a33}
 body[data-theme='light'] .bottom-nav{background:rgba(255,252,246,.94);border-color:rgba(184,137,78,.18);box-shadow:0 18px 50px rgba(38,29,17,.12)}
 body[data-theme='light'] .bottom-nav a.active,
 body[data-theme='light'] .bottom-nav a:hover{color:var(--gold-2)}
-body[data-theme='light'] .theme-toggle:hover{color:var(--dark)}
-.theme-toggle{color:var(--gold)}
-.theme-toggle:hover{color:#fff}
 .site-notification-prompt{padding:14px 0 0}
 .site-notification-card{display:flex;align-items:center;justify-content:space-between;gap:18px;background:linear-gradient(135deg,rgba(17,17,17,.95),rgba(29,22,14,.96));border:1px solid rgba(222,183,122,.16);border-radius:24px;padding:16px 18px;box-shadow:var(--shadow)}
 .site-notification-copy{display:flex;align-items:center;gap:14px;min-width:0}
