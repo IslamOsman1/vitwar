@@ -2,23 +2,23 @@ import StoreSettings from '../models/StoreSettings.js';
 
 const defaultHeroSlides = [
   {
-    title: 'عرض منتج جديد',
-    tag: 'جديد',
-    note: 'أضف بانر من لوحة التحكم لعرض منتج أو حملة جديدة',
+    title: 'سمـاش برجر بطعم الخواجة',
+    tag: 'الأكثر طلبًا',
+    note: 'أضف صورة الطبق أو البرجر المميز من لوحة التحكم ليظهر كبانر رئيسي جذاب.',
     image: '',
     link: '/offers'
   },
   {
-    title: 'خصم لفترة محدودة',
+    title: 'فرايد تشيكن مقرمش بخلطة خاصة',
     tag: 'عرض خاص',
-    note: 'يمكنك تغيير النصوص والصور بالكامل من لوحة التحكم',
+    note: 'غيّر النصوص والصور من لوحة التحكم لعرض الوجبات أو العروض اليومية بسهولة.',
     image: '',
     link: '/offers'
   },
   {
-    title: 'الأكثر طلبًا اليوم',
+    title: 'وجبات وكومبوهات جاهزة للجوع السريع',
     tag: 'مميز',
-    note: 'هذه الشريحة تعمل كبديل افتراضي حتى تضيف صورك الخاصة',
+    note: 'هذه الشريحة تعمل كبديل افتراضي حتى تضيف صور الوجبات الفعلية الخاصة بالمطعم.',
     image: '',
     link: '/offers'
   }
@@ -26,70 +26,70 @@ const defaultHeroSlides = [
 
 const defaultFeaturedCategories = [
   {
-    title: 'الخضار الطازج',
-    category: 'خضار',
-    subtitle: 'اختيار يومي من السوق',
+    title: 'سمـاش برجر',
+    category: 'برجر',
+    subtitle: 'ساندوتشات لحم مشوية وصوصات خاصة',
     image: ''
   },
   {
-    title: 'الفاكهة',
-    category: 'فاكهة',
-    subtitle: 'جودة ممتازة طوال اليوم',
+    title: 'فرايد تشيكن',
+    category: 'فرايد تشيكن',
+    subtitle: 'قطع واستربس وسندوتشات كريسبي',
     image: ''
   },
   {
-    title: 'الألبان',
-    category: 'ألبان',
-    subtitle: 'منتجات مبردة بعناية',
+    title: 'كومبو ووجبات',
+    category: 'كومبو',
+    subtitle: 'وجبات كاملة مع البطاطس والمشروب',
     image: ''
   },
   {
-    title: 'البقالة',
-    category: 'بقالة',
-    subtitle: 'كل احتياجات البيت',
+    title: 'مقبلات وصوصات',
+    category: 'مقبلات',
+    subtitle: 'إضافات تكمل الطلب بطعم أقوى',
     image: ''
   }
 ];
 
 const defaultCategoryGroups = [
   {
-    title: 'أجبان ولحوم',
-    subtitle: 'اختيارات مبردة ومجمدة للاستخدام اليومي والعائلي.',
+    title: 'برجر الخواجة',
+    subtitle: 'ساندوتشات برجر مشوية بإضافات متعددة وأسعار مناسبة للطلب الفردي أو العائلي.',
     sections: [
-      { title: 'جبن قريش', sourceCategory: 'ألبان' },
-      { title: 'أجبان بيضاء', sourceCategory: 'ألبان' },
-      { title: 'لحوم مجمدة', sourceCategory: 'بقالة' },
-      { title: 'لحوم طازجة', sourceCategory: 'بقالة' }
+      { title: 'سمـاش برجر', sourceCategory: 'برجر' },
+      { title: 'دبل برجر', sourceCategory: 'برجر' },
+      { title: 'تشيز برجر', sourceCategory: 'برجر' },
+      { title: 'سيجنتشر برجر', sourceCategory: 'برجر' }
     ]
   },
   {
-    title: 'خضار وفاكهة',
-    subtitle: 'منتجات طازجة مرتبة حسب نوع الاستخدام اليومي.',
+    title: 'فرايد تشيكن',
+    subtitle: 'منيو دجاج مقلي مقرمش يشمل ساندوتشات وقطع وبوكسات مشاركة.',
     sections: [
-      { title: 'خضار ورقية', sourceCategory: 'خضار' },
-      { title: 'خضار طبخ', sourceCategory: 'خضار' },
-      { title: 'فاكهة موسمية', sourceCategory: 'فاكهة' },
-      { title: 'فاكهة يومية', sourceCategory: 'فاكهة' }
+      { title: 'كريسبي قطع', sourceCategory: 'فرايد تشيكن' },
+      { title: 'استربس', sourceCategory: 'فرايد تشيكن' },
+      { title: 'ساندوتش دجاج', sourceCategory: 'فرايد تشيكن' },
+      { title: 'بوكسات مشاركة', sourceCategory: 'فرايد تشيكن' }
     ]
   },
   {
-    title: 'ألبان وفطار',
-    subtitle: 'كل ما تحتاجه لوجبات الصباح ومنتجات التبريد اليومية.',
+    title: 'وجبات وكومبو',
+    subtitle: 'وجبات كاملة وعروض توفير تشمل البطاطس والمشروب والإضافات.',
     sections: [
-      { title: 'لبن وحليب', sourceCategory: 'ألبان' },
-      { title: 'زبادي وألبان', sourceCategory: 'ألبان' },
-      { title: 'مربى وعسل', sourceCategory: 'بقالة' },
-      { title: 'مخبوزات خفيفة', sourceCategory: 'بقالة' }
+      { title: 'وجبات فردية', sourceCategory: 'كومبو' },
+      { title: 'وجبات دبل', sourceCategory: 'كومبو' },
+      { title: 'وجبات عائلية', sourceCategory: 'كومبو' },
+      { title: 'عروض التوفير', sourceCategory: 'كومبو' }
     ]
   },
   {
-    title: 'بقالة البيت',
-    subtitle: 'احتياجات المطبخ والبيت في أقسام واضحة وسهلة الوصول.',
+    title: 'إضافات ومقبلات',
+    subtitle: 'بطاطس، صوصات، مشروبات، وحلويات خفيفة تكمل تجربة الطلب.',
     sections: [
-      { title: 'أرز ومكرونة', sourceCategory: 'بقالة' },
-      { title: 'زيوت وسمن', sourceCategory: 'بقالة' },
-      { title: 'تجميد وحفظ', sourceCategory: 'بقالة' },
-      { title: 'منظفات أساسية', sourceCategory: 'بقالة' }
+      { title: 'بطاطس', sourceCategory: 'مقبلات' },
+      { title: 'صوصات', sourceCategory: 'مقبلات' },
+      { title: 'مشروبات', sourceCategory: 'مقبلات' },
+      { title: 'حلويات خفيفة', sourceCategory: 'مقبلات' }
     ]
   }
 ];
@@ -123,40 +123,60 @@ const defaultAdminControls = {
 const defaultPolicies = {
   privacy: {
     title: 'سياسة الخصوصية',
-    description: 'نوضح هنا كيفية جمع بياناتك واستخدامها وحمايتها أثناء استخدام متجر الوكالة.',
+    description: 'نوضح هنا كيفية جمع بياناتك واستخدامها وحمايتها أثناء استخدام موقع Burger El Khawaga.',
     sections: [
-      { title: 'البيانات التي نجمعها', body: 'نقوم بجمع بيانات الحساب الأساسية مثل الاسم والبريد الإلكتروني ورقم الهاتف والعناوين اللازمة لإتمام الطلبات وإدارة الحساب.' },
-      { title: 'استخدام البيانات', body: 'تُستخدم البيانات لإتمام الطلبات والتواصل مع العميل وتحسين تجربة الاستخدام وتقديم الدعم الفني وإدارة نقاط الولاء والخدمات المرتبطة.' },
-      { title: 'حماية المعلومات', body: 'نلتزم بحماية بيانات العميل وعدم مشاركتها إلا في حدود تشغيل الخدمة مثل الشحن أو الدفع أو الدعم الفني حسب الحاجة.' }
+      { title: 'البيانات التي نجمعها', body: 'نجمع بيانات الحساب الأساسية مثل الاسم ورقم الهاتف والعنوان لتجهيز الطلبات والتواصل مع العميل بخصوص التوصيل أو أي تحديثات.' },
+      { title: 'استخدام البيانات', body: 'تُستخدم البيانات لتأكيد الطلبات، تحسين تجربة المستخدم، وتقديم الدعم الفني وإدارة العروض أو نقاط الولاء إن كانت مفعلة.' },
+      { title: 'حماية المعلومات', body: 'نلتزم بحماية بيانات العميل وعدم مشاركتها إلا في حدود تشغيل الخدمة مثل الدفع أو التوصيل أو الدعم الفني حسب الحاجة.' }
     ]
   },
   terms: {
     title: 'الشروط والأحكام',
     description: 'هذه الصفحة توضح القواعد المنظمة لاستخدام الموقع والطلبات والحسابات.',
     sections: [
-      { title: 'استخدام الموقع', body: 'يجب استخدام الموقع بصورة قانونية وعدم إساءة استخدام الخدمات أو محاولة تعطيلها أو العبث بمحتواها أو بياناتها.' },
-      { title: 'الطلبات والدفع', body: 'يخضع قبول الطلب لتوافر المنتجات وصحة بيانات الشحن ونجاح عملية الدفع بحسب الوسيلة المختارة داخل الموقع.' },
-      { title: 'إدارة الحساب', body: 'العميل مسؤول عن صحة بيانات حسابه والحفاظ على سرية بيانات الدخول ويحق للمتجر تحديث الشروط متى لزم الأمر.' }
+      { title: 'استخدام الموقع', body: 'يجب استخدام الموقع بصورة قانونية وعدم إساءة استخدام الخدمات أو محاولة تعطيل الطلبات أو العبث ببيانات النظام.' },
+      { title: 'الطلبات والدفع', body: 'يخضع قبول الطلب لتوافر الأصناف وصحة بيانات التوصيل ونجاح عملية الدفع حسب الوسيلة المختارة داخل الموقع.' },
+      { title: 'إدارة الحساب', body: 'العميل مسؤول عن صحة بيانات حسابه والحفاظ على سرية بيانات الدخول ويحق للمطعم تحديث الشروط عند الحاجة.' }
     ]
   },
   shipping: {
-    title: 'سياسة الشحن والتوصيل',
-    description: 'تفاصيل المحافظات المتاحة واحتساب الرسوم ومدة التوصيل التقديرية.',
+    title: 'سياسة التوصيل',
+    description: 'تفاصيل مناطق التوصيل، الرسوم، والمدة التقديرية لوصول الطلب.',
     sections: [
-      { title: 'نطاق التوصيل', body: 'يظهر للعميل داخل فورم الطلب فقط المحافظات والمدن المفعلة حاليًا من لوحة التحكم.' },
-      { title: 'مدة التسليم', body: 'مدة التوصيل تقديرية وتختلف حسب المنطقة وحالة التشغيل وتوقيت الطلب وقد يتم التواصل مع العميل لتأكيد الموعد.' },
-      { title: 'رسوم الشحن', body: 'تُحتسب رسوم الشحن تلقائيًا حسب المحافظة أو الإعدادات الحالية ويظهر الإجمالي قبل تأكيد الطلب النهائي.' }
+      { title: 'نطاق التوصيل', body: 'يظهر للعميل داخل نموذج الطلب فقط المحافظات والمدن المفعلة حاليًا من لوحة التحكم.' },
+      { title: 'مدة التسليم', body: 'مدة التوصيل تقديرية وتختلف حسب المنطقة، ضغط التشغيل، وتوقيت الطلب، وقد يتم التواصل مع العميل لتأكيد الموعد.' },
+      { title: 'رسوم التوصيل', body: 'تُحتسب رسوم التوصيل تلقائيًا حسب المحافظة أو الإعدادات الحالية ويظهر الإجمالي قبل تأكيد الطلب النهائي.' }
     ]
   },
   refund: {
     title: 'سياسة الاسترجاع والاستبدال',
-    description: 'القواعد الأساسية الخاصة بإلغاء الطلبات والاستبدال والاسترجاع ومعالجة الشكاوى.',
+    description: 'القواعد الأساسية الخاصة بإلغاء الطلبات أو مراجعة المشكلات المتعلقة بالأصناف.',
     sections: [
-      { title: 'الاسترجاع والاستبدال', body: 'يمكن طلب المراجعة أو الاستبدال عند وجود مشكلة واضحة في المنتج أو عند وصول منتج غير مطابق حسب حالة الطلب.' },
-      { title: 'إلغاء الطلب', body: 'الإلغاء متاح وفق حالة الطلب والمدة المسموح بها في النظام وقد تختلف المعالجة للطلبات المدفوعة أونلاين.' },
-      { title: 'آلية المعالجة', body: 'يقوم فريق الدعم بمراجعة كل حالة وتحديد الحل المناسب سواء استبدال أو إضافة رصيد للمحفظة أو أي معالجة أخرى.' }
+      { title: 'الاسترجاع أو الاستبدال', body: 'يمكن طلب المراجعة عند وجود مشكلة واضحة في الطلب أو وصول صنف غير مطابق، ويقوم فريق الدعم بتقييم الحالة.' },
+      { title: 'إلغاء الطلب', body: 'الإلغاء متاح وفق حالة الطلب والمدة المسموح بها داخل النظام، وقد تختلف المعالجة للطلبات المدفوعة أونلاين.' },
+      { title: 'آلية المعالجة', body: 'يقوم فريق الدعم بمراجعة كل حالة وتحديد الحل المناسب سواء استبدال، تعويض، أو أي معالجة أخرى مناسبة.' }
     ]
   }
+};
+
+const defaultAbout = {
+  title: 'من نحن',
+  description: 'Burger El Khawaga مطعم متخصص في البرجر والدجاج المقلي، يقدّم وجبات سريعة بطعم ثابت وتجربة طلب أونلاين سهلة.',
+  vision: 'أن نصبح وجهة مفضلة لعشاق البرجر والوجبات السريعة بتجربة رقمية سهلة وطعم لا يُنسى.',
+  mission: 'تقديم منيو واضح، تجهيز سريع، وجودة ثابتة في كل طلب سواء داخل الفرع أو عبر التوصيل.',
+  values: 'الطعم، السرعة، النظافة، الوضوح، والاهتمام بكل تفصيلة في تجربة العميل.'
+};
+
+const isLegacyMarketSettings = (settings) => {
+  const storeName = String(settings?.storeName || '').trim().toLowerCase();
+  const featuredCategories = settings?.home?.featuredCategories || [];
+  const categoryGroups = settings?.categoryGroups || [];
+
+  const hasLegacyStoreName = ['al wekala market', 'al wekala'].includes(storeName);
+  const hasLegacyCategories = featuredCategories.some((item) => ['خضار', 'فاكهة', 'ألبان', 'بقالة'].includes(item?.category));
+  const hasLegacyGroups = categoryGroups.some((group) => ['خضار وفاكهة', 'ألبان وفطار', 'بقالة البيت'].includes(group?.title));
+
+  return hasLegacyStoreName || hasLegacyCategories || hasLegacyGroups;
 };
 
 export const ensureStoreSettings = async () => {
@@ -164,6 +184,12 @@ export const ensureStoreSettings = async () => {
   if (!settings) {
     settings = await StoreSettings.create({
       singleton: 'default',
+      storeName: 'Burger El Khawaga',
+      storeTagline: 'مطعم متخصص في السماش برجر والفرايد تشيكن مع تجربة طلب سريعة وواضحة.',
+      supportEmail: 'support@burgerelkhawaga.com',
+      address: 'القاهرة، مصر',
+      workingHours: 'يوميًا من 12 ظهرًا حتى 2 بعد منتصف الليل',
+      about: defaultAbout,
       home: {
         heroSlides: defaultHeroSlides,
         featuredCategories: defaultFeaturedCategories
@@ -179,6 +205,23 @@ export const ensureStoreSettings = async () => {
   } else {
     let changed = false;
 
+    if (isLegacyMarketSettings(settings)) {
+      settings.storeName = 'Burger El Khawaga';
+      settings.storeTagline = 'مطعم متخصص في السماش برجر والفرايد تشيكن مع تجربة طلب سريعة وواضحة.';
+      if (!settings.supportEmail || settings.supportEmail === 'support@alwekala.com') {
+        settings.supportEmail = 'support@burgerelkhawaga.com';
+      }
+      settings.address = settings.address || 'القاهرة، مصر';
+      settings.workingHours = 'يوميًا من 12 ظهرًا حتى 2 بعد منتصف الليل';
+      settings.about = defaultAbout;
+      settings.home = settings.home || {};
+      settings.home.heroSlides = defaultHeroSlides;
+      settings.home.featuredCategories = defaultFeaturedCategories;
+      settings.categoryGroups = defaultCategoryGroups;
+      settings.policies = defaultPolicies;
+      changed = true;
+    }
+
     if (!settings.home?.heroSlides?.length) {
       settings.home.heroSlides = defaultHeroSlides;
       changed = true;
@@ -191,6 +234,11 @@ export const ensureStoreSettings = async () => {
 
     if (!settings.categoryGroups?.length) {
       settings.categoryGroups = defaultCategoryGroups;
+      changed = true;
+    }
+
+    if (!settings.about?.title) {
+      settings.about = defaultAbout;
       changed = true;
     }
 

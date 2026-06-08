@@ -7,8 +7,7 @@ import {
   sendCustomerOrderWhatsAppNotification,
   sendNewOrderWhatsAppNotification
 } from '../utils/whatsapp.js';
-import { ensureStoreSettings } from '../utils/storeSettings.js';
-import { calculateEarnedLoyaltyPoints, calculateOrderPricing, incrementDiscountCodeUsage } from '../utils/pricing.js';
+import { calculateOrderPricing, incrementDiscountCodeUsage } from '../utils/pricing.js';
 
 const CANCEL_WINDOW_MS = 5 * 60 * 1000;
 const resolveClientUrl = (req) => process.env.CLIENT_URL || req.headers.origin || 'http://localhost:5173';
@@ -38,65 +37,14 @@ const canUserCancelOrder = (order) => {
   return Date.now() - new Date(order.createdAt).getTime() <= CANCEL_WINDOW_MS;
 };
 
-const restoreUsedLoyaltyPoints = async (order) => {
-  if (!Number(order?.loyaltyPointsUsed || 0)) return;
+const restoreUsedLoyaltyPoints = async () => {};
 
-  const user = await User.findById(order.user);
-  if (!user) return;
-
-  user.loyaltyPoints = Number(user.loyaltyPoints || 0) + Number(order.loyaltyPointsUsed || 0);
-  user.loyaltyHistory = [
-    {
-      amount: Number(order.loyaltyPointsUsed || 0),
-      reason: 'استرجاع نقاط من طلب ملغي',
-      order: order._id
-    },
-    ...(Array.isArray(user.loyaltyHistory) ? user.loyaltyHistory : [])
-  ].slice(0, 30);
-  await user.save();
-};
-
-const consumeLoyaltyPoints = async (userId, order, usedPoints) => {
-  if (!Number(usedPoints || 0)) return;
-
-  const user = await User.findById(userId);
-  if (!user) return;
-
-  user.loyaltyPoints = Math.max(0, Number(user.loyaltyPoints || 0) - Number(usedPoints || 0));
-  user.loyaltyHistory = [
-    {
-      amount: -Number(usedPoints || 0),
-      reason: 'استخدام نقاط في طلب جديد',
-      order: order._id
-    },
-    ...(Array.isArray(user.loyaltyHistory) ? user.loyaltyHistory : [])
-  ].slice(0, 30);
-  await user.save();
-};
+const consumeLoyaltyPoints = async () => {};
 
 const awardLoyaltyPointsIfEligible = async (order) => {
   if (!order || order.status !== 'تم التسليم' || order.loyaltyPointsAwarded) return;
-
-  const settings = await ensureStoreSettings();
-  const points = calculateEarnedLoyaltyPoints(settings, order?.itemsPrice || 0);
   order.loyaltyPointsAwarded = true;
-  order.loyaltyPointsAmount = points;
-
-  if (!points) return;
-
-  const user = await User.findById(order.user);
-  if (!user) return;
-
-  user.loyaltyPoints = Number(user.loyaltyPoints || 0) + points;
-  user.loyaltyHistory = [
-    {
-      amount: points,
-      reason: 'نقاط من طلب مكتمل',
-      order: order._id
-    },
-    ...(Array.isArray(user.loyaltyHistory) ? user.loyaltyHistory : [])
-  ].slice(0, 30);
-  await user.save();
+  order.loyaltyPointsAmount = 0;
 };
 
 const notifyOrderManagers = async (order, customer) => {
@@ -277,27 +225,11 @@ export const cancelMyOrder = asyncHandler(async (req, res) => {
     await Product.updateOne({ _id: item.product }, { $inc: { countInStock: item.qty } });
   }
 
-  const isOnlinePayment = order.paymentMethod === 'دفع أونلاين' || order.paymentProvider === 'stripe';
-
-  if (order.isPaid && isOnlinePayment && !order.refundedToWallet) {
-    const user = await User.findById(order.user);
-    if (user) {
-      user.walletBalance = Number(user.walletBalance || 0) + Number(order.totalPrice || 0);
-      await user.save();
-    }
-
-    order.refundedToWallet = true;
-    order.refundedAmount = Number(order.totalPrice || 0);
-    order.refundedAt = new Date();
-  }
-
   await restoreUsedLoyaltyPoints(order);
   await order.save();
 
   res.json({
-    message: order.refundedToWallet
-      ? 'تم إلغاء الطلب وإضافة المبلغ إلى المحفظة'
-      : 'تم إلغاء الطلب بنجاح',
+    message: 'تم إلغاء الطلب بنجاح',
     order
   });
 });

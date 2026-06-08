@@ -10,18 +10,18 @@ await Order.deleteMany();
 await Product.deleteMany();
 await User.deleteMany();
 
-await User.create({ name: 'Admin', email: 'admin@alwekala.com', password: '12345678', phone: '01000000000', role: 'admin' });
+await User.create({ name: 'Admin', email: 'admin@burgerelkhawaga.com', password: '12345678', phone: '01000000000', role: 'admin' });
 
 const products = [
-  { name: 'طماطم بلدي', description: 'طماطم طازجة مختارة يومياً.', price: 18, oldPrice: 22, category: 'خضار', unit: 'كيلو', countInStock: 80, featured: true, isDeal: true },
-  { name: 'موز مستورد', description: 'موز عالي الجودة بطعم سكري.', price: 55, oldPrice: 65, category: 'فاكهة', unit: 'كيلو', countInStock: 60, featured: true, isDeal: true },
-  { name: 'لبن كامل الدسم', description: 'لبن طازج مناسب لكل العائلة.', price: 38, category: 'ألبان', unit: 'لتر', countInStock: 100, featured: true },
-  { name: 'أرز مصري', description: 'أرز أبيض فاخر.', price: 32, oldPrice: 36, category: 'بقالة', unit: 'كيلو', countInStock: 120, isDeal: true },
-  { name: 'زيت عباد الشمس', description: 'زيت نقي للطبخ والقلي.', price: 95, category: 'بقالة', unit: 'عبوة', countInStock: 45 },
-  { name: 'جبنة بيضاء', description: 'جبنة طازجة بطعم غني.', price: 68, category: 'ألبان', unit: 'نصف كيلو', countInStock: 50 },
-  { name: 'تفاح أحمر', description: 'تفاح أحمر مقرمش.', price: 85, category: 'فاكهة', unit: 'كيلو', countInStock: 70, featured: true },
-  { name: 'خيار', description: 'خيار طازج للسلطة.', price: 16, category: 'خضار', unit: 'كيلو', countInStock: 90 }
+  { name: 'سمـاش برجر', description: 'قطعتان لحم مشويتان مع جبنة وصوص الخواجة.', price: 165, oldPrice: 190, category: 'برجر', subcategory: 'سمـاش برجر', unit: 'ساندوتش', countInStock: 80, featured: true, isDeal: true, inAgencyCollection: true },
+  { name: 'دبل تشيز برجر', description: 'لحم دبل، جبنة مضاعفة، وخبز محمص.', price: 210, oldPrice: 235, category: 'برجر', subcategory: 'دبل برجر', unit: 'ساندوتش', countInStock: 70, featured: true, isDeal: true, inAgencyCollection: true },
+  { name: 'كريسبي تشيكن ساندوتش', description: 'صدر دجاج مقرمش وخس وصوص رانش.', price: 150, category: 'فرايد تشيكن', subcategory: 'ساندوتش دجاج', unit: 'ساندوتش', countInStock: 90, featured: true, inAgencyCollection: true },
+  { name: 'بوكس فرايد تشيكن 6 قطع', description: 'ست قطع دجاج مقرمشة مع بطاطس وصوص.', price: 260, oldPrice: 290, category: 'فرايد تشيكن', subcategory: 'بوكسات مشاركة', unit: 'بوكس', countInStock: 50, isDeal: true, inAgencyCollection: true },
+  { name: 'كومبو الخواجة', description: 'سمـاش برجر مع بطاطس ومشروب.', price: 220, oldPrice: 245, category: 'كومبو', subcategory: 'وجبات فردية', unit: 'وجبة', countInStock: 65, featured: true, isDeal: true, inAgencyCollection: true },
+  { name: 'كومبو دبل', description: 'دبل برجر مع بطاطس ومشروب كبير.', price: 275, category: 'كومبو', subcategory: 'وجبات دبل', unit: 'وجبة', countInStock: 40, inAgencyCollection: true },
+  { name: 'بطاطس محمرة', description: 'بطاطس ذهبية مقرمشة.', price: 55, category: 'مقبلات', subcategory: 'بطاطس', unit: 'علبة', countInStock: 120, inAgencyCollection: true },
+  { name: 'صوص الخواجة', description: 'صوص خاص مناسب للبرجر والفرايد تشيكن.', price: 20, category: 'مقبلات', subcategory: 'صوصات', unit: 'علبة', countInStock: 150, inAgencyCollection: true }
 ];
 await Product.insertMany(products);
-console.log('Seed completed: admin@alwekala.com / 12345678');
+console.log('Seed completed: admin@burgerelkhawaga.com / 12345678');
 process.exit();

@@ -226,7 +226,7 @@ export const sendResetPasswordCode = asyncHandler(async (req, res) => {
 
   await sendEmail({
     to: user.email,
-    subject: 'كود استرجاع كلمة المرور - Al Wekala',
+    subject: 'كود استرجاع كلمة المرور - Burger El Khawaga',
     text: `كود استرجاع كلمة المرور هو: ${code}. صالح لمدة 15 دقيقة.`,
     html: `
       <div style="margin:0;padding:32px 16px;background:#f6f1e7;direction:rtl;text-align:right;font-family:Arial,'Segoe UI',Tahoma,sans-serif;color:#18130f;">

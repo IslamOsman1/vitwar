@@ -20,13 +20,7 @@ const findMatchedDiscountCode = (settings, user, normalizedCode) => {
   return null;
 };
 
-export const calculateEarnedLoyaltyPoints = (settings, itemsPrice) => {
-  const loyalty = settings?.loyalty || {};
-  if (loyalty.enabled === false) return 0;
-
-  const pointsPerPoint = Math.max(1, Number(loyalty.pointsPerPoint || 10));
-  return Math.max(0, Math.floor(Number(itemsPrice || 0) / pointsPerPoint));
-};
+export const calculateEarnedLoyaltyPoints = () => 0;
 
 export const calculateOrderPricing = async ({
   settings,
@@ -40,7 +34,6 @@ export const calculateOrderPricing = async ({
   const shippingPrice = roundMoney(await calculateShippingPrice(itemsPrice, shippingAddress));
   const subtotal = roundMoney(itemsPrice + shippingPrice);
 
-  const loyaltySettings = settings?.loyalty || {};
   const normalizedCode = normalizeCode(discountCode);
   let appliedDiscountCode = '';
   let discountCodeSource = '';
@@ -87,32 +80,9 @@ export const calculateOrderPricing = async ({
     discountCodeSource = matchedDiscount?.source || 'store';
   }
 
-  let loyaltyPointsUsed = 0;
-  let loyaltyPointsDiscount = 0;
-
-  if (redeemLoyaltyPoints && user && loyaltySettings.enabled !== false) {
-    const availablePoints = Math.max(0, Number(user.loyaltyPoints || 0));
-    const minRedeemPoints = Math.max(0, Number(loyaltySettings.minRedeemPoints || 0));
-    const pointValue = Math.max(0, Number(loyaltySettings.pointValue || 0));
-    const remainingAfterCode = roundMoney(subtotal - discountCodeAmount);
-
-    if (availablePoints < minRedeemPoints) {
-      const error = new Error(`يجب توفر ${minRedeemPoints} نقطة على الأقل لاستخدام النقاط`);
-      error.statusCode = 400;
-      throw error;
-    }
-
-    if (pointValue <= 0) {
-      const error = new Error('استبدال النقاط غير مفعل حاليًا');
-      error.statusCode = 400;
-      throw error;
-    }
-
-    loyaltyPointsUsed = Math.min(availablePoints, Math.floor(remainingAfterCode / pointValue));
-    loyaltyPointsDiscount = roundMoney(loyaltyPointsUsed * pointValue);
-  }
-
-  const totalPrice = roundMoney(Math.max(0, subtotal - discountCodeAmount - loyaltyPointsDiscount));
+  const loyaltyPointsUsed = 0;
+  const loyaltyPointsDiscount = 0;
+  const totalPrice = roundMoney(Math.max(0, subtotal - discountCodeAmount));
 
   return {
     itemsPrice,

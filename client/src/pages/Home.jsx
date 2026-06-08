@@ -1,44 +1,50 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ShoppingBasket, Star, Truck } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  Flame,
+  Truck
+} from 'lucide-react';
 import api from '../api/api.js';
 import ProductCard from '../components/ProductCard.jsx';
 import { useStoreSettings } from '../context/StoreSettingsContext.jsx';
 import { getCategoryGroups } from '../utils/categoryHelpers.js';
 
 const categoryCards = [
-  { title: 'الخضار الطازج', category: 'خضار', subtitle: 'اختيار يومي من السوق', emoji: '🥬' },
-  { title: 'الفاكهة', category: 'فاكهه', subtitle: 'جودة ممتازة طوال اليوم', emoji: '🍊' },
-  { title: 'الألبان', category: 'ألبان', subtitle: 'منتجات مبردة بعناية', emoji: '🥛' },
-  { title: 'البقالة', category: 'بقالة', subtitle: 'كل احتياجات البيت', emoji: '🛒' }
+  { title: 'سمـاش برجر', category: 'برجر', subtitle: 'برجر مشوي بطعم غني', emoji: '🍔' },
+  { title: 'فرايد تشيكن', category: 'فرايد تشيكن', subtitle: 'قطع كريسبي وتتبيلات خاصة', emoji: '🍗' },
+  { title: 'كومبو ووجبات', category: 'كومبو', subtitle: 'وجبات كاملة وسريعة', emoji: '🥤' },
+  { title: 'مقبلات وصوصات', category: 'مقبلات', subtitle: 'إضافات تكمل الطلب', emoji: '🍟' }
 ];
 
 const serviceCards = [
-  { title: 'توصيل سريع', icon: <Truck size={22} /> },
-  { title: 'خدمة موثوقة', icon: <Star size={22} /> },
-  { title: 'طلب سهل', icon: <ShoppingBasket size={22} /> }
+  { title: 'تجهيز سريع', icon: <Clock3 size={22} /> },
+  { title: 'طعم مشوي طازج', icon: <Flame size={22} /> },
+  { title: 'توصيل حتى بابك', icon: <Truck size={22} /> }
 ];
 
 const fallbackSlides = [
   {
     id: 'promo-1',
-    title: 'عروض يومية على احتياجات البيت',
-    tag: 'وفر أكثر',
-    note: 'اختيارات متنوعة من السوبر ماركت بأسعار مناسبة وتحديثات مستمرة على المنتجات.',
+    title: 'سمـاش برجر بطبقتين ولحم مشوي على الجريل',
+    tag: 'الأكثر طلبًا',
+    note: 'عيش محمص، صوص الخواجة، وجبن سايح في كل قضمة.',
     accentClass: 'promo-red'
   },
   {
     id: 'promo-2',
-    title: 'تسوق أسرع لكل احتياجاتك اليومية',
-    tag: 'توصيل سريع',
-    note: 'خضار وفاكهة وبقالة وألبان في مكان واحد مع تجربة طلب سهلة من أي جهاز.',
+    title: 'فرايد تشيكن مقرمش بخلطة مطبخ الخواجة',
+    tag: 'كريسبي',
+    note: 'قطع دجاج ذهبية مقرمشة مع صوصات واختيارات جانبية.',
     accentClass: 'promo-gold'
   },
   {
     id: 'promo-3',
-    title: 'الأكثر طلبًا في ماركت الوكالة',
-    tag: 'الأفضل مبيعًا',
-    note: 'منتجات مختارة يفضلها العملاء يوميًا داخل الماركت مع أسعار واضحة وعروض جاهزة.',
+    title: 'وجبات وكومبوهات جاهزة للّمة والجوع السريع',
+    tag: 'وفر أكثر',
+    note: 'اختر الوجبة المناسبة واضف البطاطس والمشروب بسهولة.',
     accentClass: 'promo-dark'
   }
 ];
@@ -77,8 +83,8 @@ export default function Home() {
       return imageProducts.map((product, index) => ({
         id: product._id,
         title: product.name,
-        tag: index === 0 ? 'جديد' : index === 1 ? 'عرض خاص' : 'منتج مميز',
-        note: product.oldPrice > product.price ? `الآن بسعر ${product.price} ج.م` : product.category,
+        tag: index === 0 ? 'ترشيح الشيف' : index === 1 ? 'عرض اليوم' : 'جديد المنيو',
+        note: product.oldPrice > product.price ? `الآن بسعر ${product.price} ج.م` : product.description || product.category,
         image: product.image?.url,
         link: `/product/${product._id}`
       }));
@@ -100,8 +106,9 @@ export default function Home() {
   }, [heroSlides]);
 
   const slide = heroSlides[activeSlide] || fallbackSlides[0];
-  const bestSellers = products.filter((product) => product.isDeal).slice(0, 8);
+  const bestSellers = products.filter((product) => product.isDeal || product.featured).slice(0, 8);
   const featuredCategories = settings?.home?.featuredCategories?.length ? settings.home.featuredCategories : categoryCards;
+
   const exploreCategories = useMemo(() => {
     const featuredLookup = new Map(featuredCategories.map((item) => [item.category || item.title, item]));
 
@@ -119,6 +126,7 @@ export default function Home() {
       };
     });
   }, [categoryGroups, featuredCategories, products]);
+
   const visibleExploreCategories = showAllExploreCategories ? exploreCategories : exploreCategories.slice(0, 4);
   const hasMoreExploreCategories = exploreCategories.length > 4;
 
@@ -136,11 +144,7 @@ export default function Home() {
         className="promo-slide-frame"
         style={slide.image ? { backgroundImage: `linear-gradient(180deg, rgba(9,9,9,.16), rgba(9,9,9,.56)), url(${slide.image})` } : undefined}
       >
-        <div className="promo-slide-overlay">
-          <span className="promo-slide-tag">{slide.tag}</span>
-          <strong>{slide.title}</strong>
-          <small>{slide.note}</small>
-        </div>
+        <span className="promo-slide-tag">{slide.tag}</span>
       </Link>
 
       <div className="slider-dots hero-dots">
@@ -160,8 +164,8 @@ export default function Home() {
 
     <section className="panel-card market-categories" id="featured">
       <div className="section-head compact">
-        <h2>الفئات المميزة</h2>
-        <span>اختر القسم المناسب وابدأ تصفح منتجات الماركت بسرعة وسهولة.</span>
+        <h2>أقسام المنيو</h2>
+        <span>ابدأ من القسم المناسب ثم أضف الساندوتش أو الوجبة أو الإضافات مباشرة إلى السلة.</span>
       </div>
       <div className="market-category-grid">
         {featuredCategories.map((item) => <Link
@@ -180,10 +184,10 @@ export default function Home() {
     <section className="panel-card products-panel" id="products">
       <div className="section-head">
         <div>
-          <h2>الأكثر مبيعًا</h2>
-          <p>منتجات يطلبها العملاء كثيرًا داخل الماركت ومناسبة للطلب اليومي السريع.</p>
+          <h2>ترشيحات الخواجة</h2>
+          <p>أطباق وسندوتشات عليها طلب كبير ويمكنك البدء بها لو أردت أسرع اختيار من المنيو.</p>
         </div>
-        <Link to="/categories" className="section-link">اذهب إلى الفئات</Link>
+        <Link to="/categories" className="section-link">افتح المنيو كاملًا</Link>
       </div>
 
       {loading ? <p className="muted">جاري تحميل المنتجات...</p> : <div className="product-sections">
@@ -196,8 +200,8 @@ export default function Home() {
 
     <section className="panel-card explore-categories-panel" id="explore-categories">
       <div className="explore-categories-head">
-        <h2>استكشف فئاتنا</h2>
-        <p>تصفح أقسام الماركت بسهولة واختر الفئة المناسبة لاحتياجات البيت اليومية.</p>
+        <h2>استكشف فئات الطلب</h2>
+        <p>تنقل بين مجموعات المنيو مثل البرجر، الكومبو، الفرايد تشيكن، والمقبلات حسب إعدادات المطعم الحالية.</p>
       </div>
 
       <div className="explore-categories-grid">

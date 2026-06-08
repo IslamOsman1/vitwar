@@ -54,7 +54,7 @@ export default function CheckoutReview() {
       settings,
       user,
       discountCode: draft?.discountCode,
-      redeemLoyaltyPoints: draft?.redeemLoyaltyPoints
+      redeemLoyaltyPoints: false
     }),
     [draft, settings, shippingPrice, totals.itemsPrice, user]
   );
@@ -68,8 +68,7 @@ export default function CheckoutReview() {
         orderItems: items.map((item) => ({ product: item._id, qty: item.qty })),
         shippingAddress: draft.shippingAddress,
         paymentMethod: draft.paymentMethod,
-        discountCode: draft.discountCode,
-        redeemLoyaltyPoints: draft.redeemLoyaltyPoints
+        discountCode: draft.discountCode
       };
 
       if (draft.paymentMethod === 'online') {
@@ -119,11 +118,10 @@ export default function CheckoutReview() {
             <p>{orderLabel}</p>
           </div>
 
-          {(draft.discountCode || draft.redeemLoyaltyPoints) ? (
+          {draft.discountCode ? (
             <div className="checkout-review-block">
               <strong>الخصومات المطبقة</strong>
-              {draft.discountCode ? <p>كود الخصم: {draft.discountCode}</p> : null}
-              {draft.redeemLoyaltyPoints ? <p>استخدام نقاط الولاء: {estimatedTotals.loyaltyPointsUsed} نقطة</p> : null}
+              <p>كود الخصم: {draft.discountCode}</p>
             </div>
           ) : null}
 
@@ -159,7 +157,6 @@ export default function CheckoutReview() {
           <h2>ملخص الطلب</h2>
           <p>المنتجات: {totals.itemsPrice} ج.م</p>
           <p>الشحن: {shippingPrice} ج.م</p>
-          {estimatedTotals.loyaltyPointsDiscount > 0 ? <p>خصم النقاط: -{estimatedTotals.loyaltyPointsDiscount} ج.م</p> : null}
           {draft.discountCode ? <p className="muted">سيتم اعتماد كود الخصم بعد التحقق منه من السيرفر</p> : null}
           <strong>الإجمالي المتوقع: {estimatedTotals.totalPrice} ج.م</strong>
         </aside>

@@ -110,7 +110,7 @@ Important values:
 
 - `PORT`
 - `NODE_ENV`
-- `MONGO_URI`
+- `MONGO_URI` using your real MongoDB Atlas host, for example `mongodb+srv://USER:PASSWORD@cluster0.xxxxx.mongodb.net/alwekala`
 - `JWT_SECRET`
 - `JWT_EXPIRES_IN`
 - `CLIENT_URL`

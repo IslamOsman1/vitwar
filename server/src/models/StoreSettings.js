@@ -66,12 +66,12 @@ const policyPageSchema = new mongoose.Schema({
 
 const storeSettingsSchema = new mongoose.Schema({
   singleton: { type: String, default: 'default', unique: true },
-  storeName: { type: String, default: 'Al Wekala Market' },
-  storeTagline: { type: String, default: 'تجربة تسوق سريعة وواضحة لكل احتياجات البيت.' },
-  supportEmail: { type: String, default: 'support@alwekala.com' },
+  storeName: { type: String, default: 'Burger El Khawaga' },
+  storeTagline: { type: String, default: 'مطعم متخصص في السماش برجر والفرايد تشيكن مع تجربة طلب سريعة وواضحة.' },
+  supportEmail: { type: String, default: 'support@burgerelkhawaga.com' },
   supportPhone: { type: String, default: '01000000000' },
   address: { type: String, default: 'القاهرة، مصر' },
-  workingHours: { type: String, default: 'يوميًا من 9 صباحًا حتى 11 مساءً' },
+  workingHours: { type: String, default: 'يوميًا من 12 ظهرًا حتى 2 بعد منتصف الليل' },
   whatsapp: { type: String, default: '' },
   facebookUrl: { type: String, default: '' },
   instagramUrl: { type: String, default: '' },
@@ -79,11 +79,11 @@ const storeSettingsSchema = new mongoose.Schema({
     title: { type: String, default: 'من نحن' },
     description: {
       type: String,
-      default: 'الوكالة منصة تسوق إلكتروني تهدف إلى تقديم تجربة أسرع وأسهل لشراء المنتجات اليومية والعروض في مكان واحد.'
+      default: 'Burger El Khawaga مطعم متخصص في البرجر والدجاج المقلي، يقدّم وجبات سريعة بطعم ثابت وتجربة طلب أونلاين سهلة.'
     },
-    vision: { type: String, default: 'تقديم تجربة شراء بسيطة وواضحة تساعد العميل يصل إلى ما يحتاجه بسرعة.' },
-    mission: { type: String, default: 'توفير المنتجات اليومية والعروض في واجهة سهلة ومريحة على الموبايل والكمبيوتر.' },
-    values: { type: String, default: 'الوضوح، السرعة، سهولة الاستخدام، والاهتمام بتجربة العميل في كل خطوة.' }
+    vision: { type: String, default: 'أن نصبح وجهة مفضلة لعشاق البرجر والوجبات السريعة بتجربة رقمية سهلة وطعم لا يُنسى.' },
+    mission: { type: String, default: 'تقديم منيو واضح، تجهيز سريع، وجودة ثابتة في كل طلب سواء داخل الفرع أو عبر التوصيل.' },
+    values: { type: String, default: 'الطعم، السرعة، النظافة، الوضوح، والاهتمام بكل تفصيلة في تجربة العميل.' }
   },
   policies: {
     privacy: { type: policyPageSchema, default: () => ({}) },

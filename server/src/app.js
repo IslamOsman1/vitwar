@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 if (process.env.NODE_ENV !== 'production') app.use(morgan('dev'));
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', name: 'Al Wekala API' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok', name: 'Burger El Khawaga API' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);

@@ -14,7 +14,7 @@ const productSchema = new mongoose.Schema({
   oldPrice: { type: Number, default: 0 },
   category: { type: String, required: true, index: true },
   subcategory: { type: String, default: '', index: true },
-  brand: { type: String, default: 'Al Wekala' },
+  brand: { type: String, default: 'Burger El Khawaga' },
   barcode: { type: String, default: '', trim: true, index: true },
   unit: { type: String, default: 'قطعة' },
   measurementValue: { type: Number, default: 0, min: 0 },

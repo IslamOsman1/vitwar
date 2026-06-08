@@ -45,8 +45,8 @@ export default function Footer() {
 
   const quickLinks = [
     { to: '/', label: 'الرئيسية' },
-    { to: '/categories', label: 'الفئات' },
-    { to: '/alwekala-products', label: 'منتجات الوكالة' },
+    { to: '/categories', label: 'المنيو' },
+    { to: '/alwekala-products', label: 'ترشيحات الخواجة' },
     { to: '/offers', label: 'العروض' },
     { to: '/contact', label: 'تواصل معنا' },
     { to: '/policies', label: 'السياسات' }
@@ -55,8 +55,8 @@ export default function Footer() {
   const serviceLinks = [
     { to: '/cart', label: totals.count > 0 ? `السلة (${totals.count})` : 'السلة', icon: ShoppingCart },
     { to: '/orders', label: 'طلباتي', icon: ClipboardList },
-    { to: '/contact', label: settings?.supportPhone || 'الدعم', icon: Phone },
-    { to: '/policies/shipping', label: 'سياسة الشحن', icon: Truck },
+    { to: '/contact', label: settings?.supportPhone || 'خدمة العملاء', icon: Phone },
+    { to: '/policies/shipping', label: 'سياسة التوصيل', icon: Truck },
     { to: '/policies/refund', label: 'سياسة الاسترجاع', icon: Wallet }
   ];
 
@@ -64,8 +64,8 @@ export default function Footer() {
     <>
       <nav className="bottom-nav" aria-label="التنقل السريع">
         <NavLink to="/"><Home size={24} /><span>الرئيسية</span></NavLink>
-        <NavLink to="/categories"><Grid2X2 size={24} /><span>الفئات</span></NavLink>
-        <NavLink to="/alwekala-products"><Package size={24} /><span>منتجات الوكالة</span></NavLink>
+        <NavLink to="/categories"><Grid2X2 size={24} /><span>المنيو</span></NavLink>
+        <NavLink to="/alwekala-products"><Package size={24} /><span>ترشيحاتنا</span></NavLink>
         <NavLink to="/offers"><Package size={24} /><span>العروض</span></NavLink>
 
         <div className={`bottom-more${moreOpen ? ' open' : ''}`}>
@@ -115,9 +115,9 @@ export default function Footer() {
           <div className="footer-brand-block">
             <div className="footer-title-row">
               <Store size={20} />
-              <strong>{settings?.storeName || 'Al Wekala Market'}</strong>
+              <strong>{settings?.storeName || 'Burger El Khawaga'}</strong>
             </div>
-            <p>{settings?.storeTagline || 'ماركت يومي يوفر احتياجات البيت من المنتجات الأساسية والعروض في تجربة شراء سريعة وواضحة.'}</p>
+            <p>{settings?.storeTagline || 'مطعم متخصص في السماش برجر والفرايد تشيكن مع طلب أونلاين سريع وتجربة واضحة من أول اختيار حتى تأكيد الطلب.'}</p>
             <div className="footer-contact-list">
               {settings?.supportPhone ? (
                 <a href={`tel:${settings.supportPhone}`} className="footer-inline-link">

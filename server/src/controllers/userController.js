@@ -2,8 +2,6 @@ import asyncHandler from 'express-async-handler';
 import crypto from 'crypto';
 import User from '../models/User.js';
 import { buildCustomerQrValue, ensureCustomerCode } from '../utils/customerIdentity.js';
-import { calculateEarnedLoyaltyPoints } from '../utils/pricing.js';
-import { ensureStoreSettings } from '../utils/storeSettings.js';
 import { getPushPublicKey, isPushConfigured, normalizePushSubscription } from '../utils/pushNotifications.js';
 import { uploadToCloudinary } from '../utils/uploadToCloudinary.js';
 
@@ -165,12 +163,12 @@ export const applyCustomerCareAction = asyncHandler(async (req, res) => {
   const actionType = String(req.body.actionType || '').trim();
   const note = String(req.body.note || '').trim();
 
-  if (!['wallet_credit', 'points_credit', 'discount_code', 'store_purchase'].includes(actionType)) {
+  if (!['discount_code', 'store_purchase'].includes(actionType)) {
     return res.status(400).json({ message: 'نوع العملية غير صالح' });
   }
 
   if (
-    ['wallet_credit', 'points_credit', 'discount_code'].includes(actionType)
+    actionType === 'discount_code'
     && !employeeHasAnyPermission(req.user, ['manage_customers', 'manage_customer_care', 'manage_loyalty'])
   ) {
     return res.status(403).json({ message: 'ØºÙŠØ± Ù…ØµØ±Ø­ Ø¨Ù‡Ø°Ù‡ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©' });
@@ -181,51 +179,6 @@ export const applyCustomerCareAction = asyncHandler(async (req, res) => {
     && !employeeHasAnyPermission(req.user, ['manage_customers', 'manage_store_purchases'])
   ) {
     return res.status(403).json({ message: 'ØºÙŠØ± Ù…ØµØ±Ø­ Ø¨Ù‡Ø°Ù‡ Ø§Ù„Ø¹Ù…Ù„ÙŠØ©' });
-  }
-
-  if (actionType === 'wallet_credit') {
-    const amount = Math.max(0, Number(req.body.amount || 0));
-    if (!amount) {
-      return res.status(400).json({ message: 'أدخل مبلغًا صحيحًا للمحفظة' });
-    }
-
-    user.walletBalance = Number(user.walletBalance || 0) + amount;
-    user.customerCareHistory = [
-      {
-        type: 'wallet_credit',
-        amount,
-        note: note || 'إضافة رصيد للمحفظة من قسم إرضاء العميل',
-        createdBy: req.user._id
-      },
-      ...(Array.isArray(user.customerCareHistory) ? user.customerCareHistory : [])
-    ].slice(0, 40);
-  }
-
-  if (actionType === 'points_credit') {
-    const points = Math.max(0, Number(req.body.points || req.body.amount || 0));
-    if (!points) {
-      return res.status(400).json({ message: 'أدخل عدد نقاط صحيح' });
-    }
-
-    user.loyaltyPoints = Number(user.loyaltyPoints || 0) + points;
-    user.loyaltyHistory = [
-      {
-        amount: points,
-        reason: note || 'إضافة نقاط من قسم إرضاء العميل',
-        source: 'customer-care',
-        createdBy: req.user._id
-      },
-      ...(Array.isArray(user.loyaltyHistory) ? user.loyaltyHistory : [])
-    ].slice(0, 50);
-    user.customerCareHistory = [
-      {
-        type: 'points_credit',
-        points,
-        note: note || 'إضافة نقاط يدوية',
-        createdBy: req.user._id
-      },
-      ...(Array.isArray(user.customerCareHistory) ? user.customerCareHistory : [])
-    ].slice(0, 40);
   }
 
   if (actionType === 'discount_code') {
@@ -282,29 +235,16 @@ export const applyCustomerCareAction = asyncHandler(async (req, res) => {
 
   if (actionType === 'store_purchase') {
     const amount = Math.max(0, Number(req.body.amount || 0));
-    const settings = await ensureStoreSettings();
-    const awardedPoints = calculateEarnedLoyaltyPoints(settings, amount);
 
     if (!amount) {
       return res.status(400).json({ message: 'أدخل مبلغ شراء صحيح' });
     }
 
     user.inStoreSpentTotal = Number(user.inStoreSpentTotal || 0) + amount;
-    user.loyaltyPoints = Number(user.loyaltyPoints || 0) + awardedPoints;
-    user.loyaltyHistory = [
-      {
-        amount: awardedPoints,
-        reason: note || 'نقاط من شراء داخل المحل',
-        source: 'store-purchase',
-        createdBy: req.user._id
-      },
-      ...(Array.isArray(user.loyaltyHistory) ? user.loyaltyHistory : [])
-    ].slice(0, 50);
     user.customerCareHistory = [
       {
         type: 'store_purchase',
         amount,
-        points: awardedPoints,
         note: note || 'تسجيل شراء من داخل المحل',
         createdBy: req.user._id
       },

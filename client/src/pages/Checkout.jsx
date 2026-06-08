@@ -38,7 +38,6 @@ export default function Checkout() {
   const [selectedAddressId, setSelectedAddressId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [discountCode, setDiscountCode] = useState('');
-  const [redeemLoyaltyPoints, setRedeemLoyaltyPoints] = useState(false);
 
   const savedAddresses = useMemo(
     () => Array.isArray(profileUser?.addresses) ? profileUser.addresses.filter((item) => item?.street || item?.address) : [],
@@ -69,9 +68,9 @@ export default function Checkout() {
       settings,
       user,
       discountCode,
-      redeemLoyaltyPoints
+      redeemLoyaltyPoints: false
     }),
-    [discountCode, redeemLoyaltyPoints, settings, shippingPrice, totals.itemsPrice, user]
+    [discountCode, settings, shippingPrice, totals.itemsPrice, user]
   );
 
   useEffect(() => {
@@ -111,7 +110,6 @@ export default function Checkout() {
       if (parsed.selectedAddressId) setSelectedAddressId(parsed.selectedAddressId);
       if (parsed.paymentMethod) setPaymentMethod(parsed.paymentMethod);
       if (parsed.discountCode) setDiscountCode(parsed.discountCode);
-      if (parsed.redeemLoyaltyPoints) setRedeemLoyaltyPoints(Boolean(parsed.redeemLoyaltyPoints));
     } catch {
       return;
     }
@@ -177,8 +175,7 @@ export default function Checkout() {
       shippingAddress,
       selectedAddressId,
       paymentMethod,
-      discountCode,
-      redeemLoyaltyPoints
+      discountCode
     };
     sessionStorage.setItem(checkoutDraftKey, JSON.stringify(draft));
     navigate('/checkout/review');
@@ -299,24 +296,12 @@ export default function Checkout() {
           ) : null}
 
           <div className="checkout-loyalty-box">
-            <strong>النقاط وأكواد الخصم</strong>
+            <strong>كود الخصم</strong>
             <input
               value={discountCode}
               onChange={(event) => setDiscountCode(event.target.value.toUpperCase())}
               placeholder="أدخل كود الخصم"
             />
-            {settings?.loyalty?.enabled !== false ? (
-              <label className="admin-toggle-pill checkout-points-toggle">
-                <input
-                  type="checkbox"
-                  checked={redeemLoyaltyPoints}
-                  onChange={(event) => setRedeemLoyaltyPoints(event.target.checked)}
-                  disabled={Number(profileUser?.loyaltyPoints || 0) < Number(settings?.loyalty?.minRedeemPoints || 0)}
-                />
-                استخدام نقاط الولاء
-                <span>({Number(profileUser?.loyaltyPoints || 0)} نقطة)</span>
-              </label>
-            ) : null}
           </div>
 
           <div className="checkout-payment-options">
@@ -342,9 +327,6 @@ export default function Checkout() {
           <h2>ملخص الطلب</h2>
           <p>المنتجات: {totals.itemsPrice} ج.م</p>
           <p>الشحن: {shippingPrice} ج.م</p>
-          {redeemLoyaltyPoints && estimatedTotals.loyaltyPointsDiscount > 0 ? (
-            <p>خصم النقاط: -{estimatedTotals.loyaltyPointsDiscount} ج.م</p>
-          ) : null}
           {discountCode ? <p className="muted">سيتم التحقق من كود الخصم عند تأكيد الطلب</p> : null}
           <strong>الإجمالي المتوقع: {estimatedTotals.totalPrice} ج.م</strong>
         </aside>

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import QRCode from 'qrcode';
 import {
-  Award,
   ClipboardList,
   Heart,
   LogOut,
@@ -12,8 +11,7 @@ import {
   ShieldCheck,
   ShoppingCart,
   TicketPercent,
-  UserRound,
-  Wallet
+  UserRound
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -21,9 +19,47 @@ export default function ProfilePage() {
   const { user, logout } = useAuth();
   const [qrImage, setQrImage] = useState('');
 
-  const displayName = user?.name || 'مستخدم الوكالة';
+  const displayName = user?.name || 'مستخدم الموقع';
   const initials = displayName.trim().slice(0, 2).toUpperCase();
   const activePrivateCodes = Array.isArray(user?.privateDiscountCodes) ? user.privateDiscountCodes : [];
+  const accountRole = user?.role === 'admin' ? 'مدير' : user?.role === 'employee' ? 'موظف' : 'عميل';
+
+  const quickStats = [
+    { label: 'حالة الحساب', value: accountRole, icon: ShieldCheck },
+    { label: 'أكواد الخصم', value: activePrivateCodes.length, icon: TicketPercent },
+    { label: 'بيانات التواصل', value: user?.phone ? 'مكتملة' : 'بحاجة للتحديث', icon: Phone }
+  ];
+
+  const infoCards = [
+    { label: 'الاسم', value: user?.name || 'غير متوفر', icon: UserRound },
+    { label: 'البريد الإلكتروني', value: user?.email || 'غير متوفر', icon: Mail },
+    { label: 'رقم الهاتف', value: user?.phone || 'غير متوفر', icon: Phone },
+    { label: 'نوع الحساب', value: accountRole, icon: ShieldCheck }
+  ];
+
+  const quickLinks = [
+    {
+      to: '/orders',
+      label: 'طلباتي',
+      note: 'راجع حالة الطلبات الحالية والسابقة',
+      icon: ClipboardList,
+      tone: 'warm'
+    },
+    {
+      to: '/wishlist',
+      label: 'المفضلة',
+      note: 'كل المنتجات التي حفظتها للرجوع لها',
+      icon: Heart,
+      tone: 'dark'
+    },
+    {
+      to: '/cart',
+      label: 'السلة',
+      note: 'أكمل العناصر الجاهزة للشراء بسرعة',
+      icon: ShoppingCart,
+      tone: 'gold'
+    }
+  ];
 
   useEffect(() => {
     const qrValue = user?.qrCodeValue || user?.customerCode || '';
@@ -45,113 +81,119 @@ export default function ProfilePage() {
   }, [user?.customerCode, user?.qrCodeValue]);
 
   return (
-    <main className="app-shell home-screen market-home account-page-shell">
-      <section className="panel-card account-hero profile-hero">
-        <div className="account-hero-main">
-          <div className="profile-avatar-large">
-            {user?.avatar ? <img src={user.avatar} alt={displayName} className="profile-avatar-large-image" /> : initials}
+    <main className="app-shell home-screen market-home account-page-shell profile-page-modern">
+      <section className="panel-card profile-hero-modern">
+        <div className="profile-hero-backdrop" />
+
+        <div className="profile-hero-layout">
+          <div className="profile-hero-main">
+            <div className="profile-avatar-modern">
+              {user?.avatar ? (
+                <img src={user.avatar} alt={displayName} className="profile-avatar-large-image" />
+              ) : (
+                <span>{initials}</span>
+              )}
+            </div>
+
+            <div className="profile-hero-copy">
+              <span className="market-pill">الملف الشخصي</span>
+              <h1>{displayName}</h1>
+              <p>لوحة حساب عصرية بتفاصيلك المهمة، كود العميل، وأسرع طريق لطلباتك ومفضلتك داخل تجربة المطعم الجديدة.</p>
+
+              <div className="profile-hero-tags">
+                <span>{accountRole}</span>
+                <span>{user?.customerCode || 'بدون كود عميل'}</span>
+                <span>{activePrivateCodes.length} كود خصم</span>
+              </div>
+            </div>
           </div>
-          <div className="account-copy">
-            <span className="market-pill">الملف الشخصي</span>
-            <h1>{displayName}</h1>
-            <p>لوحة شخصية مختصرة للوصول السريع إلى بياناتك وطلباتك ومفضلاتك ومحفظتك ونقاطك وكود العميل الخاص بك.</p>
+
+          <div className="profile-hero-actions-modern">
+            <Link to="/orders" className="primary-btn">طلباتي</Link>
+            <Link to="/wishlist" className="secondary-btn">المفضلة</Link>
+            <button type="button" className="secondary-btn profile-logout-btn" onClick={logout}>
+              <LogOut size={16} />
+              <span>تسجيل الخروج</span>
+            </button>
           </div>
         </div>
-        <div className="account-hero-actions">
-          <Link to="/orders" className="secondary-btn">طلباتي</Link>
-          <Link to="/wishlist" className="primary-btn">المفضلة</Link>
-          <button type="button" className="secondary-btn profile-logout-btn" onClick={logout}>
-            <LogOut size={16} />
-            <span>تسجيل الخروج</span>
-          </button>
+
+        <div className="profile-stat-band">
+          {quickStats.map((item) => {
+            const Icon = item.icon;
+            return (
+              <article key={item.label} className="profile-stat-tile">
+                <span className="profile-stat-icon"><Icon size={18} /></span>
+                <div>
+                  <small>{item.label}</small>
+                  <strong>{item.value}</strong>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
-      <section className="account-info-layout">
-        <section className="panel-card account-content-panel">
-          <div className="section-head compact">
-            <h2>معلومات الحساب</h2>
-            <span>بيانات أساسية</span>
-          </div>
+      <section className="profile-content-grid">
+        <section className="profile-main-column">
+          <section className="panel-card profile-section-card">
+            <div className="section-head compact">
+              <h2>معلومات الحساب</h2>
+              <span>بياناتك الأساسية</span>
+            </div>
 
-          <div className="account-info-grid">
-            <article className="account-info-card">
-              <span className="account-info-icon"><UserRound size={18} /></span>
-              <div>
-                <strong>الاسم</strong>
-                <p>{user?.name || 'غير متوفر'}</p>
-              </div>
-            </article>
-            <article className="account-info-card">
-              <span className="account-info-icon"><Mail size={18} /></span>
-              <div>
-                <strong>البريد الإلكتروني</strong>
-                <p>{user?.email || 'غير متوفر'}</p>
-              </div>
-            </article>
-            <article className="account-info-card">
-              <span className="account-info-icon"><Phone size={18} /></span>
-              <div>
-                <strong>رقم الهاتف</strong>
-                <p>{user?.phone || 'غير متوفر'}</p>
-              </div>
-            </article>
-            <article className="account-info-card">
-              <span className="account-info-icon"><ShieldCheck size={18} /></span>
-              <div>
-                <strong>نوع الحساب</strong>
-                <p>{user?.role === 'admin' ? 'مدير' : user?.role === 'employee' ? 'موظف' : 'عميل'}</p>
-              </div>
-            </article>
-            <article className="account-info-card">
-              <span className="account-info-icon"><Wallet size={18} /></span>
-              <div>
-                <strong>رصيد المحفظة</strong>
-                <p>{Number(user?.walletBalance || 0)} ج.م</p>
-              </div>
-            </article>
-            <article className="account-info-card">
-              <span className="account-info-icon"><Award size={18} /></span>
-              <div>
-                <strong>نقاط الولاء</strong>
-                <p>{Number(user?.loyaltyPoints || 0)} نقطة</p>
-              </div>
-            </article>
-          </div>
+            <div className="profile-info-grid-modern">
+              {infoCards.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <article key={item.label} className="profile-info-card-modern">
+                    <span className="profile-info-icon-modern"><Icon size={18} /></span>
+                    <div>
+                      <small>{item.label}</small>
+                      <strong>{item.value}</strong>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
 
-          <div className="profile-identity-grid">
-            <article className="profile-qr-card">
-              <div className="profile-qr-head">
+          <section className="profile-identity-grid-modern">
+            <article className="panel-card profile-qr-card-modern">
+              <div className="profile-block-head">
                 <div>
                   <strong>QR العميل</strong>
-                  <span>أظهر هذا الرمز عند الكاشير أو للدعم للوصول السريع إلى حسابك.</span>
+                  <span>أظهر الرمز عند الكاشير أو الدعم للوصول السريع إلى حسابك.</span>
                 </div>
-                <span className="account-info-icon"><QrCode size={18} /></span>
+                <span className="profile-block-icon"><QrCode size={18} /></span>
               </div>
 
-              <div className="profile-qr-box">
+              <div className="profile-qr-box-modern">
                 {qrImage ? <img src={qrImage} alt={`QR ${user?.customerCode || ''}`} /> : <div className="profile-qr-empty">QR</div>}
               </div>
 
-              <div className="profile-customer-code">
+              <div className="profile-code-ribbon">
                 <small>كود العميل</small>
                 <strong>{user?.customerCode || 'غير متوفر'}</strong>
               </div>
             </article>
 
-            <article className="profile-discount-card">
-              <div className="profile-qr-head">
+            <article className="panel-card profile-discount-card-modern">
+              <div className="profile-block-head">
                 <div>
                   <strong>أكوادك الخاصة</strong>
                   <span>أكواد خصم مرتبطة بحسابك ويمكن استخدامها أثناء الشراء.</span>
                 </div>
-                <span className="account-info-icon"><TicketPercent size={18} /></span>
+                <span className="profile-block-icon"><TicketPercent size={18} /></span>
               </div>
 
-              <div className="profile-private-codes">
+              <div className="profile-private-codes-modern">
                 {activePrivateCodes.length ? activePrivateCodes.map((item) => (
-                  <article key={item._id || item.code} className="profile-private-code-item">
-                    <strong>{item.code}</strong>
+                  <article key={item._id || item.code} className="profile-private-code-modern">
+                    <div className="profile-private-code-top">
+                      <strong>{item.code}</strong>
+                      <span>{item.type === 'percent' ? 'خصم نسبي' : 'خصم ثابت'}</span>
+                    </div>
                     <p>
                       {item.type === 'percent' ? `${Number(item.value || 0)}% خصم` : `${Number(item.value || 0)} ج.م خصم`}
                       {Number(item.minOrderAmount || 0) > 0 ? ` • حد أدنى ${Number(item.minOrderAmount || 0)} ج.م` : ''}
@@ -162,39 +204,31 @@ export default function ProfilePage() {
                 )}
               </div>
             </article>
-          </div>
+          </section>
         </section>
 
-        <aside className="panel-card quick-links-panel">
+        <aside className="panel-card profile-side-panel">
           <div className="section-head compact">
             <h2>وصول سريع</h2>
-            <span>اختصارات مهمة</span>
+            <span>اختصارات يومية</span>
           </div>
 
-          <div className="quick-links-list">
-            <Link to="/orders" className="quick-link-item">
-              <ClipboardList size={18} />
-              <div>
-                <strong>طلباتي</strong>
-                <span>راجع الطلبات السابقة والحالية</span>
-              </div>
-            </Link>
-            <Link to="/wishlist" className="quick-link-item">
-              <Heart size={18} />
-              <div>
-                <strong>المفضلة</strong>
-                <span>شاهد المنتجات التي قمت بحفظها</span>
-              </div>
-            </Link>
-            <Link to="/cart" className="quick-link-item">
-              <ShoppingCart size={18} />
-              <div>
-                <strong>السلة</strong>
-                <span>اكمل المنتجات الجاهزة للشراء</span>
-              </div>
-            </Link>
-            <button type="button" className="quick-link-item quick-link-button" onClick={logout}>
-              <LogOut size={18} />
+          <div className="profile-quick-links-modern">
+            {quickLinks.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link key={item.to} to={item.to} className={`profile-quick-link-modern tone-${item.tone}`}>
+                  <span className="profile-quick-link-icon"><Icon size={18} /></span>
+                  <div>
+                    <strong>{item.label}</strong>
+                    <span>{item.note}</span>
+                  </div>
+                </Link>
+              );
+            })}
+
+            <button type="button" className="profile-quick-link-modern tone-outline profile-quick-link-button" onClick={logout}>
+              <span className="profile-quick-link-icon"><LogOut size={18} /></span>
               <div>
                 <strong>تسجيل الخروج</strong>
                 <span>إنهاء الجلسة الحالية من الحساب</span>

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Award, Camera, QrCode, Save, Search, Store, Wallet, X } from 'lucide-react';
+import { ArrowRight, Camera, QrCode, Save, Search, Store, X } from 'lucide-react';
 import { BrowserQRCodeReader } from '@zxing/browser';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -287,8 +287,6 @@ export default function StorePurchasesPage() {
 
                 <div className="customer-care-meta-grid store-purchases-mobile-meta">
                   <div><QrCode size={16} /><span>{selectedCustomer.customerCode || 'بدون QR'}</span></div>
-                  <div><Wallet size={16} /><span>{Number(selectedCustomer.walletBalance || 0)} ج.م</span></div>
-                  <div><Award size={16} /><span>{Number(selectedCustomer.loyaltyPoints || 0)} نقطة</span></div>
                   <div><Store size={16} /><span>{Number(selectedCustomer.inStoreSpentTotal || 0)} ج.م مشتريات محل</span></div>
                 </div>
 
@@ -332,7 +330,7 @@ export default function StorePurchasesPage() {
                   />
                 </label>
 
-                <p className="muted">سيتم إضافة نفس قيمة المبلغ تقريبًا كنقاط ولاء لهذا العميل.</p>
+                <p className="muted">سيتم تسجيل قيمة الشراء على حساب العميل للمتابعة.</p>
 
                 <button type="submit" className="primary-btn store-purchases-mobile-submit" disabled={submitting}>
                   <Save size={16} />

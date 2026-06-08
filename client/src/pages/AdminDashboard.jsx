@@ -19,8 +19,6 @@ import {
   Truck,
   Undo2,
   Users,
-  Wallet,
-  Award,
   QrCode,
   X
 } from 'lucide-react';
@@ -50,8 +48,6 @@ const emptyProduct = {
   isDeal: false
 };
 
-const emptyWalletForm = { amount: '', note: '' };
-const emptyPointsForm = { amount: '', note: '' };
 const emptyStorePurchaseForm = { amount: '', note: '' };
 const emptyDiscountForm = {
   code: '',
@@ -156,14 +152,14 @@ const dashboardSections = [
   { id: 'products', label: 'المنتجات', icon: Package },
   { id: 'customer-care', label: 'إرضاء العميل', icon: Gift },
   { id: 'store-purchases', label: 'تسجيل الشراء من المحل', icon: Store },
-  { id: 'accounts', label: 'الحسابات', icon: Wallet },
+  { id: 'accounts', label: 'الحسابات', icon: CreditCard },
   { id: 'categories', label: 'الفئات والأقسام', icon: FolderTree },
   { id: 'store', label: 'إعدادات المتجر', icon: Store },
   { id: 'checkout', label: 'إعداد الطلب', icon: MapPin },
   { id: 'content', label: 'المحتوى والبنرات', icon: Palette },
   { id: 'policies', label: 'السياسات', icon: ShieldCheck },
   { id: 'payments', label: 'الدفع والتكامل', icon: CreditCard },
-  { id: 'loyalty', label: 'النقاط وأكواد الخصم', icon: Gift },
+  { id: 'loyalty', label: 'أكواد الخصم', icon: Gift },
   { id: 'orders', label: 'الطلبات', icon: ShoppingBag },
   { id: 'support', label: 'الدعم', icon: MessageCircle },
   { id: 'users', label: 'المستخدمون', icon: Users }
@@ -174,7 +170,7 @@ const permissionOptions = [
   { key: 'manage_orders', label: 'إدارة الطلبات' },
   { key: 'manage_support', label: 'إدارة الدعم' },
   { key: 'manage_store_purchases', label: 'تسجيل الشراء من المحل' },
-  { key: 'manage_loyalty', label: 'النقاط وأكواد الخصم' },
+  { key: 'manage_loyalty', label: 'أكواد الخصم' },
   { key: 'manage_customer_care', label: 'إرضاء العميل' }
 ];
 
@@ -210,8 +206,6 @@ const isOnOrAfter = (value, start) => {
   return Number.isFinite(time) && time >= start.getTime();
 };
 const customerCareTypeLabel = (value) => ({
-  wallet_credit: 'إضافة للمحفظة',
-  points_credit: 'إضافة نقاط',
   discount_code: 'كود خصم خاص',
   store_purchase: 'شراء من المحل'
 }[value] || value);
@@ -338,8 +332,6 @@ export default function AdminDashboard() {
   const [customerResults, setCustomerResults] = useState([]);
   const [customerLoading, setCustomerLoading] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
-  const [walletForm, setWalletForm] = useState(emptyWalletForm);
-  const [pointsForm, setPointsForm] = useState(emptyPointsForm);
   const [storePurchaseForm, setStorePurchaseForm] = useState(emptyStorePurchaseForm);
   const [discountForm, setDiscountForm] = useState(emptyDiscountForm);
   const [qrScannerOpen, setQrScannerOpen] = useState(false);
@@ -367,7 +359,6 @@ export default function AdminDashboard() {
   const canManageSupport = user?.role === 'admin' || user?.permissions?.includes('manage_support');
   const canManageCustomerCare = user?.role === 'admin' || user?.permissions?.includes('manage_customers') || user?.permissions?.includes('manage_customer_care');
   const canManageStorePurchases = user?.role === 'admin' || user?.permissions?.includes('manage_customers') || user?.permissions?.includes('manage_store_purchases');
-  const canManageLoyalty = user?.role === 'admin' || user?.permissions?.includes('manage_loyalty');
   const canSearchCustomerAccounts = canManageCustomerCare || canManageStorePurchases;
   const qrVideoRef = React.useRef(null);
   const qrReaderRef = React.useRef(null);
@@ -453,7 +444,6 @@ export default function AdminDashboard() {
         customerName: order.user?.name || '-',
         customerCode: order.user?.customerCode || '',
         amount: Number(order.totalPrice || 0),
-        points: Number(order.loyaltyPointsUsed || 0),
         note: order.discountCode ? `كود خصم: ${order.discountCode}` : '',
         code: order.discountCode || '',
         paymentLabel: order.isPaid ? 'مدفوع' : (order.paymentMethod || ''),
@@ -474,14 +464,13 @@ export default function AdminDashboard() {
         ? {
           id: `refund-${order._id}`,
           kind: 'refund',
-          label: 'استرجاع للمحفظة',
+          label: 'استرجاع طلب',
           customerName: order.user?.name || '-',
           customerCode: order.user?.customerCode || '',
           amount: Number(order.refundedAmount || 0),
-          points: 0,
           note: 'استرجاع مبلغ طلب ملغي',
           code: '',
-          paymentLabel: 'محفظة',
+          paymentLabel: 'مرتجع',
           statusLabel: 'مرتجع',
           createdAt: order.refundedAt || order.updatedAt || order.createdAt,
           searchable: [
@@ -514,12 +503,6 @@ export default function AdminDashboard() {
         storePurchases: careInRange
           .filter((entry) => entry.kind === 'store_purchase')
           .reduce((sum, entry) => sum + Number(entry.amount || 0), 0),
-        walletCredits: careInRange
-          .filter((entry) => entry.kind === 'wallet_credit')
-          .reduce((sum, entry) => sum + Number(entry.amount || 0), 0),
-        pointsCredits: careInRange
-          .filter((entry) => entry.kind === 'points_credit')
-          .reduce((sum, entry) => sum + Number(entry.points || 0), 0),
         discountsIssued: careInRange.filter((entry) => entry.kind === 'discount_code').length,
         refundsAmount: refundsInRange.reduce((sum, entry) => sum + Number(entry.amount || 0), 0),
         ordersCount: validOrders.length,
@@ -1400,8 +1383,6 @@ export default function AdminDashboard() {
         return next;
       });
       setSelectedCustomerId(updatedCustomer._id);
-      setWalletForm(emptyWalletForm);
-      setPointsForm(emptyPointsForm);
       setStorePurchaseForm(emptyStorePurchaseForm);
       setDiscountForm(emptyDiscountForm);
       toast.success(data.message || 'تم تنفيذ العملية');
@@ -1597,7 +1578,7 @@ export default function AdminDashboard() {
             <div className="admin-checkbox-row">
               <label className="admin-toggle-pill"><input type="checkbox" name="featured" checked={productForm.featured} onChange={changeProduct} /> منتج مميز</label>
               <label className="admin-toggle-pill"><input type="checkbox" name="isDeal" checked={productForm.isDeal} onChange={changeProduct} /> ضمن العروض</label>
-              <label className="admin-toggle-pill"><input type="checkbox" name="inAgencyCollection" checked={productForm.inAgencyCollection} onChange={changeProduct} /> أضف إلى منتجات الوكالة</label>
+              <label className="admin-toggle-pill"><input type="checkbox" name="inAgencyCollection" checked={productForm.inAgencyCollection} onChange={changeProduct} /> أضف إلى ترشيحات الخواجة</label>
             </div>
 
             <button className="primary-btn admin-submit-btn" type="submit">
@@ -1656,7 +1637,7 @@ export default function AdminDashboard() {
               <div className="admin-section-head">
                 <div>
                   <h2>قسم إرضاء العميل</h2>
-                  <p>ابحث عن العميل عبر QR أو رقم الهاتف أو الاسم أو البريد، ثم أضف له مزايا خاصة مثل المحفظة أو النقاط أو كود الخصم.</p>
+                  <p>ابحث عن العميل عبر QR أو رقم الهاتف أو الاسم أو البريد، ثم أضف له كود خصم خاص أو سجّل شراءً من المحل.</p>
                 </div>
               </div>
 
@@ -1717,8 +1698,6 @@ export default function AdminDashboard() {
 
                           <div className="customer-care-meta-grid">
                             <div><QrCode size={16} /><span>{selectedCustomer.customerCode || 'بدون QR'}</span></div>
-                            <div><Wallet size={16} /><span>{Number(selectedCustomer.walletBalance || 0)} ج.م</span></div>
-                            <div><Award size={16} /><span>{Number(selectedCustomer.loyaltyPoints || 0)} نقطة</span></div>
                             <div><Store size={16} /><span>{Number(selectedCustomer.inStoreSpentTotal || 0)} ج.م مشتريات محل</span></div>
                           </div>
                         </article>
@@ -1742,38 +1721,6 @@ export default function AdminDashboard() {
                       </div>
 
                       <div className="customer-care-actions-grid">
-                        <form
-                          className="admin-setting-card customer-care-action-card"
-                          onSubmit={(event) => {
-                            event.preventDefault();
-                            applyCustomerAction('wallet_credit', walletForm);
-                          }}
-                        >
-                          <div className="customer-care-card-head">
-                            <Wallet size={18} />
-                            <strong>إضافة رصيد للمحفظة</strong>
-                          </div>
-                          <Field label="المبلغ"><input type="number" value={walletForm.amount} onChange={(event) => setWalletForm((current) => ({ ...current, amount: event.target.value }))} placeholder="0" /></Field>
-                          <Field label="ملاحظة"><input value={walletForm.note} onChange={(event) => setWalletForm((current) => ({ ...current, note: event.target.value }))} placeholder="مثال: تعويض أو هدية" /></Field>
-                          <button type="submit" className="primary-btn admin-inline-save-btn"><Save size={16} /><span>إضافة للمحفظة</span></button>
-                        </form>
-
-                        <form
-                          className="admin-setting-card customer-care-action-card"
-                          onSubmit={(event) => {
-                            event.preventDefault();
-                            applyCustomerAction('points_credit', { amount: pointsForm.amount, note: pointsForm.note });
-                          }}
-                        >
-                          <div className="customer-care-card-head">
-                            <Award size={18} />
-                            <strong>إضافة نقاط ولاء</strong>
-                          </div>
-                          <Field label="عدد النقاط"><input type="number" value={pointsForm.amount} onChange={(event) => setPointsForm((current) => ({ ...current, amount: event.target.value }))} placeholder="0" /></Field>
-                          <Field label="ملاحظة"><input value={pointsForm.note} onChange={(event) => setPointsForm((current) => ({ ...current, note: event.target.value }))} placeholder="مثال: رضا عميل أو ترقية" /></Field>
-                          <button type="submit" className="primary-btn admin-inline-save-btn"><Save size={16} /><span>إضافة النقاط</span></button>
-                        </form>
-
                         <form
                           className="admin-setting-card customer-care-action-card wide"
                           onSubmit={(event) => {
@@ -1904,8 +1851,6 @@ export default function AdminDashboard() {
 
                           <div className="customer-care-meta-grid">
                             <div><QrCode size={16} /><span>{selectedCustomer.customerCode || 'بدون QR'}</span></div>
-                            <div><Wallet size={16} /><span>{Number(selectedCustomer.walletBalance || 0)} ج.م</span></div>
-                            <div><Award size={16} /><span>{Number(selectedCustomer.loyaltyPoints || 0)} نقطة</span></div>
                             <div><Store size={16} /><span>{Number(selectedCustomer.inStoreSpentTotal || 0)} ج.م مشتريات محل</span></div>
                           </div>
                         </article>
@@ -1917,7 +1862,7 @@ export default function AdminDashboard() {
                           </div>
                           <Field label="مبلغ الشراء"><input type="number" value={storePurchaseForm.amount} onChange={(event) => setStorePurchaseForm((current) => ({ ...current, amount: event.target.value }))} placeholder="0" /></Field>
                           <Field label="ملاحظة"><input value={storePurchaseForm.note} onChange={(event) => setStorePurchaseForm((current) => ({ ...current, note: event.target.value }))} placeholder="مثال: فاتورة من الفرع" /></Field>
-                          <p className="muted">سيتم إضافة نفس قيمة المبلغ كنقاط ولاء تقريبًا بعد التقريب لرقم صحيح.</p>
+                          <p className="muted">سيتم تسجيل قيمة الشراء على حساب العميل للمتابعة.</p>
                           <button
                             type="button"
                             className="primary-btn admin-inline-save-btn"
@@ -2345,56 +2290,14 @@ export default function AdminDashboard() {
         <section className={`admin-dashboard-panel${activeSection === 'loyalty' ? ' active' : ''}`}>
           <div className="admin-section-head">
             <div>
-              <h2>النقاط وأكواد الخصم</h2>
-              <p>تحكم في قيمة نقاط الولاء، معدل احتسابها، وأنشئ أكواد خصم فعالة للموقع.</p>
+              <h2>أكواد الخصم</h2>
+              <p>أنشئ أكواد خصم فعالة للموقع وأدر حدود استخدامها.</p>
             </div>
             <Gift size={18} />
           </div>
-          <SearchBox value={searchTerms.loyalty} onChange={(event) => changeSearch('loyalty', event.target.value)} placeholder="ابحث عن كود خصم أو إعداد نقاط..." />
+          <SearchBox value={searchTerms.loyalty} onChange={(event) => changeSearch('loyalty', event.target.value)} placeholder="ابحث عن كود خصم..." />
           <form className="admin-dashboard-form" onSubmit={saveSettings}>
             <div className="admin-settings-cluster">
-              <article className="admin-setting-card">
-                <div className="admin-setting-card-head"><Gift size={18} /><strong>إعدادات نقاط الولاء</strong></div>
-                <div className="admin-dashboard-form-grid">
-                  <Field label="كل كام جنيه = نقطة واحدة">
-                    <input
-                      type="number"
-                      min="1"
-                      value={settingsForm.loyalty.pointsPerPoint}
-                      onChange={(event) => changeSettingsField(['loyalty', 'pointsPerPoint'], Number(event.target.value))}
-                    />
-                  </Field>
-                  <Field label="قيمة النقطة بالجنيه">
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={settingsForm.loyalty.pointValue}
-                      onChange={(event) => changeSettingsField(['loyalty', 'pointValue'], Number(event.target.value))}
-                    />
-                  </Field>
-                  <Field label="أقل عدد نقاط للاستبدال">
-                    <input
-                      type="number"
-                      min="0"
-                      value={settingsForm.loyalty.minRedeemPoints}
-                      onChange={(event) => changeSettingsField(['loyalty', 'minRedeemPoints'], Number(event.target.value))}
-                    />
-                  </Field>
-                </div>
-                <div className="admin-toggle-row">
-                  <label className="admin-toggle-pill">
-                    <input
-                      type="checkbox"
-                      checked={settingsForm.loyalty.enabled}
-                      onChange={(event) => changeSettingsField(['loyalty', 'enabled'], event.target.checked)}
-                    />
-                    تفعيل نقاط الولاء
-                  </label>
-                </div>
-                <SaveSectionButton saving={settingsSaving} label="حفظ إعدادات النقاط" />
-              </article>
-
               <article className="admin-setting-card">
                 <div className="admin-setting-card-head"><Tag size={18} /><strong>أكواد الخصم</strong></div>
                 <button type="button" className="secondary-btn" onClick={addDiscountCode}>إضافة كود خصم</button>
@@ -2484,9 +2387,9 @@ export default function AdminDashboard() {
           <div className="admin-section-head">
             <div>
               <h2>قسم الحسابات</h2>
-              <p>تابع معاملات اليوم والأسبوع والشهر من الطلبات وشراء المحل والمحفظة والنقاط والمرتجعات.</p>
+              <p>تابع معاملات اليوم والأسبوع والشهر من الطلبات وشراء المحل والمرتجعات وأكواد الخصم.</p>
             </div>
-            <Wallet size={18} />
+            <CreditCard size={18} />
           </div>
           <SearchBox value={searchTerms.accounts} onChange={(event) => changeSearch('accounts', event.target.value)} placeholder="ابحث في المعاملات بالعميل أو النوع أو الملاحظة أو الكود..." />
 
@@ -2494,7 +2397,7 @@ export default function AdminDashboard() {
             {accountingData.summaries.map((period) => (
               <article key={period.key} className="admin-setting-card accounts-period-card">
                 <div className="admin-setting-card-head">
-                  <Wallet size={18} />
+                  <CreditCard size={18} />
                   <strong>{period.label}</strong>
                 </div>
                 <p className="muted">{period.note}</p>
@@ -2502,9 +2405,7 @@ export default function AdminDashboard() {
                   <div className="accounts-kpi-card"><span>إيراد الطلبات</span><strong>{period.values.ordersRevenue.toFixed(2)} ج.م</strong></div>
                   <div className="accounts-kpi-card"><span>الدفع الأونلاين</span><strong>{period.values.onlineRevenue.toFixed(2)} ج.م</strong></div>
                   <div className="accounts-kpi-card"><span>شراء المحل</span><strong>{period.values.storePurchases.toFixed(2)} ج.م</strong></div>
-                  <div className="accounts-kpi-card"><span>إضافات المحفظة</span><strong>{period.values.walletCredits.toFixed(2)} ج.م</strong></div>
                   <div className="accounts-kpi-card"><span>المرتجعات</span><strong>{period.values.refundsAmount.toFixed(2)} ج.م</strong></div>
-                  <div className="accounts-kpi-card"><span>النقاط المضافة</span><strong>{period.values.pointsCredits} نقطة</strong></div>
                   <div className="accounts-kpi-card"><span>أكواد الخصم</span><strong>{period.values.discountsIssued}</strong></div>
                   <div className="accounts-kpi-card"><span>عدد المعاملات</span><strong>{period.values.transactionsCount}</strong></div>
                 </div>
@@ -2531,7 +2432,7 @@ export default function AdminDashboard() {
                       <td>{new Date(entry.createdAt).toLocaleString('ar-EG')}</td>
                       <td>{entry.label}</td>
                       <td>{entry.customerName || '-'}</td>
-                      <td>{entry.amount ? `${Number(entry.amount || 0).toFixed(2)} ج.م` : `${Number(entry.points || 0)} نقطة`}</td>
+                      <td>{Number(entry.amount || 0).toFixed(2)} ج.م</td>
                       <td>{[entry.paymentLabel, entry.statusLabel, entry.code].filter(Boolean).join(' • ') || '-'}</td>
                       <td>{entry.note || '-'}</td>
                     </tr>
@@ -2661,8 +2562,6 @@ export default function AdminDashboard() {
                     <th>النوع</th>
                     <th>الصلاحيات</th>
                     <th>التسجيل</th>
-                    <th>المحفظة</th>
-                    <th>النقاط</th>
                     <th>تاريخ الإنشاء</th>
                   </tr>
                 </thead>
@@ -2694,8 +2593,6 @@ export default function AdminDashboard() {
                           : '-'}
                       </td>
                       <td>{member.hasManualPassword ? 'يدوي' : member.googleId ? 'Google' : '-'}</td>
-                      <td>{Number(member.walletBalance || 0)} ج.م</td>
-                      <td>{Number(member.loyaltyPoints || 0)} نقطة</td>
                       <td>{new Date(member.createdAt).toLocaleDateString('ar-EG')}</td>
                     </tr>
                   ))}

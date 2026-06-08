@@ -9,8 +9,7 @@ import {
   MessageCircle,
   PackageCheck,
   ShoppingBag,
-  Wallet,
-  XCircle,
+  XCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/api.js';
@@ -88,7 +87,7 @@ export default function Orders() {
   const stats = useMemo(() => ({
     count: orders.length,
     latest: orders[0]?.status || 'لا يوجد',
-    total: orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0),
+    total: orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0)
   }), [orders]);
 
   const getRemainingCancelTime = (order) => {
@@ -178,22 +177,20 @@ export default function Orders() {
               return (
                 <article className="order-showcase-card" key={order._id}>
                   <div className={`order-progress-track${progress.cancelled ? ' is-cancelled' : ''}`}>
-                    {progress.steps.map((step, index) => (
-                      (() => {
-                        const StepIcon = ORDER_STATUS_ICONS[step.label] || Package;
-                        return (
-                      <div
-                        key={`${order._id}-${step.label}`}
-                        className={`order-progress-step is-${step.state}`}
-                      >
-                        <div className="order-progress-marker">
-                          <StepIcon size={16} />
+                    {progress.steps.map((step) => {
+                      const StepIcon = ORDER_STATUS_ICONS[step.label] || Package;
+                      return (
+                        <div
+                          key={`${order._id}-${step.label}`}
+                          className={`order-progress-step is-${step.state}`}
+                        >
+                          <div className="order-progress-marker">
+                            <StepIcon size={16} />
+                          </div>
+                          <strong>{step.label}</strong>
                         </div>
-                        <strong>{step.label}</strong>
-                      </div>
-                        );
-                      })()
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <div className="order-showcase-top">
@@ -222,13 +219,6 @@ export default function Orders() {
                       </div>
                     </div>
                   </div>
-
-                  {order.refundedToWallet ? (
-                    <div className="order-wallet-note">
-                      <Wallet size={16} />
-                      <span>تم تحويل {order.refundedAmount} ج.م إلى المحفظة.</span>
-                    </div>
-                  ) : null}
 
                   <div className="order-actions-row">
                     {canCancel ? (

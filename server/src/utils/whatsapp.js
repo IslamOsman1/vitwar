@@ -252,7 +252,7 @@ export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, s
   const textMessageLines = [
     `مرحبًا ${customer?.name || shippingAddress?.fullName || 'عميلنا العزيز'}`,
     '',
-    `تم استلام طلبك رقم ${order._id} من Al Wekala.`,
+    `تم استلام طلبك رقم ${order._id} من Burger El Khawaga.`,
     '',
     `إجمالي الطلب: ${Number(order.totalPrice || 0).toFixed(2)} ج.م`,
     `طريقة الدفع: ${order.paymentMethod || 'غير محدد'}`,
@@ -265,7 +265,7 @@ export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, s
     textMessageLines.push('');
   }
 
-  textMessageLines.push('شكرًا لاختيارك Al Wekala.');
+  textMessageLines.push('شكرًا لاختيارك Burger El Khawaga.');
 
   const templateVariables = {
     1: String(customer?.name || shippingAddress?.fullName || 'عميلنا العزيز'),

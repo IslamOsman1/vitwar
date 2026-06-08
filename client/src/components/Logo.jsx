@@ -1,11 +1,11 @@
 import React from 'react';
-import logo from '../assets/logo.png';
+import logo from '../assets/image.png';
 
 export default function Logo({ className = '', compact = false }) {
   return (
     <img
       src={logo}
-      alt="Al Wekala Market"
+      alt="Burger El Khawaga"
       className={`brand-logo ${compact ? 'compact' : 'full'} ${className}`.trim()}
     />
   );
