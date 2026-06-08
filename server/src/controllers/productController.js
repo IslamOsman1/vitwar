@@ -43,11 +43,12 @@ export const getCategories = asyncHandler(async (_req, res) => {
 });
 
 export const createProduct = asyncHandler(async (req, res) => {
+  const hasCountInStock = String(req.body.countInStock ?? '').trim() !== '';
   const data = {
     ...req.body,
     price: Number(req.body.price || 0),
     oldPrice: Number(req.body.oldPrice || 0),
-    countInStock: Number(req.body.countInStock || 0),
+    countInStock: hasCountInStock ? Number(req.body.countInStock) : null,
     barcode: String(req.body.barcode || '').trim() || generateProductBarcode(),
     measurementValue: Number(req.body.measurementValue || 0),
     measurementUnit: String(req.body.measurementUnit || '').trim(),
@@ -73,12 +74,13 @@ export const createProduct = asyncHandler(async (req, res) => {
 export const updateProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (!product) return res.status(404).json({ message: 'المنتج غير موجود' });
+  const hasCountInStock = String(req.body.countInStock ?? '').trim() !== '';
 
   Object.assign(product, {
     ...req.body,
     price: Number(req.body.price || 0),
     oldPrice: Number(req.body.oldPrice || 0),
-    countInStock: Number(req.body.countInStock || 0),
+    countInStock: hasCountInStock ? Number(req.body.countInStock) : null,
     barcode: String(req.body.barcode || '').trim(),
     measurementValue: Number(req.body.measurementValue || 0),
     measurementUnit: String(req.body.measurementUnit || '').trim(),

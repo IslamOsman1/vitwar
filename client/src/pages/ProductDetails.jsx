@@ -14,6 +14,9 @@ const formatMeasurement = (product) => {
   return value > 0 && unit ? `${value} ${unit}` : '';
 };
 
+const hasTrackedStock = (product) => product?.countInStock !== null && product?.countInStock !== undefined && product?.countInStock !== '';
+const isOutOfStock = (product) => hasTrackedStock(product) && Number(product.countInStock) < 1;
+
 export default function ProductDetails() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -97,6 +100,8 @@ export default function ProductDetails() {
 
   const favorite = isFavorite(product._id);
   const measurementLabel = formatMeasurement(product);
+  const trackedStock = hasTrackedStock(product);
+  const outOfStock = isOutOfStock(product);
   const reviews = Array.isArray(product.reviews)
     ? [...product.reviews].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
     : [];
@@ -156,7 +161,7 @@ export default function ProductDetails() {
 
           <div className="big-price">{product.price} ج.م <small>/ {product.unit}</small></div>
           {measurementLabel ? <p className="muted">الحجم: {measurementLabel}</p> : null}
-          <p className="muted">المخزون: {product.countInStock}</p>
+          <p className="muted">المخزون: {trackedStock ? product.countInStock : 'غير محدد'}</p>
 
           {product.barcode ? (
             <div className="product-detail-qr-card">
@@ -177,9 +182,9 @@ export default function ProductDetails() {
             </div>
           ) : null}
 
-          <input type="number" min="1" max={product.countInStock} value={qty} onChange={(event) => setQty(event.target.value)} />
+          <input type="number" min="1" max={trackedStock ? product.countInStock : undefined} value={qty} onChange={(event) => setQty(event.target.value)} />
           <div className="detail-actions">
-            <button className="primary-btn" onClick={() => addToCart(product, Number(qty))}>أضف للسلة</button>
+            <button className="primary-btn" onClick={() => addToCart(product, Number(qty))} disabled={outOfStock}>أضف للسلة</button>
             <button type="button" className={`wishlist-detail-btn${favorite ? ' active' : ''}`} onClick={() => toggleWishlist(product)}>
               <Heart size={18} /> {favorite ? 'في المفضلة' : 'أضف للمفضلة'}
             </button>

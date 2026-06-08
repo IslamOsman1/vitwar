@@ -19,7 +19,7 @@ const productSchema = new mongoose.Schema({
   unit: { type: String, default: 'وجبة' },
   measurementValue: { type: Number, default: 0, min: 0 },
   measurementUnit: { type: String, default: '', trim: true },
-  countInStock: { type: Number, min: 0, default: 0 },
+  countInStock: { type: Number, min: 0, default: null },
   featured: { type: Boolean, default: false },
   inAgencyCollection: { type: Boolean, default: false, index: true },
   isDeal: { type: Boolean, default: false },

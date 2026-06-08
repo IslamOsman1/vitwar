@@ -10,6 +10,9 @@ const formatMeasurement = (product) => {
   return value > 0 && unit ? `${value} ${unit}` : product.unit;
 };
 
+const hasTrackedStock = (product) => product?.countInStock !== null && product?.countInStock !== undefined && product?.countInStock !== '';
+const isOutOfStock = (product) => hasTrackedStock(product) && Number(product.countInStock) < 1;
+
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
   const { isFavorite, toggleWishlist } = useWishlist();
@@ -24,7 +27,7 @@ export default function ProductCard({ product }) {
     <div className="product-body">
       <div className="product-topline">
         <span className="category">{product.category}</span>
-        <span className="stock-state">{product.countInStock > 0 ? 'متوفر' : 'نفد'}</span>
+        <span className="stock-state">{isOutOfStock(product) ? 'نفد' : 'متوفر'}</span>
       </div>
       <Link to={`/product/${product._id}`}><h3>{product.name}</h3></Link>
       <p>{formatMeasurement(product)}</p>
@@ -42,7 +45,7 @@ export default function ProductCard({ product }) {
         >
           <Heart size={17} />
         </button>
-        <button className="add-mini" onClick={() => addToCart(product)} disabled={product.countInStock < 1}>
+        <button className="add-mini" onClick={() => addToCart(product)} disabled={isOutOfStock(product)}>
           <Plus size={18} /> أضف للسلة
         </button>
       </div>
