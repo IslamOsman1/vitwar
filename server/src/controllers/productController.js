@@ -53,8 +53,14 @@ export const createProduct = asyncHandler(async (req, res) => {
 
   let image = { url: '', publicId: '' };
   if (req.file) {
-    const result = await uploadToCloudinary(req.file.buffer);
-    image = { url: result.secure_url, publicId: result.public_id };
+    try {
+      const result = await uploadToCloudinary(req.file.buffer);
+      image = { url: result.secure_url, publicId: result.public_id };
+    } catch (error) {
+      error.statusCode = error.statusCode || 500;
+      error.message = error.message || 'تعذر رفع صورة المنتج';
+      throw error;
+    }
   }
 
   const product = await Product.create({ ...data, image });
@@ -75,8 +81,14 @@ export const updateProduct = asyncHandler(async (req, res) => {
 
   if (req.file) {
     if (product.image?.publicId) await cloudinary.uploader.destroy(product.image.publicId);
-    const result = await uploadToCloudinary(req.file.buffer);
-    product.image = { url: result.secure_url, publicId: result.public_id };
+    try {
+      const result = await uploadToCloudinary(req.file.buffer);
+      product.image = { url: result.secure_url, publicId: result.public_id };
+    } catch (error) {
+      error.statusCode = error.statusCode || 500;
+      error.message = error.message || 'تعذر رفع صورة المنتج';
+      throw error;
+    }
   }
 
   await product.save();
