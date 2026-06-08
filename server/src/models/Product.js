@@ -16,7 +16,7 @@ const productSchema = new mongoose.Schema({
   subcategory: { type: String, default: '', index: true },
   brand: { type: String, default: 'Burger El Khawaga' },
   barcode: { type: String, default: '', trim: true, index: true },
-  unit: { type: String, default: 'قطعة' },
+  unit: { type: String, default: 'وجبة' },
   measurementValue: { type: Number, default: 0, min: 0 },
   measurementUnit: { type: String, default: '', trim: true },
   countInStock: { type: Number, required: true, min: 0, default: 0 },

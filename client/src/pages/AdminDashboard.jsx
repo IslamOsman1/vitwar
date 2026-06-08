@@ -39,7 +39,7 @@ const emptyProduct = {
   category: '',
   subcategory: '',
   barcode: '',
-  unit: 'قطعة',
+  unit: 'وجبة',
   measurementValue: '',
   measurementUnit: '',
   countInStock: '',
@@ -1513,15 +1513,15 @@ export default function AdminDashboard() {
           <div className="admin-section-head">
             <div>
               <h2>{editing ? 'تعديل منتج' : 'إضافة منتج جديد'}</h2>
-              <p>أنشئ منتجًا جديدًا أو عدّل المنتج الحالي مع ربطه بالفئة والقسم المناسبين.</p>
+              <p>أضف وجبة أو ساندوتش أو إضافة جديدة، ثم اربطها بالفئة والقسم المناسبين داخل منيو المطعم.</p>
             </div>
           </div>
-          <SearchBox value={searchTerms.products} onChange={(event) => changeSearch('products', event.target.value)} placeholder="ابحث عن منتج بالاسم أو الفئة..." />
+          <SearchBox value={searchTerms.products} onChange={(event) => changeSearch('products', event.target.value)} placeholder="ابحث عن وجبة أو ساندوتش أو فئة..." />
 
           <form onSubmit={submitProduct} className="admin-dashboard-form">
             <div className="admin-dashboard-form-grid">
-              <Field label="اسم المنتج"><input name="name" value={productForm.name} onChange={changeProduct} placeholder="مثال: جبنة قريش" required /></Field>
-              <Field label="الوصف"><input name="description" value={productForm.description} onChange={changeProduct} placeholder="وصف مختصر" /></Field>
+              <Field label="اسم المنتج"><input name="name" value={productForm.name} onChange={changeProduct} placeholder="مثال: سماش برجر دوبل" required /></Field>
+              <Field label="الوصف"><input name="description" value={productForm.description} onChange={changeProduct} placeholder="مثال: قطعتا لحم مع جبنة وصوص الخواجة" /></Field>
               <Field label="السعر"><input name="price" value={productForm.price} onChange={changeProduct} type="number" placeholder="0" required /></Field>
               <Field label="السعر قبل الخصم"><input name="oldPrice" value={productForm.oldPrice} onChange={changeProduct} type="number" placeholder="0" /></Field>
               <Field label="الفئة الرئيسية">
@@ -1537,29 +1537,30 @@ export default function AdminDashboard() {
                 </select>
               </Field>
 
-              <Field label="الوحدة"><input name="unit" value={productForm.unit} onChange={changeProduct} placeholder="قطعة / كجم / عبوة" /></Field>
-              <Field label="الوزن أو السعة"><input name="measurementValue" value={productForm.measurementValue || ''} onChange={changeProduct} type="number" min="0" step="0.01" placeholder="500 أو 1.5" /></Field>
-              <Field label="نوع القياس">
+              <Field label="نوع التقديم"><input name="unit" value={productForm.unit} onChange={changeProduct} placeholder="وجبة / ساندوتش / بوكس / صوص" /></Field>
+              <Field label="الحجم أو عدد القطع"><input name="measurementValue" value={productForm.measurementValue || ''} onChange={changeProduct} type="number" min="0" step="0.01" placeholder="مثال: 4 أو 250" /></Field>
+              <Field label="وحدة الحجم / العدد">
                 <select name="measurementUnit" value={productForm.measurementUnit || ''} onChange={changeProduct}>
                   <option value="">بدون</option>
+                  <option value="قطعة">قطعة</option>
                   <option value="جم">جم</option>
                   <option value="كجم">كجم</option>
                   <option value="مل">مل</option>
                   <option value="لتر">لتر</option>
                 </select>
               </Field>
-              <Field label="المخزون"><input name="countInStock" value={productForm.countInStock} onChange={changeProduct} type="number" placeholder="0" /></Field>
-              <Field label="صورة المنتج"><input type="file" accept="image/*" onChange={(event) => setImage(event.target.files?.[0] || null)} /></Field>
+              <Field label="الكمية المتاحة"><input name="countInStock" value={productForm.countInStock} onChange={changeProduct} type="number" placeholder="0" /></Field>
+              <Field label="صورة الوجبة / المنتج"><input type="file" accept="image/*" onChange={(event) => setImage(event.target.files?.[0] || null)} /></Field>
             </div>
 
-            <Field label="QR / Barcode المنتج">
+            <Field label="كود المنتج / QR">
               <div className="admin-qr-field">
                 <input
                   name="barcode"
                   value={productForm.barcode}
                   onChange={changeProduct}
                   onBlur={ensureProductBarcode}
-                  placeholder="سيتم توليده تلقائيًا إذا تُرك فارغًا"
+                  placeholder="مثال: BRG-SMASH-01 أو اتركه فارغًا للتوليد التلقائي"
                 />
                 <button type="button" className="secondary-btn" onClick={ensureProductBarcode}>توليد QR</button>
               </div>
@@ -1567,8 +1568,8 @@ export default function AdminDashboard() {
 
             <div className="admin-product-qr-preview">
               <div className="admin-product-qr-copy">
-                <strong>معاينة QR المنتج</strong>
-                <span>{productForm.barcode ? `سيُحفظ هذا الكود مع المنتج: ${productForm.barcode}` : 'اكتب كود المنتج أو اضغط توليد QR لإنشاء كود تلقائي.'}</span>
+                <strong>معاينة كود المنتج</strong>
+                <span>{productForm.barcode ? `سيُحفظ هذا الكود مع الوجبة أو المنتج: ${productForm.barcode}` : 'اكتب كودًا داخليًا أو اضغط توليد QR لإنشاء كود تلقائي.'}</span>
               </div>
               <div className="admin-product-qr-box">
                 {productQrImage ? <img src={productQrImage} alt={`QR ${productForm.barcode}`} /> : <div className="admin-product-qr-empty">QR</div>}
@@ -1576,7 +1577,7 @@ export default function AdminDashboard() {
             </div>
 
             <div className="admin-checkbox-row">
-              <label className="admin-toggle-pill"><input type="checkbox" name="featured" checked={productForm.featured} onChange={changeProduct} /> منتج مميز</label>
+              <label className="admin-toggle-pill"><input type="checkbox" name="featured" checked={productForm.featured} onChange={changeProduct} /> وجبة مميزة</label>
               <label className="admin-toggle-pill"><input type="checkbox" name="isDeal" checked={productForm.isDeal} onChange={changeProduct} /> ضمن العروض</label>
               <label className="admin-toggle-pill"><input type="checkbox" name="inAgencyCollection" checked={productForm.inAgencyCollection} onChange={changeProduct} /> أضف إلى ترشيحات الخواجة</label>
             </div>
@@ -1595,10 +1596,10 @@ export default function AdminDashboard() {
                     <th>المنتج</th>
                     <th>الفئة</th>
                     <th>القسم</th>
-                    <th>الوزن / السعة</th>
-                    <th>QR</th>
+                    <th>الحجم / العدد</th>
+                    <th>الكود</th>
                     <th>السعر</th>
-                    <th>المخزون</th>
+                    <th>المتاح</th>
                     <th>الإجراءات</th>
                   </tr>
                 </thead>
