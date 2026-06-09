@@ -20,7 +20,10 @@ const buildOrderItems = async (orderItems) => {
   return orderItems.map((item) => {
     const product = products.find((entry) => entry._id.toString() === item.product);
     if (!product) throw new Error('منتج غير موجود');
-    if (product.countInStock < item.qty) throw new Error(`الكمية غير متاحة: ${product.name}`);
+    const hasTrackedStock = product.countInStock !== null && product.countInStock !== undefined;
+    if (hasTrackedStock && Number(product.countInStock) < Number(item.qty || 0)) {
+      throw new Error(`الكمية غير متاحة: ${product.name}`);
+    }
 
     return {
       product: product._id,
