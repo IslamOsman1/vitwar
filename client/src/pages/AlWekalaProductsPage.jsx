@@ -130,7 +130,7 @@ export default function AlWekalaProductsPage() {
             {section.items.map((product) => <ProductCard key={`agency-${section.title}-${product._id}`} product={product} />)}
           </div>
         </section>)}
-      </div> : <div className="empty-state">
+      </div> : <div className="empty-state compact-empty-state">
         <p>لا توجد منتجات متاحة حاليًا في هذا القسم.</p>
         <Link to="/admin" className="primary-btn">اذهب إلى لوحة التحكم</Link>
       </div>}

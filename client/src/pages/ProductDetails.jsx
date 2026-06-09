@@ -141,7 +141,7 @@ export default function ProductDetails() {
     <div className="container page">
       <div className="product-details">
         <div className="detail-image">
-          {product.image?.url ? <img src={product.image.url} alt={product.name} /> : <span>{product.category}</span>}
+          {product.image?.url ? <img src={product.image.url} alt={product.name} loading="eager" decoding="async" fetchPriority="high" sizes="(max-width: 768px) 100vw, 48vw" /> : <span>{product.category}</span>}
         </div>
 
         <div className="detail-info">
@@ -177,7 +177,7 @@ export default function ProductDetails() {
                 </button>
               </div>
               <div className="product-detail-qr-box">
-                {qrImage ? <img src={qrImage} alt={`QR ${product.barcode}`} /> : <div className="admin-product-qr-empty">QR</div>}
+                {qrImage ? <img src={qrImage} alt={`QR ${product.barcode}`} loading="lazy" decoding="async" /> : <div className="admin-product-qr-empty">QR</div>}
               </div>
             </div>
           ) : null}

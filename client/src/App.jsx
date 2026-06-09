@@ -57,12 +57,21 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setBootSplashVisible(false), 1500);
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    const isSmallScreen = window.matchMedia?.('(max-width: 480px)')?.matches;
+    const splashDuration = prefersReducedMotion || isSmallScreen ? 800 : 1500;
+    const timer = window.setTimeout(() => setBootSplashVisible(false), splashDuration);
     return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
     if (firstPathRef.current === location.pathname) return;
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    const isSmallScreen = window.matchMedia?.('(max-width: 480px)')?.matches;
+    if (prefersReducedMotion || isSmallScreen) {
+      setRouteSplashVisible(false);
+      return undefined;
+    }
     setRouteSplashVisible(true);
     const timer = window.setTimeout(() => setRouteSplashVisible(false), 420);
     return () => window.clearTimeout(timer);
@@ -73,7 +82,9 @@ export default function App() {
   }, [location.pathname]);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    const isSmallScreen = window.matchMedia?.('(max-width: 480px)')?.matches;
+    window.scrollTo({ top: 0, left: 0, behavior: prefersReducedMotion || isSmallScreen ? 'auto' : 'smooth' });
   }, [location.pathname]);
 
   useEffect(() => {

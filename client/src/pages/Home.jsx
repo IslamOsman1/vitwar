@@ -142,8 +142,18 @@ export default function Home() {
       <Link
         to={slide.link || '/offers'}
         className="promo-slide-frame"
-        style={slide.image ? { backgroundImage: `linear-gradient(180deg, rgba(9,9,9,.16), rgba(9,9,9,.56)), url(${slide.image})` } : undefined}
       >
+        {slide.image ? (
+          <img
+            src={slide.image}
+            alt={slide.title || slide.tag || 'Burger El Khawaga'}
+            className="promo-slide-image"
+            loading={activeSlide === 0 ? 'eager' : 'lazy'}
+            decoding="async"
+            fetchPriority={activeSlide === 0 ? 'high' : 'auto'}
+            sizes="(max-width: 480px) 100vw, (max-width: 768px) 92vw, 1180px"
+          />
+        ) : null}
         <span className="promo-slide-tag">{slide.tag}</span>
       </Link>
 
@@ -212,7 +222,7 @@ export default function Home() {
         >
           <strong>{item.title}</strong>
           <div className="explore-category-image-wrap">
-            {item.image ? <img src={item.image} alt={item.title} className="explore-category-image" loading="lazy" /> : <span className="explore-category-fallback">{item.title}</span>}
+            {item.image ? <img src={item.image} alt={item.title} className="explore-category-image" loading="lazy" decoding="async" sizes="(max-width: 480px) 84px, 96px" /> : <span className="explore-category-fallback">{item.title}</span>}
           </div>
         </Link>)}
       </div>

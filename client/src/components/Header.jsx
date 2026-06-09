@@ -180,7 +180,7 @@ export default function Header() {
 
               {user && (
                 <NavLink to="/profile" className="profile-avatar-trigger" title="الملف الشخصي" aria-label="الملف الشخصي">
-                  {user.avatar ? <img src={user.avatar} alt={displayName} className="profile-avatar-image" /> : initials}
+                  {user.avatar ? <img src={user.avatar} alt={displayName} className="profile-avatar-image" loading="lazy" decoding="async" /> : initials}
                 </NavLink>
               )}
             </div>

@@ -176,11 +176,13 @@ export default function CategoriesPage() {
             ))}
 
             {!productSections.length ? (
-              <p className="muted">
-                {searchTerm
-                  ? 'لا توجد منتجات مطابقة لكلمة البحث الحالية.'
-                  : 'لا توجد منتجات متاحة للفئة أو القسم الحالي.'}
-              </p>
+              <div className="empty-state compact-empty-state">
+                <p>
+                  {searchTerm
+                    ? 'لا توجد منتجات مطابقة لكلمة البحث الحالية.'
+                    : 'لا توجد منتجات متاحة للفئة أو القسم الحالي.'}
+                </p>
+              </div>
             ) : null}
           </div>
         )}

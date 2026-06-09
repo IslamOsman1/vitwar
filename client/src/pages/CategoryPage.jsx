@@ -197,7 +197,9 @@ export default function CategoryPage() {
             ))}
 
             {!productSections.length ? (
-              <p className="muted">لا توجد منتجات متاحة لهذه الفئة حاليًا.</p>
+              <div className="empty-state compact-empty-state">
+                <p>لا توجد منتجات متاحة لهذه الفئة حاليًا.</p>
+              </div>
             ) : null}
           </div>
         )}
