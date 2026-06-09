@@ -1,46 +1,46 @@
 export const categoryBrowseTree = [
   {
-    title: 'برجر الخواجة',
-    subtitle: 'ساندوتشات سمـاش وبرجر لحم مع إضافات متنوعة وأحجام مناسبة لكل ذوق.',
-    emoji: '🍔',
+    title: 'براونيز فيتوار',
+    subtitle: 'أصناف براونيز بطبقات متنوعة ولمسات شوكولاتة مناسبة لكل ذوق.',
+    emoji: '🧇',
     sections: [
-      { title: 'سمـاش برجر', sourceCategory: 'برجر' },
-      { title: 'دبل برجر', sourceCategory: 'برجر' },
-      { title: 'تشيز برجر', sourceCategory: 'برجر' },
-      { title: 'سيجنتشر برجر', sourceCategory: 'برجر' }
+      { title: 'براونيز كيك', sourceCategory: 'براونيز' },
+      { title: 'براونيز لوتس', sourceCategory: 'براونيز' },
+      { title: 'براونيز نوتيلا', sourceCategory: 'براونيز' },
+      { title: 'براونيز ميكس', sourceCategory: 'براونيز' }
     ]
   },
   {
-    title: 'فرايد تشيكن',
-    subtitle: 'قطع كريسبي، استربس، وساندوتشات دجاج مقلية بتتبيلات خاصة.',
-    emoji: '🍗',
+    title: 'وافل وصوصات',
+    subtitle: 'وافل طازة بصوصات وحشوات وتقديمات محبوبة.',
+    emoji: '🍓',
     sections: [
-      { title: 'كريسبي قطع', sourceCategory: 'فرايد تشيكن' },
-      { title: 'استربس', sourceCategory: 'فرايد تشيكن' },
-      { title: 'ساندوتش دجاج', sourceCategory: 'فرايد تشيكن' },
-      { title: 'بوكسات مشاركة', sourceCategory: 'فرايد تشيكن' }
+      { title: 'وافل نوتيلا', sourceCategory: 'وافل' },
+      { title: 'وافل لوتس', sourceCategory: 'وافل' },
+      { title: 'وافل فواكه', sourceCategory: 'وافل' },
+      { title: 'وافل ميكس', sourceCategory: 'وافل' }
     ]
   },
   {
-    title: 'وجبات وكومبو',
-    subtitle: 'حلول جاهزة للطلب السريع تشمل البطاطس والمشروب والإضافات.',
-    emoji: '🥤',
+    title: 'آيس كريم ومكسات',
+    subtitle: 'تقديمات باردة ومكسات ممتعة للطلب السريع والمشاركة.',
+    emoji: '🍨',
     sections: [
-      { title: 'وجبات فردية', sourceCategory: 'كومبو' },
-      { title: 'وجبات دبل', sourceCategory: 'كومبو' },
-      { title: 'وجبات عائلية', sourceCategory: 'كومبو' },
-      { title: 'عروض التوفير', sourceCategory: 'كومبو' }
+      { title: 'آيس كريم', sourceCategory: 'ايس كريم' },
+      { title: 'مكسات باردة', sourceCategory: 'ايس كريم' },
+      { title: 'كاسات مشاركة', sourceCategory: 'ايس كريم' },
+      { title: 'عروض السويت', sourceCategory: 'ايس كريم' }
     ]
   },
   {
-    title: 'إضافات ومقبلات',
-    subtitle: 'بطاطس، صوصات، ومشروبات تكمّل الطلب وتزيده متعة.',
-    emoji: '🍟',
+    title: 'صوصات وإضافات',
+    subtitle: 'شوكولاتة وصوصات ومكسرات ولمسات نهائية تكمل الطلب.',
+    emoji: '🍫',
     sections: [
-      { title: 'بطاطس', sourceCategory: 'مقبلات' },
-      { title: 'صوصات', sourceCategory: 'مقبلات' },
-      { title: 'مشروبات', sourceCategory: 'مقبلات' },
-      { title: 'حلويات خفيفة', sourceCategory: 'مقبلات' }
+      { title: 'صوصات شوكولاتة', sourceCategory: 'صوصات' },
+      { title: 'صوصات بيضاء', sourceCategory: 'صوصات' },
+      { title: 'مكسرات', sourceCategory: 'صوصات' },
+      { title: 'إضافات نهائية', sourceCategory: 'صوصات' }
     ]
   }
 ];

@@ -138,7 +138,7 @@ export default function Header() {
       <header className="site-header">
         <div className="app-shell header-shell">
           <div className={`header-card${searchOpen ? ' search-active' : ''}`}>
-            <Link to="/" className="brand" aria-label="Burger El Khawaga">
+            <Link to="/" className="brand" aria-label="Vitwar">
               <Logo compact />
             </Link>
 
@@ -153,7 +153,7 @@ export default function Header() {
                 onFocus={() => {
                   if (window.innerWidth <= 640) setSearchOpen(true);
                 }}
-                placeholder="ابحث عن برجر أو وجبة أو صوص أو امسح QR..."
+                placeholder="ابحث عن نوتيلا أو براونيز أو صوص أو امسح QR..."
               />
               <button type="button" className="search-icon-btn" aria-label="قراءة QR بالكاميرا" onClick={openQrScanner}>
                 <Camera size={20} />

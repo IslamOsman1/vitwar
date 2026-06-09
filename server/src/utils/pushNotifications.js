@@ -32,7 +32,7 @@ export const normalizePushSubscription = (value = {}) => {
 };
 
 const buildPayloadString = (payload = {}) => JSON.stringify({
-  title: payload.title || 'Burger El Khawaga',
+  title: payload.title || 'Vitwar',
   body: payload.body || '',
   url: payload.url || '/',
   tag: payload.tag || '',

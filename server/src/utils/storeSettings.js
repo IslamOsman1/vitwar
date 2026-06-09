@@ -2,23 +2,23 @@ import StoreSettings from '../models/StoreSettings.js';
 
 const defaultHeroSlides = [
   {
-    title: 'سمـاش برجر بطعم الخواجة',
+    title: 'وافل فيتوار بصوصات غنية ولمسة شوكولاتة واضحة',
     tag: 'الأكثر طلبًا',
-    note: 'أضف صورة الطبق أو البرجر المميز من لوحة التحكم ليظهر كبانر رئيسي جذاب.',
+    note: 'أضف صورة المنتج أو طبق الحلا المميز من لوحة التحكم ليظهر كبانر رئيسي جذاب.',
     image: '',
     link: '/offers'
   },
   {
-    title: 'فرايد تشيكن مقرمش بخلطة خاصة',
+    title: 'براونيز ووافل بتوليفات محبوبة',
     tag: 'عرض خاص',
-    note: 'غيّر النصوص والصور من لوحة التحكم لعرض الوجبات أو العروض اليومية بسهولة.',
+    note: 'غيّر النصوص والصور من لوحة التحكم لعرض الحلويات أو العروض اليومية بسهولة.',
     image: '',
     link: '/offers'
   },
   {
-    title: 'وجبات وكومبوهات جاهزة للجوع السريع',
+    title: 'حلا يخلّي اللمة أحلى ويعيشك مود السويتنس',
     tag: 'مميز',
-    note: 'هذه الشريحة تعمل كبديل افتراضي حتى تضيف صور الوجبات الفعلية الخاصة بالمطعم.',
+    note: 'هذه الشريحة تعمل كبديل افتراضي حتى تضيف صور المنتجات الفعلية الخاصة بالمتجر.',
     image: '',
     link: '/offers'
   }
@@ -26,70 +26,70 @@ const defaultHeroSlides = [
 
 const defaultFeaturedCategories = [
   {
-    title: 'سمـاش برجر',
-    category: 'برجر',
-    subtitle: 'ساندوتشات لحم مشوية وصوصات خاصة',
+    title: 'براونيز كيك',
+    category: 'براونيز',
+    subtitle: 'قطع براونيز غنية مع شوكولاتة وحشوات متنوعة',
     image: ''
   },
   {
-    title: 'فرايد تشيكن',
-    category: 'فرايد تشيكن',
-    subtitle: 'قطع واستربس وسندوتشات كريسبي',
+    title: 'وافل ونوتيلا',
+    category: 'وافل',
+    subtitle: 'وافل طازة بصوصات وطبقات محبوبة',
     image: ''
   },
   {
-    title: 'كومبو ووجبات',
-    category: 'كومبو',
-    subtitle: 'وجبات كاملة مع البطاطس والمشروب',
+    title: 'آيس كريم ومكسات',
+    category: 'ايس كريم',
+    subtitle: 'لمسات باردة وتقديمات ممتعة تناسب المشاركة',
     image: ''
   },
   {
-    title: 'مقبلات وصوصات',
-    category: 'مقبلات',
-    subtitle: 'إضافات تكمل الطلب بطعم أقوى',
+    title: 'صوصات وإضافات',
+    category: 'صوصات',
+    subtitle: 'صوصات وشوكولاتة وإضافات تكمل الطلب بطعم أقوى',
     image: ''
   }
 ];
 
 const defaultCategoryGroups = [
   {
-    title: 'برجر الخواجة',
-    subtitle: 'ساندوتشات برجر مشوية بإضافات متعددة وأسعار مناسبة للطلب الفردي أو العائلي.',
+    title: 'براونيز فيتوار',
+    subtitle: 'أصناف براونيز بطبقات متنوعة وأسعار مناسبة للطلب الفردي أو المشاركة.',
     sections: [
-      { title: 'سمـاش برجر', sourceCategory: 'برجر' },
-      { title: 'دبل برجر', sourceCategory: 'برجر' },
-      { title: 'تشيز برجر', sourceCategory: 'برجر' },
-      { title: 'سيجنتشر برجر', sourceCategory: 'برجر' }
+      { title: 'براونيز كيك', sourceCategory: 'براونيز' },
+      { title: 'براونيز لوتس', sourceCategory: 'براونيز' },
+      { title: 'براونيز نوتيلا', sourceCategory: 'براونيز' },
+      { title: 'براونيز ميكس', sourceCategory: 'براونيز' }
     ]
   },
   {
-    title: 'فرايد تشيكن',
-    subtitle: 'منيو دجاج مقلي مقرمش يشمل ساندوتشات وقطع وبوكسات مشاركة.',
+    title: 'وافل وصوصات',
+    subtitle: 'منيو وافل طازة يشمل صوصات وحشوات وتقديمات متنوعة.',
     sections: [
-      { title: 'كريسبي قطع', sourceCategory: 'فرايد تشيكن' },
-      { title: 'استربس', sourceCategory: 'فرايد تشيكن' },
-      { title: 'ساندوتش دجاج', sourceCategory: 'فرايد تشيكن' },
-      { title: 'بوكسات مشاركة', sourceCategory: 'فرايد تشيكن' }
+      { title: 'وافل نوتيلا', sourceCategory: 'وافل' },
+      { title: 'وافل لوتس', sourceCategory: 'وافل' },
+      { title: 'وافل فواكه', sourceCategory: 'وافل' },
+      { title: 'وافل ميكس', sourceCategory: 'وافل' }
     ]
   },
   {
-    title: 'وجبات وكومبو',
-    subtitle: 'وجبات كاملة وعروض توفير تشمل البطاطس والمشروب والإضافات.',
+    title: 'آيس كريم ومكسات',
+    subtitle: 'تقديمات باردة وعروض مشاركة تشمل آيس كريم ومكسرات وإضافات.',
     sections: [
-      { title: 'وجبات فردية', sourceCategory: 'كومبو' },
-      { title: 'وجبات دبل', sourceCategory: 'كومبو' },
-      { title: 'وجبات عائلية', sourceCategory: 'كومبو' },
-      { title: 'عروض التوفير', sourceCategory: 'كومبو' }
+      { title: 'آيس كريم', sourceCategory: 'ايس كريم' },
+      { title: 'مكسات باردة', sourceCategory: 'ايس كريم' },
+      { title: 'كاسات مشاركة', sourceCategory: 'ايس كريم' },
+      { title: 'عروض السويت', sourceCategory: 'ايس كريم' }
     ]
   },
   {
-    title: 'إضافات ومقبلات',
-    subtitle: 'بطاطس، صوصات، مشروبات، وحلويات خفيفة تكمل تجربة الطلب.',
+    title: 'صوصات وإضافات',
+    subtitle: 'شوكولاتة، صوصات، مكسرات، ولمسات نهائية تكمل تجربة الطلب.',
     sections: [
-      { title: 'بطاطس', sourceCategory: 'مقبلات' },
-      { title: 'صوصات', sourceCategory: 'مقبلات' },
-      { title: 'مشروبات', sourceCategory: 'مقبلات' },
-      { title: 'حلويات خفيفة', sourceCategory: 'مقبلات' }
+      { title: 'صوصات شوكولاتة', sourceCategory: 'صوصات' },
+      { title: 'صوصات بيضاء', sourceCategory: 'صوصات' },
+      { title: 'مكسرات', sourceCategory: 'صوصات' },
+      { title: 'إضافات نهائية', sourceCategory: 'صوصات' }
     ]
   }
 ];
@@ -123,7 +123,7 @@ const defaultAdminControls = {
 const defaultPolicies = {
   privacy: {
     title: 'سياسة الخصوصية',
-    description: 'نوضح هنا كيفية جمع بياناتك واستخدامها وحمايتها أثناء استخدام موقع Burger El Khawaga.',
+    description: 'نوضح هنا كيفية جمع بياناتك واستخدامها وحمايتها أثناء استخدام موقع Vitwar.',
     sections: [
       { title: 'البيانات التي نجمعها', body: 'نجمع بيانات الحساب الأساسية مثل الاسم ورقم الهاتف والعنوان لتجهيز الطلبات والتواصل مع العميل بخصوص التوصيل أو أي تحديثات.' },
       { title: 'استخدام البيانات', body: 'تُستخدم البيانات لتأكيد الطلبات، تحسين تجربة المستخدم، وتقديم الدعم الفني وإدارة العروض أو نقاط الولاء إن كانت مفعلة.' },
@@ -161,10 +161,10 @@ const defaultPolicies = {
 
 const defaultAbout = {
   title: 'من نحن',
-  description: 'Burger El Khawaga مطعم متخصص في البرجر والدجاج المقلي، يقدّم وجبات سريعة بطعم ثابت وتجربة طلب أونلاين سهلة.',
-  vision: 'أن نصبح وجهة مفضلة لعشاق البرجر والوجبات السريعة بتجربة رقمية سهلة وطعم لا يُنسى.',
-  mission: 'تقديم منيو واضح، تجهيز سريع، وجودة ثابتة في كل طلب سواء داخل الفرع أو عبر التوصيل.',
-  values: 'الطعم، السرعة، النظافة، الوضوح، والاهتمام بكل تفصيلة في تجربة العميل.'
+  description: 'Vitwar علامة حلويات متخصصة في الوافل والبراونيز والصوصات الغنية، وتقدّم تجربة طلب أونلاين سهلة وبهوية مرحة.',
+  vision: 'أن نصبح وجهة مفضلة لعشاق الحلا والوافل بتجربة رقمية سهلة وطعم لا يُنسى.',
+  mission: 'تقديم منيو حلويات واضح، تجهيز سريع، وجودة ثابتة في كل طلب سواء داخل الفرع أو عبر التوصيل.',
+  values: 'البهجة، الجودة، النظافة، الوضوح، والاهتمام بكل تفصيلة في تجربة العميل.'
 };
 
 const isLegacyMarketSettings = (settings) => {
@@ -172,9 +172,9 @@ const isLegacyMarketSettings = (settings) => {
   const featuredCategories = settings?.home?.featuredCategories || [];
   const categoryGroups = settings?.categoryGroups || [];
 
-  const hasLegacyStoreName = ['al wekala market', 'al wekala'].includes(storeName);
-  const hasLegacyCategories = featuredCategories.some((item) => ['خضار', 'فاكهة', 'ألبان', 'بقالة'].includes(item?.category));
-  const hasLegacyGroups = categoryGroups.some((group) => ['خضار وفاكهة', 'ألبان وفطار', 'بقالة البيت'].includes(group?.title));
+  const hasLegacyStoreName = ['al wekala market', 'al wekala', 'burger el khawaga', 'el khawaga'].includes(storeName);
+  const hasLegacyCategories = featuredCategories.some((item) => ['خضار', 'فاكهة', 'ألبان', 'بقالة', 'برجر', 'فرايد تشيكن', 'كومبو', 'مقبلات'].includes(item?.category));
+  const hasLegacyGroups = categoryGroups.some((group) => ['خضار وفاكهة', 'ألبان وفطار', 'بقالة البيت', 'برجر الخواجة', 'فرايد تشيكن', 'وجبات وكومبو', 'إضافات ومقبلات'].includes(group?.title));
 
   return hasLegacyStoreName || hasLegacyCategories || hasLegacyGroups;
 };
@@ -184,9 +184,9 @@ export const ensureStoreSettings = async () => {
   if (!settings) {
     settings = await StoreSettings.create({
       singleton: 'default',
-      storeName: 'Burger El Khawaga',
-      storeTagline: 'مطعم متخصص في السماش برجر والفرايد تشيكن مع تجربة طلب سريعة وواضحة.',
-      supportEmail: 'support@burgerelkhawaga.com',
+      storeName: 'Vitwar',
+      storeTagline: 'حلويات ووافل وبراونيز بصوصات غنية وتجربة طلب لطيفة وسريعة.',
+      supportEmail: 'support@vitwar.com',
       address: 'القاهرة، مصر',
       workingHours: 'يوميًا من 12 ظهرًا حتى 2 بعد منتصف الليل',
       about: defaultAbout,
@@ -206,10 +206,10 @@ export const ensureStoreSettings = async () => {
     let changed = false;
 
     if (isLegacyMarketSettings(settings)) {
-      settings.storeName = 'Burger El Khawaga';
-      settings.storeTagline = 'مطعم متخصص في السماش برجر والفرايد تشيكن مع تجربة طلب سريعة وواضحة.';
-      if (!settings.supportEmail || settings.supportEmail === 'support@alwekala.com') {
-        settings.supportEmail = 'support@burgerelkhawaga.com';
+      settings.storeName = 'Vitwar';
+      settings.storeTagline = 'حلويات ووافل وبراونيز بصوصات غنية وتجربة طلب لطيفة وسريعة.';
+      if (!settings.supportEmail || ['support@alwekala.com', 'support@burgerelkhawaga.com'].includes(settings.supportEmail)) {
+        settings.supportEmail = 'support@vitwar.com';
       }
       settings.address = settings.address || 'القاهرة، مصر';
       settings.workingHours = 'يوميًا من 12 ظهرًا حتى 2 بعد منتصف الليل';

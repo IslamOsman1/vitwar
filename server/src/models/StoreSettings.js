@@ -66,9 +66,9 @@ const policyPageSchema = new mongoose.Schema({
 
 const storeSettingsSchema = new mongoose.Schema({
   singleton: { type: String, default: 'default', unique: true },
-  storeName: { type: String, default: 'Burger El Khawaga' },
-  storeTagline: { type: String, default: 'مطعم متخصص في السماش برجر والفرايد تشيكن مع تجربة طلب سريعة وواضحة.' },
-  supportEmail: { type: String, default: 'support@burgerelkhawaga.com' },
+  storeName: { type: String, default: 'Vitwar' },
+  storeTagline: { type: String, default: 'حلويات ووافل وبراونيز بصوصات غنية وتجربة طلب لطيفة وسريعة.' },
+  supportEmail: { type: String, default: 'support@vitwar.com' },
   supportPhone: { type: String, default: '01000000000' },
   address: { type: String, default: 'القاهرة، مصر' },
   workingHours: { type: String, default: 'يوميًا من 12 ظهرًا حتى 2 بعد منتصف الليل' },
@@ -79,11 +79,11 @@ const storeSettingsSchema = new mongoose.Schema({
     title: { type: String, default: 'من نحن' },
     description: {
       type: String,
-      default: 'Burger El Khawaga مطعم متخصص في البرجر والدجاج المقلي، يقدّم وجبات سريعة بطعم ثابت وتجربة طلب أونلاين سهلة.'
+      default: 'Vitwar علامة حلويات متخصصة في الوافل والبراونيز والصوصات الغنية، وتقدّم تجربة طلب أونلاين سهلة.'
     },
-    vision: { type: String, default: 'أن نصبح وجهة مفضلة لعشاق البرجر والوجبات السريعة بتجربة رقمية سهلة وطعم لا يُنسى.' },
-    mission: { type: String, default: 'تقديم منيو واضح، تجهيز سريع، وجودة ثابتة في كل طلب سواء داخل الفرع أو عبر التوصيل.' },
-    values: { type: String, default: 'الطعم، السرعة، النظافة، الوضوح، والاهتمام بكل تفصيلة في تجربة العميل.' }
+    vision: { type: String, default: 'أن نصبح وجهة مفضلة لعشاق الحلا والوافل بتجربة رقمية سهلة وطعم لا يُنسى.' },
+    mission: { type: String, default: 'تقديم منيو حلويات واضح، تجهيز سريع، وجودة ثابتة في كل طلب سواء داخل الفرع أو عبر التوصيل.' },
+    values: { type: String, default: 'البهجة، الجودة، النظافة، الوضوح، والاهتمام بكل تفصيلة في تجربة العميل.' }
   },
   policies: {
     privacy: { type: policyPageSchema, default: () => ({}) },

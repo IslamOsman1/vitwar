@@ -13,38 +13,38 @@ import { useStoreSettings } from '../context/StoreSettingsContext.jsx';
 import { getCategoryGroups } from '../utils/categoryHelpers.js';
 
 const categoryCards = [
-  { title: 'سمـاش برجر', category: 'برجر', subtitle: 'برجر مشوي بطعم غني', emoji: '🍔' },
-  { title: 'فرايد تشيكن', category: 'فرايد تشيكن', subtitle: 'قطع كريسبي وتتبيلات خاصة', emoji: '🍗' },
-  { title: 'كومبو ووجبات', category: 'كومبو', subtitle: 'وجبات كاملة وسريعة', emoji: '🥤' },
-  { title: 'مقبلات وصوصات', category: 'مقبلات', subtitle: 'إضافات تكمل الطلب', emoji: '🍟' }
+  { title: 'براونيز كيك', category: 'براونيز', subtitle: 'ألذ قطع البراونيز مع إضافات غنية', emoji: '🧇' },
+  { title: 'توتس ونوتيلا', category: 'وافل', subtitle: 'وافل طازة بصوصات وحشوات محبوبة', emoji: '🍓' },
+  { title: 'شوكولاتة وصوص', category: 'صوصات', subtitle: 'طبقات شوكولاتة وصوصات تزيد المتعة', emoji: '🍫' },
+  { title: 'آيس كريم ومكسات', category: 'ايس كريم', subtitle: 'إضافات باردة ومكسرات ولمسات نهائية', emoji: '🍨' }
 ];
 
 const serviceCards = [
   { title: 'تجهيز سريع', icon: <Clock3 size={22} /> },
-  { title: 'طعم مشوي طازج', icon: <Flame size={22} /> },
+  { title: 'حلا طازة يوميًا', icon: <Flame size={22} /> },
   { title: 'توصيل حتى بابك', icon: <Truck size={22} /> }
 ];
 
 const fallbackSlides = [
   {
     id: 'promo-1',
-    title: 'سمـاش برجر بطبقتين ولحم مشوي على الجريل',
+    title: 'وافل فيتوار بصوصات غنية ولمسة شوكولاتة واضحة',
     tag: 'الأكثر طلبًا',
-    note: 'عيش محمص، صوص الخواجة، وجبن سايح في كل قضمة.',
+    note: 'نوتيلا، لوتس، وبراونيز بطابع مبهج يخلي كل لقمة ألذ.',
     accentClass: 'promo-red'
   },
   {
     id: 'promo-2',
-    title: 'فرايد تشيكن مقرمش بخلطة مطبخ الخواجة',
-    tag: 'كريسبي',
-    note: 'قطع دجاج ذهبية مقرمشة مع صوصات واختيارات جانبية.',
+    title: 'براونيز ووافل بتوليفات تحبها من أول نظرة',
+    tag: 'جديد المنيو',
+    note: 'اختيارات شوكولاتة، نوتيلا، ولوتس مع تقديم أنيق وطعم غني.',
     accentClass: 'promo-gold'
   },
   {
     id: 'promo-3',
-    title: 'وجبات وكومبوهات جاهزة للّمة والجوع السريع',
-    tag: 'وفر أكثر',
-    note: 'اختر الوجبة المناسبة واضف البطاطس والمشروب بسهولة.',
+    title: 'حلا يخلّي اللمة أحلى ويعيشك مود السويتنس',
+    tag: 'اختيار مميز',
+    note: 'منيو حلويات واضح يناسب الطلب الفردي والمشاركة بنفس البهجة.',
     accentClass: 'promo-dark'
   }
 ];
@@ -146,7 +146,7 @@ export default function Home() {
         {slide.image ? (
           <img
             src={slide.image}
-            alt={slide.title || slide.tag || 'Burger El Khawaga'}
+            alt={slide.title || slide.tag || 'Vitwar'}
             className="promo-slide-image"
             loading={activeSlide === 0 ? 'eager' : 'lazy'}
             decoding="async"
@@ -175,7 +175,7 @@ export default function Home() {
     <section className="panel-card market-categories" id="featured">
       <div className="section-head compact">
         <h2>أقسام المنيو</h2>
-        <span>ابدأ من القسم المناسب ثم أضف الساندوتش أو الوجبة أو الإضافات مباشرة إلى السلة.</span>
+        <span>ابدأ من القسم المناسب ثم أضف الوافل أو البراونيز أو الإضافات مباشرة إلى السلة.</span>
       </div>
       <div className="market-category-grid">
         {featuredCategories.map((item) => <Link
@@ -194,8 +194,8 @@ export default function Home() {
     <section className="panel-card products-panel" id="products">
       <div className="section-head">
         <div>
-          <h2>ترشيحات الخواجة</h2>
-          <p>أطباق وسندوتشات عليها طلب كبير ويمكنك البدء بها لو أردت أسرع اختيار من المنيو.</p>
+          <h2>اختيارات فيتوار</h2>
+          <p>اختيارات مميزة من الحلويات والوافل والصوصات الغنية لتبدأ منها لو أردت أسرع اختيار من المنيو.</p>
         </div>
         <Link to="/categories" className="section-link">افتح المنيو كاملًا</Link>
       </div>
@@ -211,7 +211,7 @@ export default function Home() {
     <section className="panel-card explore-categories-panel" id="explore-categories">
       <div className="explore-categories-head">
         <h2>استكشف فئات الطلب</h2>
-        <p>تنقل بين مجموعات المنيو مثل البرجر، الكومبو، الفرايد تشيكن، والمقبلات حسب إعدادات المطعم الحالية.</p>
+        <p>تنقل بين مجموعات المنيو مثل البراونيز، الوافل، الصوصات، والإضافات حسب إعدادات المتجر الحالية.</p>
       </div>
 
       <div className="explore-categories-grid">

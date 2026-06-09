@@ -2,7 +2,7 @@ export const policySummaries = [
   {
     key: 'privacy',
     title: 'سياسة الخصوصية',
-    description: 'كيف نجمع بياناتك ونستخدمها ونحافظ على سريتها داخل موقع Burger El Khawaga.',
+    description: 'كيف نجمع بياناتك ونستخدمها ونحافظ على سريتها داخل موقع Vitwar.',
     path: '/policies/privacy'
   },
   {
@@ -136,7 +136,7 @@ export const refundSections = [
 export const defaultPoliciesContent = {
   privacy: {
     title: 'سياسة الخصوصية',
-    description: 'نوضح هنا كيفية جمع بياناتك واستخدامها وحمايتها أثناء استخدام موقع Burger El Khawaga.',
+    description: 'نوضح هنا كيفية جمع بياناتك واستخدامها وحمايتها أثناء استخدام موقع Vitwar.',
     sections: privacySections
   },
   terms: {

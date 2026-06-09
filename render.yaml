@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: el-khawaga-api
+    name: vitwar-api
     runtime: node
     rootDir: server
     plan: free
@@ -64,7 +64,7 @@ services:
         sync: false
 
   - type: web
-    name: el-khawaga-web
+    name: vitwar-web
     runtime: static
     rootDir: client
     plan: free

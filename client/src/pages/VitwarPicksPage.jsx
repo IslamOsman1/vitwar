@@ -5,7 +5,7 @@ import ProductCard from '../components/ProductCard.jsx';
 import { useStoreSettings } from '../context/StoreSettingsContext.jsx';
 import { getCategoryGroups } from '../utils/categoryHelpers.js';
 
-export default function AlWekalaProductsPage() {
+export default function VitwarPicksPage() {
   const { settings } = useStoreSettings();
   const categoryGroups = useMemo(() => getCategoryGroups(settings), [settings]);
   const [openGroup, setOpenGroup] = useState('');
@@ -15,7 +15,7 @@ export default function AlWekalaProductsPage() {
 
   useEffect(() => {
     setLoading(true);
-    api.get('/products?agency=true&limit=100')
+    api.get('/products?picks=true&limit=100')
       .then(({ data }) => setProducts(Array.isArray(data.products) ? data.products : []))
       .catch(() => setProducts([]))
       .finally(() => setLoading(false));

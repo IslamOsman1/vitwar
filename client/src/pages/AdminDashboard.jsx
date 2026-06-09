@@ -1520,8 +1520,8 @@ export default function AdminDashboard() {
 
           <form onSubmit={submitProduct} className="admin-dashboard-form">
             <div className="admin-dashboard-form-grid">
-              <Field label="اسم المنتج"><input name="name" value={productForm.name} onChange={changeProduct} placeholder="مثال: سماش برجر دوبل" required /></Field>
-              <Field label="الوصف"><input name="description" value={productForm.description} onChange={changeProduct} placeholder="مثال: قطعتا لحم مع جبنة وصوص الخواجة" /></Field>
+              <Field label="اسم المنتج"><input name="name" value={productForm.name} onChange={changeProduct} placeholder="مثال: براونيز نوتيلا" required /></Field>
+              <Field label="الوصف"><input name="description" value={productForm.description} onChange={changeProduct} placeholder="مثال: براونيز غني مع صوص شوكولاتة ولمسة لوتس" /></Field>
               <Field label="السعر"><input name="price" value={productForm.price} onChange={changeProduct} type="number" placeholder="0" required /></Field>
               <Field label="السعر قبل الخصم"><input name="oldPrice" value={productForm.oldPrice} onChange={changeProduct} type="number" placeholder="0" /></Field>
               <Field label="الفئة الرئيسية">
@@ -1579,7 +1579,7 @@ export default function AdminDashboard() {
             <div className="admin-checkbox-row">
               <label className="admin-toggle-pill"><input type="checkbox" name="featured" checked={productForm.featured} onChange={changeProduct} /> وجبة مميزة</label>
               <label className="admin-toggle-pill"><input type="checkbox" name="isDeal" checked={productForm.isDeal} onChange={changeProduct} /> ضمن العروض</label>
-              <label className="admin-toggle-pill"><input type="checkbox" name="inAgencyCollection" checked={productForm.inAgencyCollection} onChange={changeProduct} /> أضف إلى ترشيحات الخواجة</label>
+              <label className="admin-toggle-pill"><input type="checkbox" name="inAgencyCollection" checked={productForm.inAgencyCollection} onChange={changeProduct} /> أضف إلى اختيارات فيتوار</label>
             </div>
 
             <button className="primary-btn admin-submit-btn" type="submit">

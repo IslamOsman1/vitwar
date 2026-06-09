@@ -226,13 +226,13 @@ export const sendResetPasswordCode = asyncHandler(async (req, res) => {
 
   await sendEmail({
     to: user.email,
-    subject: 'كود استرجاع كلمة المرور - Burger El Khawaga',
+    subject: 'كود استرجاع كلمة المرور - Vitwar',
     text: `كود استرجاع كلمة المرور هو: ${code}. صالح لمدة 15 دقيقة.`,
     html: `
       <div style="margin:0;padding:32px 16px;background:#f6f1e7;direction:rtl;text-align:right;font-family:Arial,'Segoe UI',Tahoma,sans-serif;color:#18130f;">
         <div style="max-width:560px;margin:0 auto;background:#fffdf8;border:1px solid #eadcc7;border-radius:24px;overflow:hidden;box-shadow:0 18px 40px rgba(38,29,17,.08);">
           <div style="padding:24px 28px;background:linear-gradient(135deg,#111111,#2b1e12);color:#f7e9d1;">
-            <div style="font-size:13px;letter-spacing:1px;opacity:.9;margin-bottom:10px;">AL WEKALA</div>
+            <div style="font-size:13px;letter-spacing:1px;opacity:.9;margin-bottom:10px;">VITWAR</div>
             <h2 style="margin:0;font-size:28px;line-height:1.3;">استرجاع كلمة المرور</h2>
             <p style="margin:10px 0 0;font-size:15px;line-height:1.8;color:#ead8bb;">
               وصلك هذا البريد لأنك طلبت إعادة تعيين كلمة المرور الخاصة بحسابك.

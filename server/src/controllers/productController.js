@@ -24,7 +24,9 @@ export const getProducts = asyncHandler(async (req, res) => {
   const category = req.query.category ? { category: req.query.category } : {};
   const subcategory = req.query.subcategory ? { subcategory: req.query.subcategory } : {};
   const isDeal = req.query.deals === 'true' ? { isDeal: true } : {};
-  const inAgencyCollection = req.query.agency === 'true' ? { inAgencyCollection: true } : {};
+  const inAgencyCollection = req.query.agency === 'true' || req.query.picks === 'true'
+    ? { inAgencyCollection: true }
+    : {};
   const query = { ...keyword, ...category, ...subcategory, ...isDeal, ...inAgencyCollection };
   const count = await Product.countDocuments(query);
   const products = await Product.find(query).sort({ createdAt: -1 }).limit(limit).skip((page - 1) * limit);

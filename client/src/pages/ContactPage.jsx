@@ -11,7 +11,7 @@ export default function ContactPage() {
         <div>
           <span className="market-pill">تواصل معنا</span>
           <h1>تواصل معنا</h1>
-          <p>فريق Burger El Khawaga جاهز لاستقبال استفسارات الطلبات، الملاحظات، وحجوزات الوجبات والعروض عبر القنوات التالية.</p>
+          <p>فريق Vitwar جاهز لاستقبال استفسارات الطلبات، الملاحظات، وطلبات الحلويات والعروض عبر القنوات التالية.</p>
         </div>
         <Link to="/" className="secondary-btn">العودة للرئيسية</Link>
       </div>
@@ -42,8 +42,8 @@ export default function ContactPage() {
         <span>{settings?.whatsapp || 'غير متوفر حاليًا'}</span>
       </div>
       <div className="profile-link-card">
-        <strong>اسم المطعم</strong>
-        <span>{settings?.storeName || 'Burger El Khawaga'}</span>
+        <strong>اسم المتجر</strong>
+        <span>{settings?.storeName || 'Vitwar'}</span>
       </div>
     </section>
   </main>;

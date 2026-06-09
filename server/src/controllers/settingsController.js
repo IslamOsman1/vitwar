@@ -257,7 +257,7 @@ export const updateLoyaltySettings = asyncHandler(async (req, res) => {
 
 export const uploadBannerImage = asyncHandler(async (req, res) => {
   if (!req.file) return res.status(400).json({ message: 'اختر صورة أولًا' });
-  const result = await uploadToCloudinary(req.file.buffer, 'alwekala/banners');
+  const result = await uploadToCloudinary(req.file.buffer, 'vitwar/banners');
   res.json({ url: result.secure_url, publicId: result.public_id });
 });
 

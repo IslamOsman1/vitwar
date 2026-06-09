@@ -152,7 +152,7 @@ export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippi
 
   const itemsText = formatOrderItems(order.orderItems || []);
   const textMessage = [
-    'طلب جديد في متجر الوكالة',
+    'طلب جديد في متجر Vitwar',
     `رقم الطلب: ${order._id}`,
     `العميل: ${customer?.name || shippingAddress?.fullName || 'غير محدد'}`,
     `الهاتف: ${shippingAddress?.phone || customer?.phone || 'غير متوفر'}`,
@@ -252,7 +252,7 @@ export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, s
   const textMessageLines = [
     `مرحبًا ${customer?.name || shippingAddress?.fullName || 'عميلنا العزيز'}`,
     '',
-    `تم استلام طلبك رقم ${order._id} من Burger El Khawaga.`,
+    `تم استلام طلبك رقم ${order._id} من Vitwar.`,
     '',
     `إجمالي الطلب: ${Number(order.totalPrice || 0).toFixed(2)} ج.م`,
     `طريقة الدفع: ${order.paymentMethod || 'غير محدد'}`,
@@ -265,7 +265,7 @@ export const sendCustomerOrderWhatsAppNotification = async ({ order, customer, s
     textMessageLines.push('');
   }
 
-  textMessageLines.push('شكرًا لاختيارك Burger El Khawaga.');
+  textMessageLines.push('شكرًا لاختيارك Vitwar.');
 
   const templateVariables = {
     1: String(customer?.name || shippingAddress?.fullName || 'عميلنا العزيز'),

@@ -1,21 +1,21 @@
 {
-  "name": "Burger El Khawaga",
-  "short_name": "El Khawaga",
-  "description": "سماش برجر وفرايد تشيكن ووجبات سريعة بطلب أونلاين واضح وسريع.",
+  "name": "Vitwar",
+  "short_name": "Vitwar",
+  "description": "وافل وبراونيز وحلويات بصوصات غنية وتجربة طلب أونلاين واضحة وسريعة.",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#050403",
-  "theme_color": "#100c09",
+  "background_color": "#fff7fc",
+  "theme_color": "#ec3da7",
   "icons": [
     {
-      "src": "/favicon1.png",
+      "src": "/logo.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/favicon1.png",
+      "src": "/logo.png",
       "sizes": "512x512",
       "type": "image/png"
     }

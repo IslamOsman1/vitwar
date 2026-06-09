@@ -1,11 +1,11 @@
 import React from 'react';
-import logo from '../assets/image-optimized.png';
+import logo from '../assets/image.png';
 
 export default function Logo({ className = '', compact = false }) {
   return (
     <img
       src={logo}
-      alt="Burger El Khawaga"
+      alt="Vitwar"
       loading="eager"
       decoding="async"
       fetchPriority="high"

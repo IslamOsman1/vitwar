@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 if (process.env.NODE_ENV !== 'production') app.use(morgan('dev'));
 
 app.get('/ping', (req, res) => res.status(200).type('text/plain').send('OK'));
-app.get('/api/health', (req, res) => res.json({ status: 'ok', name: 'Burger El Khawaga API' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok', name: 'Vitwar API' }));
 
 app.use('/api', (req, res, next) => {
   if (req.path === '/health') {

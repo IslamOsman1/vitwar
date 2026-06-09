@@ -105,7 +105,7 @@ const serializeCustomerCareUser = (user) => ({
 
 const buildPrivateDiscountCode = (customerCode = '') => {
   const suffix = crypto.randomBytes(2).toString('hex').toUpperCase();
-  const readableCustomer = String(customerCode || 'WK').slice(-4).toUpperCase();
+  const readableCustomer = String(customerCode || 'VT').slice(-4).toUpperCase();
   return `VIP-${readableCustomer}-${suffix}`;
 };
 
@@ -451,7 +451,7 @@ export const uploadMyAvatar = asyncHandler(async (req, res) => {
 
   await ensureCustomerCode(user);
 
-  const result = await uploadToCloudinary(req.file.buffer, 'alwekala/avatars');
+  const result = await uploadToCloudinary(req.file.buffer, 'vitwar/avatars');
   user.avatar = result.secure_url;
   await user.save();
 

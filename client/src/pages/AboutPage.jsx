@@ -12,7 +12,7 @@ export default function AboutPage() {
         <div>
           <span className="market-pill">{about.title || 'من نحن'}</span>
           <h1>{about.title || 'من نحن'}</h1>
-          <p>{about.description || 'Burger El Khawaga مطعم متخصص في السماش برجر والفرايد تشيكن، هدفه تقديم وجبات سريعة بطعم ثابت وهوية واضحة وتجربة طلب أونلاين سهلة.'}</p>
+          <p>{about.description || 'Vitwar علامة حلويات تركّز على الوافل والبراونيز والصوصات الغنية، بهدف تقديم تجربة حلوة واضحة وسهلة من أول دخول حتى إتمام الطلب.'}</p>
         </div>
         <Link to="/" className="secondary-btn">العودة للرئيسية</Link>
       </div>
@@ -25,11 +25,11 @@ export default function AboutPage() {
       </div>
       <div className="profile-link-card">
         <strong>رسالتنا</strong>
-        <span>{about.mission || 'تقديم وجبات برجر ودجاج مقلي بجودة ثابتة، وتسليم سريع، وخدمة واضحة من بداية الطلب حتى الاستلام.'}</span>
+        <span>{about.mission || 'تقديم حلا طازة وتوليفات محبوبة بجودة ثابتة، مع خدمة سريعة وتجربة طلب سهلة وواضحة.'}</span>
       </div>
       <div className="profile-link-card">
         <strong>قيمنا</strong>
-        <span>{about.values || 'الطعم، السرعة، النظافة، وضوح الأسعار، والاهتمام بتفاصيل تجربة العميل.'}</span>
+        <span>{about.values || 'البهجة، الجودة، النظافة، وضوح الأسعار، والاهتمام بكل تفصيلة في تجربة العميل.'}</span>
       </div>
     </section>
   </main>;

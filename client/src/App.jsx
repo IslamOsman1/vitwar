@@ -21,7 +21,7 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx';
 import TermsPage from './pages/TermsPage.jsx';
 import ShippingPolicyPage from './pages/ShippingPolicyPage.jsx';
 import RefundPolicyPage from './pages/RefundPolicyPage.jsx';
-import AlWekalaProductsPage from './pages/AlWekalaProductsPage.jsx';
+import VitwarPicksPage from './pages/VitwarPicksPage.jsx';
 import Cart from './pages/Cart.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
@@ -109,7 +109,7 @@ export default function App() {
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/category/:name" element={<CategoryPage />} />
         <Route path="/offers" element={<OffersPage />} />
-        <Route path="/alwekala-products" element={<AlWekalaProductsPage />} />
+        <Route path="/vitwar-picks" element={<VitwarPicksPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
