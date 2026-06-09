@@ -128,7 +128,7 @@ export default function OffersPage() {
       </section>
     ) : null}
 
-    <section className="panel-card products-panel category-products-panel">
+    <section className="panel-card products-panel">
       <div className="section-head compact">
         <h2>{openSection || openGroup || 'كل العروض'}</h2>
         <span>{loading ? 'جاري التحميل...' : `${products.length} عرض`}</span>

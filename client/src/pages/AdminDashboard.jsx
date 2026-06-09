@@ -48,7 +48,6 @@ const emptyProduct = {
   isDeal: false
 };
 
-const emptyStorePurchaseForm = { amount: '', note: '' };
 const emptyDiscountForm = {
   code: '',
   type: 'fixed',
@@ -151,7 +150,6 @@ const defaultSettingsForm = {
 const dashboardSections = [
   { id: 'products', label: 'المنتجات', icon: Package },
   { id: 'customer-care', label: 'إرضاء العميل', icon: Gift },
-  { id: 'store-purchases', label: 'تسجيل الشراء من المحل', icon: Store },
   { id: 'accounts', label: 'الحسابات', icon: CreditCard },
   { id: 'categories', label: 'الفئات والأقسام', icon: FolderTree },
   { id: 'store', label: 'إعدادات المتجر', icon: Store },
@@ -169,7 +167,6 @@ const permissionOptions = [
   { key: 'manage_products', label: 'إدارة المنتجات' },
   { key: 'manage_orders', label: 'إدارة الطلبات' },
   { key: 'manage_support', label: 'إدارة الدعم' },
-  { key: 'manage_store_purchases', label: 'تسجيل الشراء من المحل' },
   { key: 'manage_loyalty', label: 'أكواد الخصم' },
   { key: 'manage_customer_care', label: 'إرضاء العميل' }
 ];
@@ -332,7 +329,6 @@ export default function AdminDashboard() {
   const [customerResults, setCustomerResults] = useState([]);
   const [customerLoading, setCustomerLoading] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
-  const [storePurchaseForm, setStorePurchaseForm] = useState(emptyStorePurchaseForm);
   const [discountForm, setDiscountForm] = useState(emptyDiscountForm);
   const [qrScannerOpen, setQrScannerOpen] = useState(false);
   const [qrScannerStarting, setQrScannerStarting] = useState(false);
@@ -358,8 +354,6 @@ export default function AdminDashboard() {
   const canManageOrders = user?.role === 'admin' || user?.permissions?.includes('manage_orders');
   const canManageSupport = user?.role === 'admin' || user?.permissions?.includes('manage_support');
   const canManageCustomerCare = user?.role === 'admin' || user?.permissions?.includes('manage_customers') || user?.permissions?.includes('manage_customer_care');
-  const canManageStorePurchases = user?.role === 'admin' || user?.permissions?.includes('manage_customers') || user?.permissions?.includes('manage_store_purchases');
-  const canSearchCustomerAccounts = canManageCustomerCare || canManageStorePurchases;
   const qrVideoRef = React.useRef(null);
   const qrReaderRef = React.useRef(null);
   const qrControlsRef = React.useRef(null);
@@ -371,7 +365,6 @@ export default function AdminDashboard() {
       ? dashboardSections.filter((section) =>
         (section.id === 'products' && user?.permissions?.includes('manage_products')) ||
         (section.id === 'customer-care' && (user?.permissions?.includes('manage_customers') || user?.permissions?.includes('manage_customer_care'))) ||
-        (section.id === 'store-purchases' && (user?.permissions?.includes('manage_customers') || user?.permissions?.includes('manage_store_purchases'))) ||
         (section.id === 'categories' && user?.permissions?.includes('manage_products')) ||
         (section.id === 'loyalty' && user?.permissions?.includes('manage_loyalty')) ||
         (section.id === 'orders' && user?.permissions?.includes('manage_orders')) ||
@@ -815,7 +808,7 @@ export default function AdminDashboard() {
   };
 
   const loadCustomerCareUsers = async (query = '') => {
-    if (!canSearchCustomerAccounts) return;
+    if (!canManageCustomerCare) return;
     if (!query.trim()) {
       setCustomerResults([]);
       setSelectedCustomerId('');
@@ -860,12 +853,12 @@ export default function AdminDashboard() {
   }, [canManageOrders]);
 
   useEffect(() => {
-    if (!['customer-care', 'store-purchases'].includes(activeSection) || !canSearchCustomerAccounts) return undefined;
+    if (activeSection !== 'customer-care' || !canManageCustomerCare) return undefined;
     const timer = window.setTimeout(() => {
       loadCustomerCareUsers(customerSearch);
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [activeSection, customerSearch, canSearchCustomerAccounts]);
+  }, [activeSection, customerSearch, canManageCustomerCare]);
 
   useEffect(() => {
     const section = new URLSearchParams(location.search).get('section');
@@ -1396,7 +1389,6 @@ export default function AdminDashboard() {
         return next;
       });
       setSelectedCustomerId(updatedCustomer._id);
-      setStorePurchaseForm(emptyStorePurchaseForm);
       setDiscountForm(emptyDiscountForm);
       toast.success(data.message || 'تم تنفيذ العملية');
     } catch (error) {
@@ -1482,11 +1474,6 @@ export default function AdminDashboard() {
 
   const sectionClass = (id) => `dashboard-tab-btn${activeSection === id ? ' active' : ''}`;
   const handleSectionChange = (sectionId) => {
-    if (sectionId === 'store-purchases' && window.matchMedia('(max-width: 760px)').matches) {
-      navigate('/admin/store-purchases');
-      return;
-    }
-
     setActiveSection(sectionId);
   };
 
@@ -1794,131 +1781,6 @@ export default function AdminDashboard() {
           ) : (
             <div className="admin-setting-card">
               <p className="muted">ليس لديك صلاحية الوصول إلى قسم إرضاء العميل.</p>
-            </div>
-          )}
-        </section>
-
-        <section className={`admin-dashboard-panel${activeSection === 'store-purchases' ? ' active' : ''}`}>
-          {canManageStorePurchases ? (
-            <>
-              <div className="admin-section-head">
-                <div>
-                  <h2>تسجيل الشراء من المحل</h2>
-                  <p>ابحث عن العميل عبر QR أو رقم الهاتف أو الاسم أو البريد، ثم سجّل مبلغ شراء المحل ليُضاف إلى إجمالي مشترياته ونقاطه مباشرة.</p>
-                </div>
-              </div>
-
-              <SearchBox
-                value={customerSearch}
-                onChange={(event) => setCustomerSearch(event.target.value)}
-                placeholder="ابحث بالـ QR أو رقم الهاتف أو الاسم أو البريد الإلكتروني..."
-                onCameraClick={openQrScanner}
-              />
-
-              <div className="customer-care-layout">
-                <section className="customer-care-results">
-                  {customerLoading ? <div className="admin-setting-card"><p className="muted">جارٍ تحميل العملاء...</p></div> : null}
-
-                  {!customerLoading && customerSearch.trim() && !customerResults.length ? (
-                    <div className="admin-setting-card">
-                      <p className="muted">لا توجد نتائج مطابقة حاليًا.</p>
-                    </div>
-                  ) : null}
-
-                  {customerResults.map((customer) => (
-                    <button
-                      key={customer._id}
-                      type="button"
-                      className={`customer-care-user-card${selectedCustomerId === customer._id ? ' active' : ''}`}
-                      onClick={() => setSelectedCustomerId(customer._id)}
-                    >
-                      <div className="customer-care-user-head">
-                        <div className="customer-care-user-avatar">
-                          {customer.avatar ? <img src={customer.avatar} alt={customer.name} /> : customer.name?.trim()?.slice(0, 2)?.toUpperCase()}
-                        </div>
-                        <div>
-                          <strong>{customer.name}</strong>
-                          <span>{customer.customerCode || 'بدون كود'}</span>
-                        </div>
-                      </div>
-                      <p>{customer.email || 'بدون بريد إلكتروني'}</p>
-                      <small>{customer.phone || 'بدون رقم هاتف'}</small>
-                    </button>
-                  ))}
-                </section>
-
-                <section className="customer-care-workspace">
-                  {selectedCustomer ? (
-                    <>
-                      <div className="customer-care-summary">
-                        <article className="customer-care-summary-card">
-                          <div className="customer-care-summary-head">
-                            <div className="customer-care-user-avatar large">
-                              {selectedCustomer.avatar ? <img src={selectedCustomer.avatar} alt={selectedCustomer.name} /> : selectedCustomer.name?.trim()?.slice(0, 2)?.toUpperCase()}
-                            </div>
-                            <div>
-                              <strong>{selectedCustomer.name}</strong>
-                              <span>{selectedCustomer.email || 'بدون بريد'}</span>
-                              <small>{selectedCustomer.phone || 'بدون هاتف'}</small>
-                            </div>
-                          </div>
-
-                          <div className="customer-care-meta-grid">
-                            <div><QrCode size={16} /><span>{selectedCustomer.customerCode || 'بدون QR'}</span></div>
-                            <div><Store size={16} /><span>{Number(selectedCustomer.inStoreSpentTotal || 0)} ج.م مشتريات محل</span></div>
-                          </div>
-                        </article>
-
-                        <article className="admin-setting-card customer-care-action-card">
-                          <div className="customer-care-card-head">
-                            <Store size={18} />
-                            <strong>تسجيل شراء جديد من المحل</strong>
-                          </div>
-                          <Field label="مبلغ الشراء"><input type="number" value={storePurchaseForm.amount} onChange={(event) => setStorePurchaseForm((current) => ({ ...current, amount: event.target.value }))} placeholder="0" /></Field>
-                          <Field label="ملاحظة"><input value={storePurchaseForm.note} onChange={(event) => setStorePurchaseForm((current) => ({ ...current, note: event.target.value }))} placeholder="مثال: فاتورة من الفرع" /></Field>
-                          <p className="muted">سيتم تسجيل قيمة الشراء على حساب العميل للمتابعة.</p>
-                          <button
-                            type="button"
-                            className="primary-btn admin-inline-save-btn"
-                            onClick={() => applyCustomerAction('store_purchase', storePurchaseForm)}
-                          >
-                            <Save size={16} />
-                            <span>تسجيل الشراء</span>
-                          </button>
-                        </article>
-                      </div>
-
-                      <article className="admin-setting-card">
-                        <div className="section-head compact customer-care-inline-head">
-                          <div>
-                            <h3>آخر عمليات الشراء المسجلة من المحل</h3>
-                            <span>سجل مختصر لعمليات هذا العميل داخل الفرع</span>
-                          </div>
-                        </div>
-                        <div className="customer-care-history">
-                          {selectedCustomer.customerCareHistory?.filter((entry) => entry.type === 'store_purchase').length ? selectedCustomer.customerCareHistory
-                            .filter((entry) => entry.type === 'store_purchase')
-                            .map((entry) => (
-                              <div key={entry._id} className="customer-care-history-item">
-                                <strong>{customerCareTypeLabel(entry.type)}</strong>
-                                <span>{entry.amount ? `${entry.amount} ج.م` : '-'}</span>
-                                <p>{entry.note || 'بدون ملاحظة'}</p>
-                              </div>
-                            )) : <p className="muted">لا توجد عمليات شراء محل مسجلة لهذا العميل حتى الآن.</p>}
-                        </div>
-                      </article>
-                    </>
-                  ) : (
-                    <div className="admin-setting-card">
-                      <p className="muted">اختر عميلًا من القائمة لتسجيل شراء جديد من المحل.</p>
-                    </div>
-                  )}
-                </section>
-              </div>
-            </>
-          ) : (
-            <div className="admin-setting-card">
-              <p className="muted">ليس لديك صلاحية الوصول إلى قسم تسجيل الشراء من المحل.</p>
             </div>
           )}
         </section>

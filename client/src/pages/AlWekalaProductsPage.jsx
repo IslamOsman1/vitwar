@@ -109,14 +109,14 @@ export default function AlWekalaProductsPage() {
         </button>)}
       </div>
     </section>}
-    <section className="panel-card category-products-panel">
+    <section className="panel-card products-panel">
       <div className="section-head compact">
         <h2>{openSection || openGroup || 'كل المنتجات'}</h2>
         <span>{loading ? 'جاري التحميل...' : `${products.length} منتج`}</span>
       </div>
 
-      {loading ? <p className="muted">جاري تحميل المنتجات...</p> : visibleSections.length ? <div className="agency-product-sections">
-        {visibleSections.map((section) => <section key={`${section.groupTitle}-${section.title}`} className="panel-card category-products-panel agency-product-section">
+      {loading ? <p className="muted">جاري تحميل المنتجات...</p> : visibleSections.length ? <div className="product-sections">
+        {visibleSections.map((section) => <section key={`${section.groupTitle}-${section.title}`} className="product-section">
           <div className="section-head compact">
             <div>
               <h3>{section.title}</h3>
@@ -126,7 +126,7 @@ export default function AlWekalaProductsPage() {
               ? <Link to={`/category/${encodeURIComponent(section.title)}`} className="section-link">عرض الكل</Link>
               : null}
           </div>
-          <div className="category-products-grid">
+          <div className="products-grid">
             {section.items.map((product) => <ProductCard key={`agency-${section.title}-${product._id}`} product={product} />)}
           </div>
         </section>)}

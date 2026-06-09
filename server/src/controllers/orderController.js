@@ -8,6 +8,7 @@ import {
   sendNewOrderWhatsAppNotification
 } from '../utils/whatsapp.js';
 import { calculateOrderPricing, incrementDiscountCodeUsage } from '../utils/pricing.js';
+import { ensureStoreSettings } from '../utils/storeSettings.js';
 
 const CANCEL_WINDOW_MS = 5 * 60 * 1000;
 const resolveClientUrl = (req) => process.env.CLIENT_URL || req.headers.origin || 'http://localhost:5173';
