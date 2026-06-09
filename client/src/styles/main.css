@@ -1056,6 +1056,354 @@ body[data-theme='light'] .store-purchases-mobile-reset{background:#fffdf8;color:
   .admin-toggle-row,
   .admin-table-actions{display:grid;grid-template-columns:1fr}
 }
+
+.admin-dashboard-page,
+.admin-dashboard-hero,
+.admin-hero-copy,
+.admin-hero-stats,
+.admin-dashboard-tabs,
+.admin-dashboard-grid,
+.admin-dashboard-panel,
+.admin-section-head,
+.admin-dashboard-form,
+.admin-dashboard-form-grid,
+.admin-table-card,
+.admin-table-wrap,
+.customer-care-layout,
+.customer-care-workspace,
+.customer-care-summary,
+.customer-care-actions-grid,
+.admin-settings-cluster,
+.admin-setting-card,
+.admin-category-groups-stack,
+.admin-category-inventory,
+.admin-subsections-stack{
+  min-width:0;
+}
+
+.admin-dashboard-page{
+  direction:rtl;
+  overflow-x:hidden;
+}
+
+.admin-dashboard-tabs{
+  direction:rtl;
+}
+
+.dashboard-tab-btn,
+.admin-submit-btn,
+.admin-inline-save-btn,
+.table-action-btn,
+.admin-toggle-pill,
+.admin-file-pill,
+.admin-search-box,
+.admin-search-camera{
+  min-height:44px;
+}
+
+.dashboard-tab-btn,
+.admin-search-box,
+.admin-kpi-card,
+.admin-dashboard-panel,
+.admin-setting-card,
+.customer-care-summary-card,
+.customer-care-user-card,
+.customer-care-history-item{
+  box-sizing:border-box;
+}
+
+@media(max-width:768px){
+  .admin-dashboard-page{
+    gap:16px;
+    width:min(100%,100%);
+  }
+  .admin-dashboard-hero{
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+  .admin-hero-copy{
+    padding:18px;
+    gap:10px;
+    border-radius:22px;
+    box-shadow:0 8px 18px rgba(0,0,0,.14);
+  }
+  .admin-hero-copy h1{
+    font-size:clamp(1.5rem,5vw,2rem);
+    line-height:1.2;
+  }
+  .admin-hero-copy p{
+    font-size:.9rem;
+    line-height:1.75;
+    max-width:none;
+  }
+  .admin-hero-stats{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+  .admin-kpi-card{
+    padding:14px;
+    gap:6px;
+    border-radius:18px;
+    box-shadow:0 6px 14px rgba(41,31,16,.08);
+  }
+  .admin-kpi-card span{
+    font-size:.82rem;
+    line-height:1.5;
+  }
+  .admin-kpi-card strong{
+    font-size:1.3rem;
+    line-height:1.1;
+  }
+  .admin-dashboard-tabs{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+  .dashboard-tab-btn{
+    width:100%;
+    min-width:0;
+    padding:10px 12px;
+    border-radius:16px;
+    justify-content:flex-start;
+    text-align:right;
+    box-shadow:none;
+  }
+  .dashboard-tab-btn.active{
+    box-shadow:0 6px 14px rgba(184,137,78,.14);
+  }
+  .dashboard-tab-btn span{
+    min-width:0;
+    overflow-wrap:anywhere;
+  }
+  .dashboard-tab-btn b{
+    margin-inline-start:auto;
+  }
+  .admin-dashboard-panel{
+    padding:14px;
+    border-radius:20px;
+    box-shadow:0 8px 18px rgba(0,0,0,.12);
+  }
+  .admin-section-head{
+    display:grid;
+    gap:10px;
+    align-items:start;
+  }
+  .admin-section-head h2,
+  .admin-section-head h3{
+    font-size:1.15rem;
+    line-height:1.35;
+  }
+  .admin-section-head p{
+    font-size:.88rem;
+    line-height:1.75;
+  }
+  .admin-dashboard-form,
+  .admin-settings-form,
+  .admin-settings-cluster{
+    gap:14px;
+  }
+  .admin-dashboard-form-grid,
+  .admin-dashboard-form-grid.two-cols,
+  .admin-settings-grid,
+  .admin-text-grid,
+  .admin-text-grid.enhanced,
+  .admin-slides-grid,
+  .admin-slides-grid.enhanced,
+  .accounts-period-grid,
+  .accounts-kpi-grid,
+  .customer-care-summary,
+  .customer-care-actions-grid,
+  .customer-care-layout,
+  .admin-subsection-card{
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .admin-search-box{
+    padding-inline:12px;
+    gap:8px;
+  }
+  .admin-search-box input{
+    font-size:.92rem;
+    min-width:0;
+  }
+  .admin-submit-btn,
+  .admin-inline-save-btn,
+  .table-action-btn{
+    width:100%;
+    justify-content:center;
+  }
+  .admin-table-actions,
+  .admin-toggle-row,
+  .admin-checkbox-row{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+  }
+  .admin-toggle-pill,
+  .admin-file-pill{
+    width:100%;
+    justify-content:flex-start;
+    padding-inline:12px;
+  }
+  .admin-category-inventory,
+  .admin-setting-card,
+  .customer-care-summary-card{
+    padding:14px;
+    border-radius:18px;
+  }
+  .admin-category-chip{
+    min-width:0;
+    width:100%;
+  }
+  .customer-care-user-card{
+    padding:14px;
+    border-radius:18px;
+    box-shadow:none;
+  }
+  .customer-care-user-card.active{
+    box-shadow:0 8px 18px rgba(0,0,0,.12);
+  }
+  .customer-care-summary-head,
+  .customer-care-user-head{
+    align-items:flex-start;
+  }
+  .customer-care-meta-grid{
+    grid-template-columns:1fr;
+  }
+  .admin-table-wrap{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+}
+
+@media(max-width:480px){
+  .admin-dashboard-page{
+    gap:14px;
+  }
+  .admin-hero-copy{
+    padding:16px 14px;
+    border-radius:20px;
+    box-shadow:0 4px 12px rgba(0,0,0,.1);
+  }
+  .admin-hero-copy h1{
+    font-size:1.35rem;
+  }
+  .admin-hero-copy p{
+    font-size:.84rem;
+  }
+  .admin-hero-stats{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  .admin-kpi-card{
+    padding:12px;
+    border-radius:16px;
+    box-shadow:none;
+  }
+  .admin-kpi-card strong{
+    font-size:1.12rem;
+  }
+  .admin-kpi-card span{
+    font-size:.76rem;
+  }
+  .admin-dashboard-tabs{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  .dashboard-tab-btn{
+    min-height:46px;
+    padding:10px;
+    border-radius:14px;
+    gap:8px;
+    font-size:.82rem;
+  }
+  .dashboard-tab-btn svg{
+    width:16px;
+    height:16px;
+    flex:0 0 auto;
+  }
+  .dashboard-tab-btn b{
+    min-width:20px;
+    height:20px;
+    font-size:.68rem;
+  }
+  .admin-dashboard-panel{
+    padding:12px;
+    border-radius:18px;
+    box-shadow:none;
+  }
+  .admin-section-head h2,
+  .admin-section-head h3{
+    font-size:1.02rem;
+  }
+  .admin-section-head p,
+  .muted{
+    font-size:.8rem;
+  }
+  .admin-search-box,
+  .admin-toggle-pill,
+  .admin-file-pill{
+    border-radius:14px;
+  }
+  .admin-table-actions{
+    gap:8px;
+  }
+}
+
+@media(max-width:360px){
+  .admin-dashboard-page{
+    gap:12px;
+  }
+  .admin-hero-copy{
+    padding:14px 12px;
+  }
+  .admin-hero-copy h1{
+    font-size:1.18rem;
+  }
+  .admin-hero-copy p{
+    font-size:.78rem;
+    line-height:1.65;
+  }
+  .admin-hero-stats{
+    grid-template-columns:1fr;
+  }
+  .admin-dashboard-tabs{
+    grid-template-columns:1fr;
+  }
+  .dashboard-tab-btn{
+    min-height:44px;
+    padding:9px 10px;
+    font-size:.78rem;
+  }
+  .admin-kpi-card{
+    padding:10px 12px;
+  }
+  .admin-kpi-card strong{
+    font-size:1rem;
+  }
+  .admin-dashboard-panel,
+  .admin-setting-card,
+  .customer-care-summary-card,
+  .customer-care-user-card{
+    padding:10px;
+    border-radius:16px;
+  }
+  .admin-search-box input{
+    font-size:.88rem;
+  }
+}
+
+@media(max-width:768px) and (prefers-reduced-motion: reduce){
+  .dashboard-tab-btn,
+  .admin-kpi-card,
+  .admin-dashboard-panel,
+  .customer-care-user-card,
+  .customer-care-summary-card{
+    box-shadow:none !important;
+    transition:none !important;
+    transform:none !important;
+  }
+}
 .support-chat-widget{position:fixed;left:20px;bottom:106px;z-index:45;display:grid;justify-items:end;gap:12px}
 .barcode-scanner-overlay{position:fixed;inset:0;z-index:95;background:rgba(8,8,8,.78);backdrop-filter:blur(10px);display:grid;place-items:center;padding:20px}
 .barcode-scanner-modal{width:min(460px,calc(100vw - 24px));display:grid;gap:16px;padding:18px;border-radius:28px;background:#111111;border:1px solid rgba(222,183,122,.14);box-shadow:0 24px 70px rgba(0,0,0,.38)}
