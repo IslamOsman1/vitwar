@@ -61,10 +61,40 @@ const serializeUser = (user) => ({
 const buildAuthResponse = async (user) => {
   await ensureCustomerCode(user);
   return {
-    token: generateToken(user._id),
+    token: generateToken({ id: String(user._id) }),
     user: serializeUser(user)
   };
 };
+
+const adminUserId = '000000000000000000000000';
+
+const serializeAdminUser = (username = '') => ({
+  id: adminUserId,
+  name: 'Admin',
+  email: username,
+  phone: '',
+  customerCode: '',
+  qrCodeValue: '',
+  addresses: [],
+  role: 'admin',
+  permissions: ['*'],
+  avatar: '',
+  walletBalance: 0,
+  loyaltyPoints: 0,
+  loyaltyHistory: [],
+  inStoreSpentTotal: 0,
+  privateDiscountCodes: [],
+  hasManualPassword: true
+});
+
+const buildAdminAuthResponse = (username = '') => ({
+  token: generateToken({
+    id: adminUserId,
+    admin: true,
+    username
+  }),
+  user: serializeAdminUser(username)
+});
 
 const randomPassword = () => crypto.randomBytes(24).toString('hex');
 
@@ -78,120 +108,36 @@ const passwordTooShortMessage = 'كلمة المرور يجب أن تكون 6 أ
 const resetCodeCooldownMs = 60 * 1000;
 
 export const register = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
-  const phone = normalizePhone(req.body.phone);
-  const normalizedEmail = String(email || '').trim().toLowerCase();
-
-  if (!normalizedEmail) {
-    return res.status(400).json({ message: 'أدخل البريد الإلكتروني' });
-  }
-
-  const existingUser = await User.findOne({ email: normalizedEmail });
-
-  if (existingUser) {
-    if (existingUser.googleId && !existingUser.hasManualPassword) {
-      existingUser.name = name || existingUser.name;
-      existingUser.password = password;
-      existingUser.phone = phone;
-      existingUser.hasManualPassword = true;
-      await existingUser.save();
-      return res.status(200).json(await buildAuthResponse(existingUser));
-    }
-
-    return res.status(400).json({ message: 'البريد مستخدم من قبل' });
-  }
-
-  const user = await User.create({
-    name,
-    email: normalizedEmail,
-    password,
-    phone,
-    hasManualPassword: true
-  });
-
-  res.status(201).json(await buildAuthResponse(user));
+  return res.status(410).json({ message: '?????? ??????? ????? ?? ??? ??????' });
 });
 
 export const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  const normalizedEmail = String(email || '').trim().toLowerCase();
-  const user = await User.findOne({ email: normalizedEmail });
+  return res.status(410).json({ message: '????? ???? ??????? ???? ?? ??? ??????' });
+});
 
-  if (user && await user.matchPassword(password)) {
-    return res.json(await buildAuthResponse(user));
+export const adminLogin = asyncHandler(async (req, res) => {
+  const username = String(req.body.username || req.body.email || '').trim();
+  const password = String(req.body.password || '');
+  const adminUsername = String(process.env.ADMIN_USERNAME || '').trim();
+  const adminPassword = String(process.env.ADMIN_PASSWORD || '');
+
+  if (!adminUsername || !adminPassword) {
+    return res.status(500).json({ message: '????? ???? ???? ?????? ??? ????? ?? ??????' });
   }
 
-  if (user?.googleId && !user.hasManualPassword) {
-    return res.status(401).json({
-      message: 'هذا الحساب مسجل عبر Google فقط. استخدم Google أو أنشئ كلمة مرور بنفس البريد لربط الحساب.'
-    });
+  if (username === adminUsername && password === adminPassword) {
+    return res.json(buildAdminAuthResponse(adminUsername));
   }
 
-  res.status(401).json({ message: 'البريد أو كلمة المرور غير صحيحة' });
+  return res.status(401).json({ message: '??? ???????? ?? ???? ?????? ??? ?????' });
 });
 
 export const googleLogin = asyncHandler(async (req, res) => {
-  const { credential } = req.body;
-  if (!credential) {
-    return res.status(400).json({ message: 'بيانات Google غير موجودة' });
-  }
-
-  const googleClientId = process.env.GOOGLE_CLIENT_ID;
-  if (!googleClientId) {
-    return res.status(400).json({ message: 'تسجيل الدخول بجوجل غير مفعل من إعدادات البيئة' });
-  }
-
-  const ticket = await googleClient.verifyIdToken({
-    idToken: credential,
-    audience: googleClientId
-  });
-
-  const payload = ticket.getPayload();
-  if (!payload?.email || !payload.email_verified) {
-    return res.status(400).json({ message: 'تعذر التحقق من حساب Google' });
-  }
-
-  const normalizedEmail = String(payload.email).trim().toLowerCase();
-
-  let user = await User.findOne({
-    $or: [
-      { email: normalizedEmail },
-      { googleId: payload.sub }
-    ]
-  });
-
-  if (!user) {
-    user = await User.create({
-      name: payload.name || normalizedEmail.split('@')[0],
-      email: normalizedEmail,
-      password: randomPassword(),
-      hasManualPassword: false,
-      phone: '',
-      googleId: payload.sub,
-      avatar: payload.picture || ''
-    });
-  } else {
-    if (!user.googleId) user.googleId = payload.sub;
-    if (!user.avatar && payload.picture) user.avatar = payload.picture;
-    if (!user.name && payload.name) user.name = payload.name;
-    await user.save();
-  }
-
-  res.json(await buildAuthResponse(user));
+  return res.status(410).json({ message: '????? ?????? ????? ???? ?? ??? ??????' });
 });
 
 export const setManualPassword = asyncHandler(async (req, res) => {
-  const { password } = req.body;
-
-  if (!password || String(password).trim().length < 6) {
-    return res.status(400).json({ message: passwordTooShortMessage });
-  }
-
-  req.user.password = password;
-  req.user.hasManualPassword = true;
-  await req.user.save();
-
-  res.json(await buildAuthResponse(req.user));
+  return res.status(410).json({ message: '????? ???? ?????? ??????? ???? ?? ??? ??????' });
 });
 
 export const sendResetPasswordCode = asyncHandler(async (req, res) => {
@@ -318,6 +264,20 @@ export const resetPasswordWithEmailCode = asyncHandler(async (req, res) => {
 });
 
 export const profile = asyncHandler(async (req, res) => {
-  await ensureCustomerCode(req.user);
-  res.json(serializeUser(req.user));
+  if (req.user?.isEnvAdmin) {
+    return res.json(serializeAdminUser(req.user.email || process.env.ADMIN_USERNAME || ''));
+  }
+
+  if (req.user?.role === 'admin') {
+    await ensureCustomerCode(req.user);
+    return res.json(serializeUser(req.user));
+  }
+
+  return res.status(410).json({ message: '?????? ??????? ????? ?? ??? ??????' });
 });
+
+
+
+
+
+

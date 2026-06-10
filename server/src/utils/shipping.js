@@ -19,6 +19,6 @@ export const calculateShippingPrice = async (itemsPrice, shippingAddress = {}) =
 
   if (!itemsPrice || itemsPrice >= freeShippingThreshold) return 0;
 
-  const governorateFee = findGovernorateShippingFee(settings, shippingAddress.city);
+  const governorateFee = findGovernorateShippingFee(settings, shippingAddress.governorate || shippingAddress.city);
   return governorateFee ?? shippingFee;
 };

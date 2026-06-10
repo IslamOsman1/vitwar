@@ -117,7 +117,12 @@ const collectOrderManagers = async () => {
 const formatOrderItems = (items = []) => (
   items
     .slice(0, 8)
-    .map((item) => `- ${item.name} x ${item.qty}`)
+    .map((item) => {
+      const addOnsText = (item.addOns || []).length
+        ? ` (${item.addOns.map((addOn) => `+ ${addOn.name}`).join('، ')})`
+        : '';
+      return `- ${item.name}${addOnsText} x ${item.qty}`;
+    })
     .join('\n')
 );
 
@@ -126,7 +131,18 @@ const normalizeBaseUrl = (value = '') => String(value || '').trim().replace(/\/+
 const buildCustomerOrdersUrl = (baseUrlOverride = '') => {
   const baseUrl = normalizeBaseUrl(baseUrlOverride) || normalizeBaseUrl(process.env.CLIENT_URL);
   if (!baseUrl) return '';
-  return `${baseUrl}/orders`;
+  return baseUrl;
+};
+
+const buildShippingAddressLine = (shippingAddress = {}) => {
+  const parts = [
+    shippingAddress.branch || '',
+    shippingAddress.governorate || shippingAddress.city || '',
+    shippingAddress.city || shippingAddress.area || '',
+    shippingAddress.street || ''
+  ].map((part) => String(part || '').trim()).filter(Boolean);
+
+  return parts.join(' ');
 };
 
 export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippingAddress }) => {
@@ -156,7 +172,7 @@ export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippi
     `رقم الطلب: ${order._id}`,
     `العميل: ${customer?.name || shippingAddress?.fullName || 'غير محدد'}`,
     `الهاتف: ${shippingAddress?.phone || customer?.phone || 'غير متوفر'}`,
-    `العنوان: ${`${shippingAddress?.city || ''} ${shippingAddress?.area || ''} ${shippingAddress?.street || ''}`.trim() || 'غير متوفر'}`,
+    `العنوان: ${buildShippingAddressLine(shippingAddress) || 'غير متوفر'}`,
     `الدفع: ${order.paymentMethod || 'غير محدد'}`,
     `الإجمالي: ${Number(order.totalPrice || 0).toFixed(2)} ج.م`,
     itemsText ? `المنتجات:\n${itemsText}` : 'المنتجات: غير متوفرة',
@@ -168,7 +184,7 @@ export const sendNewOrderWhatsAppNotification = async ({ order, customer, shippi
     3: String(shippingAddress?.phone || customer?.phone || ''),
     4: `${Number(order?.totalPrice || 0).toFixed(2)} ج.م`,
     5: String(order?.paymentMethod || ''),
-    6: String(`${shippingAddress?.city || ''} ${shippingAddress?.area || ''} ${shippingAddress?.street || ''}`.trim())
+    6: String(buildShippingAddressLine(shippingAddress))
   };
 
   const results = await Promise.all(recipients.map(async (recipient) => {

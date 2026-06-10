@@ -66,7 +66,7 @@ export default function ForgotPasswordPage() {
         password: newPassword
       });
       toast.success('تم تحديث كلمة المرور');
-      navigate('/login');
+      navigate('/');
     } catch (error) {
       toast.error(error.response?.data?.message || 'تعذر تحديث كلمة المرور');
     } finally {
@@ -123,7 +123,7 @@ export default function ForgotPasswordPage() {
         <button className="primary-btn" disabled={saving}>{saving ? 'جارٍ الحفظ...' : 'تحديث كلمة المرور'}</button>
       </form>
 
-      <p>تذكرت كلمة المرور؟ <Link to="/login">العودة لتسجيل الدخول</Link></p>
+      <p>تذكرت كلمة المرور؟ <Link to="/">العودة للرئيسية</Link></p>
     </div>
   );
 }

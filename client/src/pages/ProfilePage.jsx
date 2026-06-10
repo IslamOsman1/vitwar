@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import QRCode from 'qrcode';
 import {
-  ClipboardList,
-  Heart,
   LogOut,
   Mail,
   Phone,
@@ -38,20 +36,6 @@ export default function ProfilePage() {
   ];
 
   const quickLinks = [
-    {
-      to: '/orders',
-      label: 'طلباتي',
-      note: 'راجع حالة الطلبات الحالية والسابقة',
-      icon: ClipboardList,
-      tone: 'warm'
-    },
-    {
-      to: '/wishlist',
-      label: 'المفضلة',
-      note: 'كل المنتجات التي حفظتها للرجوع لها',
-      icon: Heart,
-      tone: 'dark'
-    },
     {
       to: '/cart',
       label: 'السلة',
@@ -109,8 +93,8 @@ export default function ProfilePage() {
           </div>
 
           <div className="profile-hero-actions-modern">
-            <Link to="/orders" className="primary-btn">طلباتي</Link>
-            <Link to="/wishlist" className="secondary-btn">المفضلة</Link>
+            <Link to="/cart" className="primary-btn">السلة</Link>
+            <Link to="/" className="secondary-btn">الرئيسية</Link>
             <button type="button" className="secondary-btn profile-logout-btn" onClick={logout}>
               <LogOut size={16} />
               <span>تسجيل الخروج</span>

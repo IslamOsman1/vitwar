@@ -14,23 +14,41 @@ const CANCEL_WINDOW_MS = 5 * 60 * 1000;
 const resolveClientUrl = (req) => process.env.CLIENT_URL || req.headers.origin || 'http://localhost:5173';
 
 const buildOrderItems = async (orderItems) => {
-  const ids = orderItems.map((item) => item.product);
-  const products = await Product.find({ _id: { $in: ids } });
+  const productIds = orderItems.map((item) => item.product);
+  const products = await Product.find({ _id: { $in: productIds } });
 
   return orderItems.map((item) => {
     const product = products.find((entry) => entry._id.toString() === item.product);
     if (!product) throw new Error('منتج غير موجود');
+
+    const qty = Math.max(1, Number(item.qty || 1));
     const hasTrackedStock = product.countInStock !== null && product.countInStock !== undefined;
-    if (hasTrackedStock && Number(product.countInStock) < Number(item.qty || 0)) {
+    if (hasTrackedStock && Number(product.countInStock) < qty) {
       throw new Error(`الكمية غير متاحة: ${product.name}`);
     }
+
+    const addOns = (Array.isArray(item.addOns) ? item.addOns : []).map((addOn) => {
+      const requestedAddOnId = String(addOn.addOnId || addOn._id || addOn.product || '');
+      const productAddOn = (product.availableAddOns || []).find((entry) => entry._id.toString() === requestedAddOnId);
+      if (!productAddOn || productAddOn.active === false) throw new Error('إضافة غير متاحة لهذا المنتج');
+      const addOnQty = Math.max(1, Number(addOn.qty || 1));
+
+      return {
+        addOnId: productAddOn._id.toString(),
+        name: productAddOn.name,
+        price: productAddOn.price,
+        image: productAddOn.image || '',
+        qty: addOnQty
+      };
+    });
 
     return {
       product: product._id,
       name: product.name,
-      qty: item.qty,
+      qty,
       image: product.image?.url,
-      price: product.price
+      price: product.price,
+      addOns
     };
   });
 };
@@ -45,6 +63,17 @@ const adjustTrackedStock = async (productId, qtyDelta) => {
   );
 };
 
+const applyStockAdjustmentForOrderItems = async (items, direction = -1) => {
+  for (const item of items) {
+    await adjustTrackedStock(item.product, direction * Number(item.qty || 0));
+    for (const addOn of item.addOns || []) {
+      if (addOn.product) {
+        await adjustTrackedStock(addOn.product, direction * Number(item.qty || 0) * Number(addOn.qty || 1));
+      }
+    }
+  }
+};
+
 const canUserCancelOrder = (order) => {
   if (!order) return false;
   if (order.status !== 'جديد') return false;
@@ -54,6 +83,18 @@ const canUserCancelOrder = (order) => {
 const restoreUsedLoyaltyPoints = async () => {};
 
 const consumeLoyaltyPoints = async () => {};
+
+const normalizeShippingAddress = (shippingAddress = {}) => ({
+  fullName: String(shippingAddress.fullName || '').trim(),
+  phone: String(shippingAddress.phone || '').trim(),
+  branch: String(shippingAddress.branch || '').trim(),
+  governorate: String(shippingAddress.governorate || shippingAddress.city || '').trim(),
+  city: String(shippingAddress.city || shippingAddress.area || '').trim(),
+  area: String(shippingAddress.area || shippingAddress.city || '').trim(),
+  street: String(shippingAddress.street || '').trim(),
+  cafeName: String(shippingAddress.cafeName || '').trim(),
+  notes: String(shippingAddress.notes || '').trim()
+});
 
 const awardLoyaltyPointsIfEligible = async (order) => {
   if (!order || order.status !== 'تم التسليم' || order.loyaltyPointsAwarded) return;
@@ -82,13 +123,14 @@ const notifyOrderManagers = async (order, customer) => {
 };
 
 const notifyOrderCustomer = async (order, body) => {
+  if (!order.user) return;
   const customer = await User.findById(order.user).select('pushSubscriptions');
   if (!customer) return;
 
   await sendPushToUsers([customer], {
     title: 'تحديث حالة الطلب',
     body,
-    url: '/orders',
+    url: '/',
     tag: `order-status-${order._id}`,
     data: {
       orderId: String(order._id),
@@ -98,11 +140,12 @@ const notifyOrderCustomer = async (order, body) => {
 };
 
 export const createOrder = asyncHandler(async (req, res) => {
-  const { orderItems, shippingAddress, paymentMethod, discountCode, redeemLoyaltyPoints } = req.body;
+  const { orderItems, shippingAddress, paymentMethod, discountCode, redeemLoyaltyPoints, fulfillmentMethod } = req.body;
   if (!orderItems?.length) {
     return res.status(400).json({ message: 'السلة فارغة' });
   }
 
+  const normalizedShippingAddress = normalizeShippingAddress(shippingAddress);
   const settings = await ensureStoreSettings();
   const paymentSettings = settings.payment || {};
 
@@ -118,16 +161,17 @@ export const createOrder = asyncHandler(async (req, res) => {
   const pricing = await calculateOrderPricing({
     settings,
     items,
-    shippingAddress,
+    shippingAddress: normalizedShippingAddress,
     discountCode,
     redeemLoyaltyPoints,
     user: req.user
   });
 
   const order = await Order.create({
-    user: req.user._id,
+    user: req.user?._id || null,
     orderItems: items,
-    shippingAddress,
+    shippingAddress: normalizedShippingAddress,
+    fulfillmentMethod: ['cafe', 'delivery'].includes(fulfillmentMethod) ? fulfillmentMethod : 'restaurant',
     paymentMethod: paymentMethod === 'online' ? 'دفع أونلاين' : 'الدفع عند الاستلام',
     paymentProvider: paymentMethod === 'online' ? (paymentSettings.onlineProvider || 'stripe') : '',
     itemsPrice: pricing.itemsPrice,
@@ -139,14 +183,14 @@ export const createOrder = asyncHandler(async (req, res) => {
     totalPrice: pricing.totalPrice
   });
 
-  for (const item of items) {
-    await adjustTrackedStock(item.product, -Number(item.qty || 0));
+  await applyStockAdjustmentForOrderItems(items, -1);
+
+  if (req.user?._id) {
+    await consumeLoyaltyPoints(req.user._id, order, pricing.loyaltyPointsUsed);
   }
 
-  await consumeLoyaltyPoints(req.user._id, order, pricing.loyaltyPointsUsed);
-
   if (pricing.discountCode) {
-    const freshUser = pricing.discountCodeSource === 'private' ? await User.findById(req.user._id) : null;
+    const freshUser = pricing.discountCodeSource === 'private' && req.user?._id ? await User.findById(req.user._id) : null;
     await incrementDiscountCodeUsage({
       settings,
       user: freshUser,
@@ -155,16 +199,16 @@ export const createOrder = asyncHandler(async (req, res) => {
     });
   }
 
-  await notifyOrderManagers(order, req.user);
-  console.log('WhatsApp hook reached for createOrder', {
-    orderId: String(order._id || ''),
-    customerId: String(req.user?._id || ''),
-    paymentMethod: order.paymentMethod
-  });
+  const customer = req.user || {
+    name: normalizedShippingAddress.fullName || 'عميل جديد',
+    phone: normalizedShippingAddress.phone || ''
+  };
+
+  await notifyOrderManagers(order, customer);
   const adminWhatsAppResult = await sendNewOrderWhatsAppNotification({
     order,
-    customer: req.user,
-    shippingAddress
+    customer,
+    shippingAddress: normalizedShippingAddress
   }).catch((error) => {
     console.error('WhatsApp notification error', {
       orderId: String(order._id || ''),
@@ -178,8 +222,8 @@ export const createOrder = asyncHandler(async (req, res) => {
   });
   const customerWhatsAppResult = await sendCustomerOrderWhatsAppNotification({
     order,
-    customer: req.user,
-    shippingAddress,
+    customer,
+    shippingAddress: normalizedShippingAddress,
     clientUrl: resolveClientUrl(req)
   }).catch((error) => {
     console.error('WhatsApp customer notification error', {
@@ -205,7 +249,7 @@ export const getOrderById = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id).populate('user', 'name email phone walletBalance loyaltyPoints');
   if (!order) return res.status(404).json({ message: 'الطلب غير موجود' });
 
-  const isOwner = order.user?._id?.toString() === req.user._id.toString();
+  const isOwner = req.user?._id ? order.user?._id?.toString() === req.user._id.toString() : true;
   if (!isOwner && req.user.role !== 'admin') {
     return res.status(403).json({ message: 'غير مصرح بهذه العملية' });
   }
@@ -224,7 +268,7 @@ export const cancelMyOrder = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) return res.status(404).json({ message: 'الطلب غير موجود' });
 
-  const isOwner = order.user?.toString() === req.user._id.toString();
+  const isOwner = req.user?._id ? order.user?.toString() === req.user._id.toString() : true;
   if (!isOwner && req.user.role !== 'admin') {
     return res.status(403).json({ message: 'غير مصرح بهذه العملية' });
   }
@@ -235,9 +279,7 @@ export const cancelMyOrder = asyncHandler(async (req, res) => {
 
   order.status = 'ملغي';
 
-  for (const item of order.orderItems) {
-    await adjustTrackedStock(item.product, Number(item.qty || 0));
-  }
+  await applyStockAdjustmentForOrderItems(order.orderItems || [], 1);
 
   await restoreUsedLoyaltyPoints(order);
   await order.save();
@@ -252,7 +294,9 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) return res.status(404).json({ message: 'الطلب غير موجود' });
 
-  order.status = req.body.status || order.status;
+  const allowedStatuses = ['جديد', 'تم التسليم', 'ملغي'];
+  const nextStatus = allowedStatuses.includes(req.body.status) ? req.body.status : order.status;
+  order.status = nextStatus;
 
   if (req.body.isPaid === true) {
     order.isPaid = true;

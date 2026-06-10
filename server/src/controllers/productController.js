@@ -1,4 +1,4 @@
-import asyncHandler from 'express-async-handler';
+﻿import asyncHandler from 'express-async-handler';
 import Product from '../models/Product.js';
 import cloudinary from '../config/cloudinary.js';
 import { assertDeletePassword } from '../utils/deleteProtection.js';
@@ -6,6 +6,34 @@ import { uploadToCloudinary } from '../utils/uploadToCloudinary.js';
 
 const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const generateProductBarcode = () => `PRD-${Date.now().toString(36).toUpperCase()}`;
+
+const parseAvailableAddOns = (value) => {
+  let entries = [];
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      entries = Array.isArray(parsed) ? parsed : [];
+    } catch {
+      entries = [];
+    }
+  } else if (Array.isArray(value)) {
+    entries = value;
+  }
+
+  return entries
+    .map((item) => {
+      const addOn = {
+        name: String(item?.name || '').trim(),
+        price: Number(item?.price || 0),
+        image: String(item?.image || '').trim(),
+        active: item?.active !== false
+      };
+      if (item?._id) addOn._id = item._id;
+      return addOn;
+    })
+    .filter((item) => item.name && Number.isFinite(item.price) && item.price >= 0);
+};
 
 export const getProducts = asyncHandler(async (req, res) => {
   const page = Number(req.query.page) || 1;
@@ -34,8 +62,9 @@ export const getProducts = asyncHandler(async (req, res) => {
 });
 
 export const getProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id).populate('reviews.user', 'name avatar');
-  if (!product) return res.status(404).json({ message: 'المنتج غير موجود' });
+  const product = await Product.findById(req.params.id)
+    .populate('reviews.user', 'name avatar');
+  if (!product) return res.status(404).json({ message: 'Ø§Ù„Ù…Ù†ØªØ¬ ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯' });
   res.json(product);
 });
 
@@ -54,7 +83,8 @@ export const createProduct = asyncHandler(async (req, res) => {
     barcode: String(req.body.barcode || '').trim() || generateProductBarcode(),
     measurementValue: Number(req.body.measurementValue || 0),
     measurementUnit: String(req.body.measurementUnit || '').trim(),
-    inAgencyCollection: req.body.inAgencyCollection ?? req.body.featured ?? false
+    inAgencyCollection: req.body.inAgencyCollection ?? req.body.featured ?? false,
+    availableAddOns: parseAvailableAddOns(req.body.availableAddOns)
   };
 
   let image = { url: '', publicId: '' };
@@ -64,7 +94,7 @@ export const createProduct = asyncHandler(async (req, res) => {
       image = { url: result.secure_url, publicId: result.public_id };
     } catch (error) {
       error.statusCode = error.statusCode || 500;
-      error.message = error.message || 'تعذر رفع صورة المنتج';
+      error.message = error.message || 'ØªØ¹Ø°Ø± Ø±ÙØ¹ ØµÙˆØ±Ø© Ø§Ù„Ù…Ù†ØªØ¬';
       throw error;
     }
   }
@@ -75,8 +105,10 @@ export const createProduct = asyncHandler(async (req, res) => {
 
 export const updateProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
-  if (!product) return res.status(404).json({ message: 'المنتج غير موجود' });
+  if (!product) return res.status(404).json({ message: 'Ø§Ù„Ù…Ù†ØªØ¬ ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯' });
   const hasCountInStock = String(req.body.countInStock ?? '').trim() !== '';
+
+  const availableAddOns = parseAvailableAddOns(req.body.availableAddOns);
 
   Object.assign(product, {
     ...req.body,
@@ -86,7 +118,8 @@ export const updateProduct = asyncHandler(async (req, res) => {
     barcode: String(req.body.barcode || '').trim(),
     measurementValue: Number(req.body.measurementValue || 0),
     measurementUnit: String(req.body.measurementUnit || '').trim(),
-    inAgencyCollection: req.body.inAgencyCollection ?? req.body.featured ?? product.inAgencyCollection
+    inAgencyCollection: req.body.inAgencyCollection ?? req.body.featured ?? product.inAgencyCollection,
+    availableAddOns
   });
 
   if (req.file) {
@@ -96,7 +129,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
       product.image = { url: result.secure_url, publicId: result.public_id };
     } catch (error) {
       error.statusCode = error.statusCode || 500;
-      error.message = error.message || 'تعذر رفع صورة المنتج';
+      error.message = error.message || 'ØªØ¹Ø°Ø± Ø±ÙØ¹ ØµÙˆØ±Ø© Ø§Ù„Ù…Ù†ØªØ¬';
       throw error;
     }
   }
@@ -109,60 +142,15 @@ export const deleteProduct = asyncHandler(async (req, res) => {
   await assertDeletePassword(req.body?.deletePassword);
 
   const product = await Product.findById(req.params.id);
-  if (!product) return res.status(404).json({ message: 'المنتج غير موجود' });
+  if (!product) return res.status(404).json({ message: 'Ø§Ù„Ù…Ù†ØªØ¬ ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯' });
 
   if (product.image?.publicId) {
     await cloudinary.uploader.destroy(product.image.publicId);
   }
 
   await product.deleteOne();
-  res.json({ message: 'تم حذف المنتج' });
+  res.json({ message: 'ØªÙ… Ø­Ø°Ù Ø§Ù„Ù…Ù†ØªØ¬' });
 });
 
-export const createProductReview = asyncHandler(async (req, res) => {
-  const { rating, comment } = req.body;
-  const product = await Product.findById(req.params.id);
 
-  if (!product) {
-    return res.status(404).json({ message: 'المنتج غير موجود' });
-  }
 
-  const normalizedComment = String(comment || '').trim();
-  const numericRating = Number(rating || 0);
-
-  if (!normalizedComment) {
-    return res.status(400).json({ message: 'أضف تعليقًا قبل الإرسال' });
-  }
-
-  if (!Number.isFinite(numericRating) || numericRating < 1 || numericRating > 5) {
-    return res.status(400).json({ message: 'اختر تقييمًا من 1 إلى 5' });
-  }
-
-  const existingReview = product.reviews.find((entry) => entry.user?.toString() === req.user._id.toString());
-
-  if (existingReview) {
-    existingReview.rating = numericRating;
-    existingReview.comment = normalizedComment;
-    existingReview.name = req.user.name || existingReview.name;
-  } else {
-    product.reviews.unshift({
-      user: req.user._id,
-      name: req.user.name || 'مستخدم',
-      rating: numericRating,
-      comment: normalizedComment
-    });
-  }
-
-  product.numReviews = product.reviews.length;
-  product.rating = product.numReviews
-    ? Number((product.reviews.reduce((sum, entry) => sum + Number(entry.rating || 0), 0) / product.numReviews).toFixed(1))
-    : 0;
-
-  await product.save();
-  await product.populate('reviews.user', 'name avatar');
-
-  res.status(201).json({
-    message: existingReview ? 'تم تحديث تقييمك' : 'تم إرسال تقييمك بنجاح',
-    product
-  });
-});

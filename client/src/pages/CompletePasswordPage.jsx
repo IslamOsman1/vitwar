@@ -63,7 +63,7 @@ export default function CompletePasswordPage() {
 
       <button type="button" className="secondary-btn password-setup-logout" onClick={() => {
         logout();
-        navigate('/login', { replace: true });
+        navigate('/', { replace: true });
       }}>
         تسجيل الخروج
       </button>

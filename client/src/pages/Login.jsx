@@ -47,7 +47,7 @@ export default function Login() {
       <div className="auth-divider"><span>أو</span></div>
       <SocialLoginButtons />
 
-      <p>ليس لديك حساب؟ <Link to="/register">أنشئ حساب</Link></p>
+      <p>ليس لديك حساب؟ <Link to="/">العودة للرئيسية</Link></p>
       <p className="auth-policy-links">
         <Link to="/policies/terms">الشروط والأحكام</Link>
         <span>•</span>

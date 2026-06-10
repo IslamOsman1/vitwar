@@ -1,24 +1,38 @@
 import mongoose from 'mongoose';
 
+const orderItemAddOnSchema = new mongoose.Schema({
+  product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+  addOnId: { type: String, default: '' },
+  name: String,
+  price: { type: Number, required: true },
+  image: { type: String, default: '' },
+  qty: { type: Number, default: 1 }
+}, { _id: false });
+
 const orderItemSchema = new mongoose.Schema({
   product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
   name: String,
   qty: { type: Number, required: true },
   image: String,
-  price: { type: Number, required: true }
+  price: { type: Number, required: true },
+  addOns: { type: [orderItemAddOnSchema], default: [] }
 }, { _id: false });
 
 const orderSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   orderItems: [orderItemSchema],
   shippingAddress: {
     fullName: String,
     phone: String,
+    branch: String,
+    governorate: String,
+    cafeName: String,
     city: String,
     area: String,
     street: String,
     notes: String
   },
+  fulfillmentMethod: { type: String, enum: ['restaurant', 'cafe', 'delivery'], default: 'restaurant' },
   paymentMethod: { type: String, default: 'الدفع عند الاستلام' },
   paymentProvider: { type: String, default: '' },
   paymentSessionId: { type: String, default: '' },
@@ -32,7 +46,7 @@ const orderSchema = new mongoose.Schema({
   totalPrice: { type: Number, required: true },
   status: {
     type: String,
-    enum: ['جديد', 'قيد التجهيز', 'في الطريق', 'تم التسليم', 'ملغي'],
+    enum: ['جديد', 'تم التسليم', 'ملغي'],
     default: 'جديد'
   },
   isPaid: { type: Boolean, default: false },

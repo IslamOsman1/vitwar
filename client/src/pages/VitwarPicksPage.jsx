@@ -132,7 +132,7 @@ export default function VitwarPicksPage() {
         </section>)}
       </div> : <div className="empty-state compact-empty-state">
         <p>لا توجد منتجات متاحة حاليًا في هذا القسم.</p>
-        <Link to="/admin" className="primary-btn">اذهب إلى لوحة التحكم</Link>
+        <span className="muted">لوحة التحكم متاحة عبر المسار المباشر `/admin`.</span>
       </div>}
     </section>
   </main>;

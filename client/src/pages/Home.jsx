@@ -150,7 +150,6 @@ export default function Home() {
             className="promo-slide-image"
             loading={activeSlide === 0 ? 'eager' : 'lazy'}
             decoding="async"
-            fetchPriority={activeSlide === 0 ? 'high' : 'auto'}
             sizes="(max-width: 480px) 100vw, (max-width: 768px) 92vw, 1180px"
           />
         ) : null}

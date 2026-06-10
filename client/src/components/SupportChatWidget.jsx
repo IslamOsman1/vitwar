@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { BellRing, MessageCircle, RotateCcw, Send, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/api.js';
@@ -161,7 +161,7 @@ export default function SupportChatWidget() {
           <div className="support-chat-head">
             <div>
               <strong>الدعم الفني</strong>
-              <span>{isCustomer ? supportName : 'تحتاج إلى تسجيل الدخول لبدء المحادثة'}</span>
+              <span>{isCustomer ? supportName : 'خدمة الدعم'}</span>
             </div>
             <button type="button" className="support-chat-close" onClick={() => setOpen(false)}>
               <X size={18} />
@@ -217,9 +217,8 @@ export default function SupportChatWidget() {
             </>
           ) : (
             <div className="support-chat-guest">
-              <p>سجل الدخول أولًا حتى نربط رسائلك بحسابك ونساعدك في الطلبات والعروض وخدمة ما بعد الشراء.</p>
+              <p>تواصل معنا عبر واتساب أو من هنا وسيصل فريق الدعم لرسالتك مباشرة.</p>
               <div className="support-chat-guest-actions">
-                <Link to="/login" className="primary-btn" onClick={() => setOpen(false)}>تسجيل الدخول</Link>
                 {settings?.whatsapp ? (
                   <a
                     href={`https://wa.me/${String(settings.whatsapp).replace(/\D/g, '')}`}

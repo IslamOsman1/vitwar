@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../api/api.js';
-import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
 
 const checkoutDraftKey = 'checkout-draft';
@@ -12,7 +11,6 @@ export default function CheckoutSuccess() {
   const [loading, setLoading] = useState(true);
   const [paid, setPaid] = useState(false);
   const [order, setOrder] = useState(null);
-  const { refreshProfile } = useAuth();
   const { clearCart } = useCart();
 
   useEffect(() => {
@@ -27,7 +25,6 @@ export default function CheckoutSuccess() {
         setPaid(Boolean(data.paid));
         setOrder(data.order);
         if (data.paid) {
-          refreshProfile().catch(() => undefined);
           clearCart();
           sessionStorage.removeItem(checkoutDraftKey);
           toast.success('تم تأكيد الدفع بنجاح وإنشاء الطلب');
@@ -37,7 +34,7 @@ export default function CheckoutSuccess() {
         toast.error(error.response?.data?.message || 'تعذر التحقق من عملية الدفع');
       })
       .finally(() => setLoading(false));
-  }, [clearCart, refreshProfile, searchParams]);
+  }, [clearCart, searchParams]);
 
   return (
     <div className="container page checkout-page">
@@ -52,8 +49,8 @@ export default function CheckoutSuccess() {
         </p>
 
         <div className="checkout-review-actions">
-          <Link to={paid ? '/orders' : '/checkout/review'} className="primary-btn">
-            {paid ? 'الذهاب إلى طلباتي' : 'العودة إلى إكمال الطلب'}
+          <Link to={paid ? '/' : '/checkout/review'} className="primary-btn">
+            {paid ? 'العودة للرئيسية' : 'العودة إلى إكمال الطلب'}
           </Link>
           <Link to="/" className="secondary-btn">العودة للرئيسية</Link>
         </div>

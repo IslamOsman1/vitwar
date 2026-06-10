@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  adminLogin,
   googleLogin,
   login,
   profile,
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.post('/register', register);
 router.post('/login', login);
+router.post('/admin-login', adminLogin);
 router.post('/google', googleLogin);
 router.post('/reset-password/email/send-code', sendResetPasswordCode);
 router.post('/reset-password/email/confirm', resetPasswordWithEmailCode);

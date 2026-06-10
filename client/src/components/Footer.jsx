@@ -1,10 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import {
-  ClipboardList,
   Facebook,
   Grid2X2,
-  Heart,
   Home,
   Info,
   Instagram,
@@ -12,7 +10,6 @@ import {
   MoreHorizontal,
   Package,
   Phone,
-  Settings,
   ShieldCheck,
   ShoppingCart,
   Store,
@@ -54,7 +51,6 @@ export default function Footer() {
 
   const serviceLinks = [
     { to: '/cart', label: totals.count > 0 ? `السلة (${totals.count})` : 'السلة', icon: ShoppingCart },
-    { to: '/orders', label: 'طلباتي', icon: ClipboardList },
     { to: '/contact', label: settings?.supportPhone || 'خدمة العملاء', icon: Phone },
     { to: '/policies/shipping', label: 'سياسة التوصيل', icon: Truck },
     { to: '/policies/refund', label: 'سياسة الاسترجاع', icon: Wallet }
@@ -80,18 +76,6 @@ export default function Footer() {
                 <ShoppingCart size={18} />
                 <span>السلة</span>
                 {totals.count > 0 ? <b>{totals.count}</b> : null}
-              </Link>
-              <Link to="/orders" className="bottom-more-item" onClick={() => setMoreOpen(false)}>
-                <ClipboardList size={18} />
-                <span>طلباتي</span>
-              </Link>
-              <Link to="/wishlist" className="bottom-more-item" onClick={() => setMoreOpen(false)}>
-                <Heart size={18} />
-                <span>المفضلة</span>
-              </Link>
-              <Link to="/settings" className="bottom-more-item" onClick={() => setMoreOpen(false)}>
-                <Settings size={18} />
-                <span>الإعدادات</span>
               </Link>
               <Link to="/contact" className="bottom-more-item" onClick={() => setMoreOpen(false)}>
                 <Phone size={18} />

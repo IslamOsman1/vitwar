@@ -7,7 +7,7 @@ const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user') || 'null'));
+  const [user, setUser] = useState(null);
 
   const saveSession = (data) => {
     localStorage.setItem('token', data.token);
@@ -17,33 +17,37 @@ export function AuthProvider({ children }) {
 
   const refreshProfile = async () => {
     const { data } = await api.get('/auth/profile');
+    if (data?.role !== 'admin') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+      return null;
+    }
     localStorage.setItem('user', JSON.stringify(data));
     setUser(data);
     return data;
   };
 
   const login = async (email, password) => {
-    const { data } = await api.post('/auth/login', { email, password });
+    throw new Error('Customer accounts are disabled');
+  };
+
+  const adminLogin = async (username, password) => {
+    const { data } = await api.post('/auth/admin-login', { username, password });
     saveSession(data);
-    toast.success('تم تسجيل الدخول');
+    toast.success('تم تسجيل الدخول إلى لوحة التحكم');
   };
 
   const register = async (payload) => {
-    const { data } = await api.post('/auth/register', payload);
-    saveSession(data);
-    toast.success('تم إنشاء الحساب');
+    throw new Error('Customer accounts are disabled');
   };
 
   const googleLogin = async (credential) => {
-    const { data } = await api.post('/auth/google', { credential });
-    saveSession(data);
-    toast.success('تم تسجيل الدخول بواسطة Google');
+    throw new Error('Customer accounts are disabled');
   };
 
   const setManualPassword = async (password) => {
-    const { data } = await api.put('/auth/set-password', { password });
-    saveSession(data);
-    toast.success('تم حفظ كلمة المرور بنجاح');
+    throw new Error('Customer accounts are disabled');
   };
 
   const logout = () => {
@@ -59,12 +63,21 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) return;
-    refreshProfile().catch(() => logout());
+    if (!token) {
+      localStorage.removeItem('user');
+      setUser(null);
+      return;
+    }
+
+    refreshProfile().catch(() => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+    });
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, register, googleLogin, setManualPassword, logout, refreshProfile }}>
+    <AuthContext.Provider value={{ user, login, adminLogin, register, googleLogin, setManualPassword, logout, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

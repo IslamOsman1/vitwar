@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { BrowserQRCodeReader } from '@zxing/browser';
-import { Camera, LayoutDashboard, Search, ShoppingCart, UserRound, X } from 'lucide-react';
+import { Camera, Search, ShoppingCart, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Logo from './Logo.jsx';
-import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
 
 export default function Header() {
-  const { user } = useAuth();
   const { totals } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,9 +19,6 @@ export default function Header() {
   const [qrScannerOpen, setQrScannerOpen] = useState(false);
   const [qrScannerStarting, setQrScannerStarting] = useState(false);
   const [qrScannerStatus, setQrScannerStatus] = useState('');
-
-  const displayName = user?.name || 'User';
-  const initials = displayName.trim().slice(0, 2).toUpperCase();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -165,24 +160,6 @@ export default function Header() {
                 <ShoppingCart size={22} />
                 {totals.count > 0 && <b>{totals.count}</b>}
               </NavLink>
-
-              {(user?.role === 'admin' || (user?.role === 'employee' && user?.permissions?.length > 0)) && (
-                <NavLink to="/admin" className="round-action" title="لوحة التحكم" aria-label="لوحة التحكم">
-                  <LayoutDashboard size={22} />
-                </NavLink>
-              )}
-
-              {user ? null : (
-                <NavLink to="/login" className="round-action user-action" title="تسجيل الدخول" aria-label="تسجيل الدخول">
-                  <UserRound size={22} />
-                </NavLink>
-              )}
-
-              {user && (
-                <NavLink to="/profile" className="profile-avatar-trigger" title="الملف الشخصي" aria-label="الملف الشخصي">
-                  {user.avatar ? <img src={user.avatar} alt={displayName} className="profile-avatar-image" loading="lazy" decoding="async" /> : initials}
-                </NavLink>
-              )}
             </div>
           </div>
         </div>

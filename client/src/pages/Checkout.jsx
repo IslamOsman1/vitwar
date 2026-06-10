@@ -1,31 +1,22 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, MapPin } from 'lucide-react';
-import api from '../api/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
 import { useStoreSettings } from '../context/StoreSettingsContext.jsx';
 import { calculateCheckoutTotals } from '../utils/pricing.js';
-import { calculateShippingForGovernorate } from '../utils/shipping.js';
 
 const checkoutDraftKey = 'checkout-draft';
 
-const buildInitialAddress = (user) => ({
-  fullName: user?.name || '',
+const buildInitialCheckoutFields = (user) => ({
+  fullName: user?.role === 'admin' ? '' : (user?.name || ''),
   phone: user?.phone || '',
+  governorate: '',
   city: '',
-  area: '',
   street: '',
-  notes: ''
-});
-
-const buildAddressFromSavedAddress = (address, user) => ({
-  fullName: user?.name || '',
-  phone: user?.phone || '',
-  city: address?.governorate || '',
-  area: address?.city || '',
-  street: address?.street || address?.address || '',
-  notes: address?.notes || ''
+  branch: '',
+  notes: '',
+  cafeName: '',
+  pickupType: 'restaurant'
 });
 
 export default function Checkout() {
@@ -34,31 +25,26 @@ export default function Checkout() {
   const { items, totals } = useCart();
   const { settings } = useStoreSettings();
   const [profileUser, setProfileUser] = useState(user);
-  const [shippingAddress, setAddress] = useState(() => buildInitialAddress(user));
-  const [selectedAddressId, setSelectedAddressId] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [shippingAddress, setAddress] = useState(() => buildInitialCheckoutFields(user));
   const [discountCode, setDiscountCode] = useState('');
+  const [fulfillmentMethod, setFulfillmentMethod] = useState('restaurant');
 
-  const savedAddresses = useMemo(
-    () => Array.isArray(profileUser?.addresses) ? profileUser.addresses.filter((item) => item?.street || item?.address) : [],
-    [profileUser]
+  const isNearbyCafe = fulfillmentMethod === 'cafe';
+  const isDeliveryHome = fulfillmentMethod === 'delivery';
+  const governorates = settings?.checkout?.governorates || [];
+  const selectedGovernorate = useMemo(
+    () => governorates.find((item) => String(item.name || '').trim() === String(shippingAddress.governorate || '').trim()) || null,
+    [governorates, shippingAddress.governorate]
   );
-
-  const availableGovernorates = useMemo(
-    () => settings?.checkout?.governorates || [],
-    [settings]
+  const selectedGovernorateCities = useMemo(
+    () => (selectedGovernorate?.cities || []).filter(Boolean),
+    [selectedGovernorate]
   );
-
-  const availableCities = useMemo(() => {
-    const selectedGovernorate = availableGovernorates.find((item) => item.name === shippingAddress.city);
-    return selectedGovernorate?.cities || [];
-  }, [availableGovernorates, shippingAddress.city]);
-
-  const notesEnabled = settings?.checkout?.notesEnabled !== false;
-  const notesRequired = Boolean(settings?.checkout?.notesEnabled && settings?.checkout?.notesRequired);
+  const notesEnabled = true;
+  const notesRequired = false;
   const shippingPrice = useMemo(
-    () => calculateShippingForGovernorate(settings, shippingAddress.city, totals.itemsPrice),
-    [settings, shippingAddress.city, totals.itemsPrice]
+    () => 0,
+    []
   );
 
   const estimatedTotals = useMemo(
@@ -78,21 +64,17 @@ export default function Checkout() {
   }, [user]);
 
   useEffect(() => {
-    api.get('/users/me')
-      .then(({ data }) => setProfileUser(data))
-      .catch(() => undefined);
-  }, []);
-
-  useEffect(() => {
-    const nextBase = buildInitialAddress(profileUser);
+    const nextBase = buildInitialCheckoutFields(profileUser);
     setAddress((current) => ({
       ...current,
       fullName: current.fullName || nextBase.fullName,
       phone: current.phone || nextBase.phone,
+      notes: current.notes || '',
+      cafeName: current.cafeName || '',
+      branch: current.branch || '',
+      governorate: current.governorate || '',
       city: current.city || '',
-      area: current.area || '',
-      street: current.street || '',
-      notes: current.notes || ''
+      pickupType: current.pickupType || nextBase.pickupType
     }));
   }, [profileUser]);
 
@@ -101,14 +83,14 @@ export default function Checkout() {
     if (!draft) return;
     try {
       const parsed = JSON.parse(draft);
+      if (parsed.fulfillmentMethod) setFulfillmentMethod(parsed.fulfillmentMethod);
       if (parsed.shippingAddress) {
         setAddress({
-          ...buildInitialAddress(profileUser),
-          ...parsed.shippingAddress
+          ...buildInitialCheckoutFields(profileUser),
+          ...parsed.shippingAddress,
+          fullName: profileUser?.role === 'admin' ? '' : (parsed.shippingAddress.fullName || '')
         });
       }
-      if (parsed.selectedAddressId) setSelectedAddressId(parsed.selectedAddressId);
-      if (parsed.paymentMethod) setPaymentMethod(parsed.paymentMethod);
       if (parsed.discountCode) setDiscountCode(parsed.discountCode);
     } catch {
       return;
@@ -116,66 +98,79 @@ export default function Checkout() {
   }, [profileUser]);
 
   useEffect(() => {
-    if (!selectedAddressId) return;
-    const selectedAddress = savedAddresses.find((item) => item._id === selectedAddressId);
-    if (!selectedAddress) return;
-    setAddress(buildAddressFromSavedAddress(selectedAddress, profileUser));
-  }, [profileUser, savedAddresses, selectedAddressId]);
-
-  useEffect(() => {
     if (!items.length) navigate('/cart');
   }, [items, navigate]);
 
-  const paymentOptions = useMemo(() => {
+  const checkoutOptions = useMemo(() => {
     const options = [];
-    if (settings?.payment?.cashOnDeliveryEnabled !== false) {
-      options.push({
-        value: 'cod',
-        label: 'الدفع عند الاستلام',
-        note: 'الدفع عند وصول الطلب'
-      });
-    }
-    if (settings?.payment?.onlinePaymentEnabled) {
-      options.push({
-        value: 'online',
-        label: 'دفع أونلاين',
-        note: 'الدفع الآن ببطاقة بنكية عبر الإنترنت'
-      });
-    }
+    options.push({
+      kind: 'fulfillment',
+      value: 'restaurant',
+      label: 'استلام من المطعم',
+      note: 'الدفع عند وصول الطلب'
+    });
+    options.push({
+      kind: 'fulfillment',
+      value: 'cafe',
+      label: 'الكافيهات المجاورة',
+      note: 'استلام من أقرب كافيه متاح'
+    });
+    options.push({
+      kind: 'fulfillment',
+      value: 'delivery',
+      label: 'التوصيل للمنزل',
+      note: 'نفس فورم الدفع عند الاستلام'
+    });
     return options;
   }, [settings]);
 
   const change = (event) => {
     const { name, value } = event.target;
     setAddress((current) => {
-      const next = { ...current, [name]: value };
-      if (name === 'city') next.area = '';
-      return next;
+      return { ...current, [name]: value };
     });
   };
 
-  const selectSavedAddress = (nextId) => {
-    setSelectedAddressId(nextId);
-    if (!nextId) {
-      setAddress((current) => ({
-        ...current,
-        fullName: profileUser?.name || current.fullName || '',
-        phone: profileUser?.phone || current.phone || '',
-        city: '',
-        area: '',
-        street: '',
-        notes: ''
-      }));
-    }
+  const selectGovernorate = (event) => {
+    const nextGovernorate = event.target.value;
+    setAddress((current) => ({
+      ...current,
+      governorate: nextGovernorate,
+      city: ''
+    }));
+  };
+
+  const selectCity = (event) => {
+    setAddress((current) => ({
+      ...current,
+      city: event.target.value
+    }));
+  };
+
+  const selectFulfillmentMethod = (nextMethod) => {
+    setFulfillmentMethod(nextMethod);
+    setAddress((current) => ({
+      ...current,
+      pickupType: nextMethod,
+      governorate: nextMethod === 'delivery' ? current.governorate || '' : '',
+      city: nextMethod === 'delivery' ? current.city || '' : '',
+      street: nextMethod === 'delivery' ? current.street || '' : '',
+      branch: nextMethod !== 'delivery' ? current.branch || '' : '',
+      cafeName: nextMethod === 'cafe' ? current.cafeName || '' : '',
+      notes: current.notes || ''
+    }));
   };
 
   const submit = (event) => {
     event.preventDefault();
     const draft = {
-      shippingAddress,
-      selectedAddressId,
-      paymentMethod,
-      discountCode
+      shippingAddress: {
+        ...shippingAddress,
+        area: shippingAddress.city || ''
+      },
+      paymentMethod: 'cod',
+      discountCode,
+      fulfillmentMethod
     };
     sessionStorage.setItem(checkoutDraftKey, JSON.stringify(draft));
     navigate('/checkout/review');
@@ -192,41 +187,6 @@ export default function Checkout() {
 
       <div className="checkout-layout">
         <form className="checkout-form checkout-panel" onSubmit={submit}>
-          {savedAddresses.length ? (
-            <div className="checkout-loyalty-box">
-              <strong>العناوين المحفوظة</strong>
-              <div className="checkout-saved-addresses">
-                <button
-                  type="button"
-                  className={`checkout-saved-address-card${selectedAddressId === '' ? ' active' : ''}`}
-                  onClick={() => selectSavedAddress('')}
-                >
-                  <div className="checkout-saved-address-head">
-                    <span>إدخال يدوي</span>
-                    {selectedAddressId === '' ? <Check size={16} /> : <MapPin size={16} />}
-                  </div>
-                  <small>اكتب عنوانًا جديدًا بنفسك</small>
-                </button>
-
-                {savedAddresses.map((address) => (
-                  <button
-                    key={address._id}
-                    type="button"
-                    className={`checkout-saved-address-card${selectedAddressId === address._id ? ' active' : ''}`}
-                    onClick={() => selectSavedAddress(address._id)}
-                  >
-                    <div className="checkout-saved-address-head">
-                      <span>{address.label || 'عنوان محفوظ'}</span>
-                      {selectedAddressId === address._id ? <Check size={16} /> : <MapPin size={16} />}
-                    </div>
-                    <small>{[address.governorate, address.city].filter(Boolean).join(' - ') || 'بدون مدينة محددة'}</small>
-                    <p>{address.street || address.address || 'بدون عنوان تفصيلي'}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
           <input
             name="fullName"
             value={shippingAddress.fullName}
@@ -243,53 +203,73 @@ export default function Checkout() {
             required
           />
 
-          {availableGovernorates.length ? (
-            <select name="city" value={shippingAddress.city} onChange={change} required>
-              <option value="">اختر المحافظة</option>
-              {availableGovernorates.map((governorate) => (
-                <option key={governorate.name} value={governorate.name}>{governorate.name}</option>
-              ))}
+          {!isDeliveryHome ? (
+            <select
+              name="branch"
+              value={shippingAddress.branch}
+              onChange={change}
+              required
+            >
+              <option value="">اختر الفرع</option>
+              <option value="التجمع الاول">التجمع الاول</option>
+              <option value="التجمع الخامس">التجمع الخامس</option>
             </select>
-          ) : (
+          ) : null}
+
+          {isDeliveryHome ? (
+            <>
+              <select
+                name="governorate"
+                value={shippingAddress.governorate}
+                onChange={selectGovernorate}
+                required
+              >
+                <option value="">اختر المحافظة</option>
+                {governorates.map((governorate) => (
+                  <option key={governorate.name} value={governorate.name}>
+                    {governorate.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                name="city"
+                value={shippingAddress.city}
+                onChange={selectCity}
+                required
+                disabled={!selectedGovernorateCities.length}
+              >
+                <option value="">اختر المدينة</option>
+                {selectedGovernorateCities.map((city) => (
+                  <option key={`${shippingAddress.city}-${city}`} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+              <input
+                name="street"
+                value={shippingAddress.street}
+                placeholder="العنوان التفصيلي"
+                onChange={change}
+                required
+              />
+            </>
+          ) : null}
+
+          {isNearbyCafe ? (
             <input
-              name="city"
-              value={shippingAddress.city}
-              placeholder="المحافظة"
+              name="cafeName"
+              value={shippingAddress.cafeName}
+              placeholder="اسم الكافيه المجاور"
               onChange={change}
               required
             />
-          )}
-
-          {availableCities.length ? (
-            <select name="area" value={shippingAddress.area} onChange={change} required>
-              <option value="">اختر المدينة</option>
-              {availableCities.map((cityName) => (
-                <option key={cityName} value={cityName}>{cityName}</option>
-              ))}
-            </select>
-          ) : (
-            <input
-              name="area"
-              value={shippingAddress.area}
-              placeholder="المدينة أو المنطقة"
-              onChange={change}
-              required
-            />
-          )}
-
-          <input
-            name="street"
-            value={shippingAddress.street}
-            placeholder="العنوان التفصيلي"
-            onChange={change}
-            required
-          />
+          ) : null}
 
           {notesEnabled ? (
             <textarea
               name="notes"
               value={shippingAddress.notes}
-              placeholder="ملاحظات"
+              placeholder={isNearbyCafe ? 'ملاحظات عن الكافيه أو الطلب' : 'ملاحظات الطلب'}
               onChange={change}
               required={notesRequired}
             />
@@ -305,14 +285,17 @@ export default function Checkout() {
           </div>
 
           <div className="checkout-payment-options">
-            {paymentOptions.map((option) => (
-              <label key={option.value} className={`payment-option-card${paymentMethod === option.value ? ' active' : ''}`}>
+            {checkoutOptions.map((option) => (
+              <label
+                key={`${option.kind}-${option.value}`}
+                className={`payment-option-card${fulfillmentMethod === option.value ? ' active' : ''}`}
+              >
                 <input
                   type="radio"
-                  name="paymentMethod"
+                  name="fulfillmentMethod"
                   value={option.value}
-                  checked={paymentMethod === option.value}
-                  onChange={(event) => setPaymentMethod(event.target.value)}
+                  checked={fulfillmentMethod === option.value}
+                  onChange={(event) => selectFulfillmentMethod(event.target.value)}
                 />
                 <strong>{option.label}</strong>
                 <span>{option.note}</span>

@@ -10,10 +10,7 @@ import Home from './pages/Home.jsx';
 import CategoriesPage from './pages/CategoriesPage.jsx';
 import CategoryPage from './pages/CategoryPage.jsx';
 import OffersPage from './pages/OffersPage.jsx';
-import WishlistPage from './pages/WishlistPage.jsx';
 import ProductDetails from './pages/ProductDetails.jsx';
-import ProfilePage from './pages/ProfilePage.jsx';
-import SettingsPage from './pages/SettingsPage.jsx';
 import ContactPage from './pages/ContactPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
 import PoliciesPage from './pages/PoliciesPage.jsx';
@@ -23,23 +20,18 @@ import ShippingPolicyPage from './pages/ShippingPolicyPage.jsx';
 import RefundPolicyPage from './pages/RefundPolicyPage.jsx';
 import VitwarPicksPage from './pages/VitwarPicksPage.jsx';
 import Cart from './pages/Cart.jsx';
-import Login from './pages/Login.jsx';
-import Register from './pages/Register.jsx';
-import CompletePasswordPage from './pages/CompletePasswordPage.jsx';
-import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
+import AdminLogin from './pages/AdminLogin.jsx';
 import Checkout from './pages/Checkout.jsx';
 import CheckoutReview from './pages/CheckoutReview.jsx';
 import CheckoutSuccess from './pages/CheckoutSuccess.jsx';
-import Orders from './pages/Orders.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import StorePurchasesPage from './pages/StorePurchasesPage.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 
-function PrivateRoute({ children, adminOnly = false }) {
+function AdminRoute({ children }) {
   const { user } = useAuth();
-  if (!user) return <Navigate to="/login" />;
-  const canAccessAdmin = user.role === 'admin' || (user.role === 'employee' && (user.permissions || []).length > 0);
-  if (adminOnly && !canAccessAdmin) return <Navigate to="/" />;
+  if (!user) return <Navigate to="/admin/login" replace />;
+  if (user.role !== 'admin') return <Navigate to="/" replace />;
   return children;
 }
 
@@ -49,7 +41,6 @@ export default function App() {
   const [bootSplashVisible, setBootSplashVisible] = useState(true);
   const [routeSplashVisible, setRouteSplashVisible] = useState(false);
   const firstPathRef = useRef(location.pathname);
-  const requiresPasswordSetup = Boolean(user && !user.hasManualPassword);
 
   useEffect(() => {
     document.body.dataset.theme = 'dark';
@@ -99,21 +90,12 @@ export default function App() {
     <SiteNotificationPrompt />
     <main className={`app-main-shell${routeSplashVisible ? ' is-transitioning' : ''}`}>
       <Routes>
-        {requiresPasswordSetup
-          ? <>
-            <Route path="/complete-password" element={<CompletePasswordPage />} />
-            <Route path="*" element={<Navigate to="/complete-password" replace />} />
-          </>
-          : <>
         <Route path="/" element={<Home />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/category/:name" element={<CategoryPage />} />
         <Route path="/offers" element={<OffersPage />} />
         <Route path="/vitwar-picks" element={<VitwarPicksPage />} />
-        <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/product/:id" element={<ProductDetails />} />
-        <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
-        <Route path="/settings" element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/policies" element={<PoliciesPage />} />
@@ -122,16 +104,13 @@ export default function App() {
         <Route path="/policies/shipping" element={<ShippingPolicyPage />} />
         <Route path="/policies/refund" element={<RefundPolicyPage />} />
         <Route path="/cart" element={<Cart />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
-        <Route path="/checkout/review" element={<PrivateRoute><CheckoutReview /></PrivateRoute>} />
-        <Route path="/checkout/success" element={<PrivateRoute><CheckoutSuccess /></PrivateRoute>} />
-        <Route path="/orders" element={<PrivateRoute><Orders /></PrivateRoute>} />
-        <Route path="/admin" element={<PrivateRoute adminOnly><AdminDashboard /></PrivateRoute>} />
-        <Route path="/admin/store-purchases" element={<PrivateRoute adminOnly><StorePurchasesPage /></PrivateRoute>} />
-          </>}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/checkout/review" element={<CheckoutReview />} />
+        <Route path="/checkout/success" element={<CheckoutSuccess />} />
+        <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path="/admin/store-purchases" element={<AdminRoute><StorePurchasesPage /></AdminRoute>} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </main>
     <SupportChatWidget />

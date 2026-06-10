@@ -30,23 +30,41 @@ const getStripeClient = async () => {
 };
 
 const buildOrderItems = async (orderItems) => {
-  const ids = orderItems.map((item) => item.product);
-  const products = await Product.find({ _id: { $in: ids } });
+  const productIds = orderItems.map((item) => item.product);
+  const products = await Product.find({ _id: { $in: productIds } });
 
   return orderItems.map((item) => {
     const product = products.find((entry) => entry._id.toString() === item.product);
     if (!product) throw new Error('منتج غير موجود');
+
+    const qty = Math.max(1, Number(item.qty || 1));
     const hasTrackedStock = product.countInStock !== null && product.countInStock !== undefined;
-    if (hasTrackedStock && Number(product.countInStock) < Number(item.qty || 0)) {
+    if (hasTrackedStock && Number(product.countInStock) < qty) {
       throw new Error(`الكمية غير متاحة: ${product.name}`);
     }
+
+    const addOns = (Array.isArray(item.addOns) ? item.addOns : []).map((addOn) => {
+      const requestedAddOnId = String(addOn.addOnId || addOn._id || addOn.product || '');
+      const productAddOn = (product.availableAddOns || []).find((entry) => entry._id.toString() === requestedAddOnId);
+      if (!productAddOn || productAddOn.active === false) throw new Error('إضافة غير متاحة لهذا المنتج');
+      const addOnQty = Math.max(1, Number(addOn.qty || 1));
+
+      return {
+        addOnId: productAddOn._id.toString(),
+        name: productAddOn.name,
+        price: productAddOn.price,
+        image: productAddOn.image || '',
+        qty: addOnQty
+      };
+    });
 
     return {
       product: product._id,
       name: product.name,
-      qty: item.qty,
+      qty,
       image: product.image?.url,
-      price: product.price
+      price: product.price,
+      addOns
     };
   });
 };
@@ -60,6 +78,29 @@ const adjustTrackedStock = async (productId, qtyDelta) => {
     { $inc: { countInStock: qtyDelta } }
   );
 };
+
+const applyStockAdjustmentForOrderItems = async (items, direction = -1) => {
+  for (const item of items) {
+    await adjustTrackedStock(item.product, direction * Number(item.qty || 0));
+    for (const addOn of item.addOns || []) {
+      if (addOn.product) {
+        await adjustTrackedStock(addOn.product, direction * Number(item.qty || 0) * Number(addOn.qty || 1));
+      }
+    }
+  }
+};
+
+const normalizeShippingAddress = (shippingAddress = {}) => ({
+  fullName: String(shippingAddress.fullName || '').trim(),
+  phone: String(shippingAddress.phone || '').trim(),
+  branch: String(shippingAddress.branch || '').trim(),
+  governorate: String(shippingAddress.governorate || shippingAddress.city || '').trim(),
+  city: String(shippingAddress.city || shippingAddress.area || '').trim(),
+  area: String(shippingAddress.area || shippingAddress.city || '').trim(),
+  street: String(shippingAddress.street || '').trim(),
+  cafeName: String(shippingAddress.cafeName || '').trim(),
+  notes: String(shippingAddress.notes || '').trim()
+});
 
 const consumeLoyaltyPoints = async (userId, order, usedPoints) => {
   if (!Number(usedPoints || 0)) return;
@@ -80,17 +121,18 @@ const consumeLoyaltyPoints = async (userId, order, usedPoints) => {
 };
 
 export const createStripeCheckoutSession = asyncHandler(async (req, res) => {
-  const { orderItems, shippingAddress, discountCode, redeemLoyaltyPoints } = req.body;
+  const { orderItems, shippingAddress, discountCode, redeemLoyaltyPoints, fulfillmentMethod } = req.body;
   if (!orderItems?.length) {
     return res.status(400).json({ message: 'السلة فارغة' });
   }
 
   const items = await buildOrderItems(orderItems);
   const { stripe, settings } = await getStripeClient();
+  const normalizedShippingAddress = normalizeShippingAddress(shippingAddress);
   const pricing = await calculateOrderPricing({
     settings,
     items,
-    shippingAddress,
+    shippingAddress: normalizedShippingAddress,
     discountCode,
     redeemLoyaltyPoints,
     user: req.user
@@ -99,11 +141,16 @@ export const createStripeCheckoutSession = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'إجمالي الطلب بعد الخصومات يساوي صفرًا، اختر الدفع عند الاستلام لإتمام الطلب' });
   }
   const origin = process.env.CLIENT_URL || req.headers.origin || 'http://localhost:5173';
+  const customer = req.user || {
+    name: normalizedShippingAddress.fullName || 'عميل جديد',
+    email: '',
+    phone: normalizedShippingAddress.phone || ''
+  };
 
   const payload = JSON.stringify({
-    userId: req.user._id.toString(),
+    userId: req.user?._id ? req.user._id.toString() : '',
     clientUrl: origin,
-    shippingAddress,
+    shippingAddress: normalizedShippingAddress,
     items,
     discountCode: pricing.discountCode,
     discountCodeSource: pricing.discountCodeSource,
@@ -112,7 +159,8 @@ export const createStripeCheckoutSession = asyncHandler(async (req, res) => {
     loyaltyPointsDiscount: pricing.loyaltyPointsDiscount,
     itemsPrice: pricing.itemsPrice,
     shippingPrice: pricing.shippingPrice,
-    totalPrice: pricing.totalPrice
+    totalPrice: pricing.totalPrice,
+    fulfillmentMethod: ['cafe', 'delivery'].includes(fulfillmentMethod) ? fulfillmentMethod : 'restaurant'
   });
 
   const chargeableItems = [{
@@ -130,7 +178,7 @@ export const createStripeCheckoutSession = asyncHandler(async (req, res) => {
     mode: 'payment',
     success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/checkout/review?cancelled=1`,
-    customer_email: req.user.email,
+    ...(customer.email ? { customer_email: customer.email } : {}),
     metadata: {
       checkoutPayload: payload
     },
@@ -158,23 +206,28 @@ export const verifyStripeCheckoutSession = asyncHandler(async (req, res) => {
     }
 
     const payload = JSON.parse(rawPayload);
-    const isOwner = payload.userId === req.user._id.toString();
+    const isOwner = req.user?._id ? payload.userId === req.user._id.toString() : true;
 
-    if (!isOwner && req.user.role !== 'admin') {
+    if (!isOwner && req.user?.role !== 'admin') {
       return res.status(403).json({ message: 'غير مصرح بهذه العملية' });
     }
 
     const refreshedItems = await buildOrderItems(
       payload.items.map((item) => ({
         product: item.product.toString(),
-        qty: item.qty
+        qty: item.qty,
+        addOns: (item.addOns || []).map((addOn) => ({
+          addOnId: String(addOn.addOnId || addOn.product || ''),
+          qty: addOn.qty
+        }))
       }))
     );
 
     order = await Order.create({
-      user: payload.userId,
+      user: payload.userId || null,
       orderItems: refreshedItems,
-      shippingAddress: payload.shippingAddress,
+      shippingAddress: normalizeShippingAddress(payload.shippingAddress),
+      fulfillmentMethod: ['cafe', 'delivery'].includes(payload.fulfillmentMethod) ? payload.fulfillmentMethod : 'restaurant',
       paymentMethod: 'دفع أونلاين',
       paymentProvider: settings.payment?.onlineProvider || 'stripe',
       paymentSessionId: session.id,
@@ -190,14 +243,14 @@ export const verifyStripeCheckoutSession = asyncHandler(async (req, res) => {
       paidAt: new Date()
     });
 
-    for (const item of refreshedItems) {
-      await adjustTrackedStock(item.product, -Number(item.qty || 0));
+    await applyStockAdjustmentForOrderItems(refreshedItems, -1);
+
+    if (payload.userId) {
+      await consumeLoyaltyPoints(payload.userId, order, payload.loyaltyPointsUsed);
     }
 
-    await consumeLoyaltyPoints(payload.userId, order, payload.loyaltyPointsUsed);
-
     if (payload.discountCode) {
-      const freshUser = payload.discountCodeSource === 'private' ? await User.findById(payload.userId) : null;
+      const freshUser = payload.discountCodeSource === 'private' && payload.userId ? await User.findById(payload.userId) : null;
       await incrementDiscountCodeUsage({
         settings,
         user: freshUser,
@@ -206,17 +259,17 @@ export const verifyStripeCheckoutSession = asyncHandler(async (req, res) => {
       });
     }
 
-    const customer = await User.findById(payload.userId).select('name phone');
+    const customer = payload.userId
+      ? await User.findById(payload.userId).select('name phone')
+      : {
+          name: normalizeShippingAddress(payload.shippingAddress).fullName || 'عميل جديد',
+          phone: normalizeShippingAddress(payload.shippingAddress).phone || ''
+        };
 
-    console.log('WhatsApp hook reached for verifyStripeCheckoutSession', {
-      orderId: String(order._id || ''),
-      customerId: String(payload.userId || ''),
-      paymentMethod: order.paymentMethod
-    });
     const adminWhatsAppResult = await sendNewOrderWhatsAppNotification({
       order,
       customer,
-      shippingAddress: payload.shippingAddress
+      shippingAddress: normalizeShippingAddress(payload.shippingAddress)
     }).catch((error) => {
       console.error('WhatsApp notification error', {
         orderId: String(order._id || ''),
@@ -232,7 +285,7 @@ export const verifyStripeCheckoutSession = asyncHandler(async (req, res) => {
     const customerWhatsAppResult = await sendCustomerOrderWhatsAppNotification({
       order,
       customer,
-      shippingAddress: payload.shippingAddress,
+      shippingAddress: normalizeShippingAddress(payload.shippingAddress),
       clientUrl: payload.clientUrl
     }).catch((error) => {
       console.error('WhatsApp customer notification error', {
@@ -247,8 +300,8 @@ export const verifyStripeCheckoutSession = asyncHandler(async (req, res) => {
     });
   }
 
-  const isOwner = order.user?.toString() === req.user._id.toString();
-  if (!isOwner && req.user.role !== 'admin') {
+  const isOwner = req.user?._id ? order.user?.toString() === req.user._id.toString() : true;
+  if (!isOwner && req.user?.role !== 'admin') {
     return res.status(403).json({ message: 'غير مصرح بهذه العملية' });
   }
 

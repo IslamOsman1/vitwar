@@ -61,7 +61,7 @@ export default function Register() {
       <div className="auth-divider"><span>أو</span></div>
       <SocialLoginButtons />
 
-      <p>لديك حساب بالفعل؟ <Link to="/login">سجل الدخول</Link></p>
+      <p>لديك حساب بالفعل؟ <Link to="/">العودة للرئيسية</Link></p>
       <p className="auth-policy-links">
         بإنشائك للحساب فأنت توافق على <Link to="/policies/terms">الشروط والأحكام</Link> و<Link to="/policies/privacy">سياسة الخصوصية</Link>
       </p>

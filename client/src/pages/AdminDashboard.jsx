@@ -12,13 +12,13 @@ import {
   Printer,
   Save,
   Search,
+  Users,
   ShieldCheck,
   ShoppingBag,
   Store,
   Tag,
   Truck,
   Undo2,
-  Users,
   QrCode,
   X
 } from 'lucide-react';
@@ -45,8 +45,28 @@ const emptyProduct = {
   countInStock: '',
   featured: false,
   inAgencyCollection: false,
-  isDeal: false
+  isDeal: false,
+  availableAddOns: []
 };
+
+const createEmptyAddOn = () => ({
+  name: '',
+  price: '',
+  image: '',
+  active: true
+});
+
+const normalizeProductAddOns = (addOns = []) => (
+  (Array.isArray(addOns) ? addOns : [])
+    .filter((item) => item && typeof item === 'object')
+    .map((item) => ({
+      _id: item._id || '',
+      name: item.name || '',
+      price: item.price ?? '',
+      image: item.image || '',
+      active: item.active !== false
+    }))
+);
 
 const emptyDiscountForm = {
   code: '',
@@ -149,26 +169,22 @@ const defaultSettingsForm = {
 
 const dashboardSections = [
   { id: 'products', label: 'المنتجات', icon: Package },
-  { id: 'customer-care', label: 'إرضاء العميل', icon: Gift },
   { id: 'accounts', label: 'الحسابات', icon: CreditCard },
   { id: 'categories', label: 'الفئات والأقسام', icon: FolderTree },
   { id: 'store', label: 'إعدادات المتجر', icon: Store },
   { id: 'checkout', label: 'إعداد الطلب', icon: MapPin },
   { id: 'content', label: 'المحتوى والبنرات', icon: Palette },
   { id: 'policies', label: 'السياسات', icon: ShieldCheck },
-  { id: 'payments', label: 'الدفع والتكامل', icon: CreditCard },
   { id: 'loyalty', label: 'أكواد الخصم', icon: Gift },
   { id: 'orders', label: 'الطلبات', icon: ShoppingBag },
-  { id: 'support', label: 'الدعم', icon: MessageCircle },
-  { id: 'users', label: 'المستخدمون', icon: Users }
+  { id: 'support', label: 'الدعم', icon: MessageCircle }
 ];
 
 const permissionOptions = [
   { key: 'manage_products', label: 'إدارة المنتجات' },
   { key: 'manage_orders', label: 'إدارة الطلبات' },
   { key: 'manage_support', label: 'إدارة الدعم' },
-  { key: 'manage_loyalty', label: 'أكواد الخصم' },
-  { key: 'manage_customer_care', label: 'إرضاء العميل' }
+  { key: 'manage_loyalty', label: 'أكواد الخصم' }
 ];
 
 const policyDefinitions = [
@@ -178,14 +194,14 @@ const policyDefinitions = [
   { key: 'refund', label: 'سياسة الاسترجاع والاستبدال', icon: Undo2 }
 ];
 
-const orderStatuses = ['جديد', 'قيد التجهيز', 'في الطريق', 'تم التسليم', 'ملغي'];
+const orderStatuses = ['جديد', 'تم التسليم', 'ملغي'];
 
 const normalizeText = (value) => String(value || '').toLowerCase();
 const normalizeOrderStatus = (value) => String(value || '').trim().toLowerCase();
 const generateProductBarcode = () => `PRD-${Date.now().toString(36).toUpperCase()}`;
 const isDeliveredOrder = (order) => {
   const status = normalizeOrderStatus(order?.status);
-  return status === 'تم التسليم' || status.includes('التسليم') || status === 'delivered';
+  return status === 'تم التسليم' || status === 'delivered';
 };
 const isCancelledOrder = (order) => {
   const status = normalizeOrderStatus(order?.status);
@@ -333,6 +349,7 @@ export default function AdminDashboard() {
   const [qrScannerOpen, setQrScannerOpen] = useState(false);
   const [qrScannerStarting, setQrScannerStarting] = useState(false);
   const [qrScannerStatus, setQrScannerStatus] = useState('');
+  const [orderNotePreview, setOrderNotePreview] = useState({ open: false, orderId: '', customerName: '', note: '' });
   const [searchTerms, setSearchTerms] = useState({
     products: '',
     accounts: '',
@@ -383,6 +400,7 @@ export default function AdminDashboard() {
       .flatMap((group) => group.sections || [])
       .filter((section) => section.sourceCategory === productForm.category);
   }, [categoryGroups, productForm.category]);
+  const trackStock = String(productForm.countInStock ?? '').trim() !== '';
 
   const stats = useMemo(() => ({
     totalOrders: orders.length,
@@ -434,7 +452,7 @@ export default function AdminDashboard() {
         id: `order-${order._id}`,
         kind: 'order',
         label: 'طلب موقع',
-        customerName: order.user?.name || '-',
+        customerName: order.user?.name || order.shippingAddress?.fullName || '-',
         customerCode: order.user?.customerCode || '',
         amount: Number(order.totalPrice || 0),
         note: order.discountCode ? `كود خصم: ${order.discountCode}` : '',
@@ -444,8 +462,13 @@ export default function AdminDashboard() {
         createdAt: order.createdAt,
         searchable: [
           order.user?.name,
+          order.shippingAddress?.fullName,
           order.user?.email,
           order.user?.phone,
+          order.shippingAddress?.phone,
+          order.shippingAddress?.governorate,
+          order.shippingAddress?.city,
+          order.shippingAddress?.street,
           order.paymentMethod,
           order.status,
           order.totalPrice,
@@ -458,7 +481,7 @@ export default function AdminDashboard() {
           id: `refund-${order._id}`,
           kind: 'refund',
           label: 'استرجاع طلب',
-          customerName: order.user?.name || '-',
+          customerName: order.user?.name || order.shippingAddress?.fullName || '-',
           customerCode: order.user?.customerCode || '',
           amount: Number(order.refundedAmount || 0),
           note: 'استرجاع مبلغ طلب ملغي',
@@ -468,6 +491,7 @@ export default function AdminDashboard() {
           createdAt: order.refundedAt || order.updatedAt || order.createdAt,
           searchable: [
             order.user?.name,
+            order.shippingAddress?.fullName,
             order.paymentMethod,
             order.status,
             order.refundedAmount,
@@ -888,6 +912,38 @@ export default function AdminDashboard() {
     });
   };
 
+  const toggleTrackedStock = (checked) => {
+    setProductForm((current) => ({
+      ...current,
+      countInStock: checked ? (String(current.countInStock ?? '').trim() !== '' ? current.countInStock : '0') : ''
+    }));
+  };
+
+  const addProductAddOn = () => {
+    setProductForm((current) => ({
+      ...current,
+      availableAddOns: [...normalizeProductAddOns(current.availableAddOns), createEmptyAddOn()]
+    }));
+  };
+
+  const updateProductAddOn = (index, field, value) => {
+    setProductForm((current) => {
+      const nextAddOns = normalizeProductAddOns(current.availableAddOns);
+      nextAddOns[index] = {
+        ...nextAddOns[index],
+        [field]: value
+      };
+      return { ...current, availableAddOns: nextAddOns };
+    });
+  };
+
+  const removeProductAddOn = (index) => {
+    setProductForm((current) => ({
+      ...current,
+      availableAddOns: normalizeProductAddOns(current.availableAddOns).filter((_, itemIndex) => itemIndex !== index)
+    }));
+  };
+
   const ensureProductBarcode = () => {
     setProductForm((current) => {
       if (String(current.barcode || '').trim()) return current;
@@ -985,7 +1041,8 @@ export default function AdminDashboard() {
       ...productForm,
       price: Number(productForm.price || 0),
       oldPrice: Number(productForm.oldPrice || 0),
-      measurementValue: Number(productForm.measurementValue || 0)
+      measurementValue: Number(productForm.measurementValue || 0),
+      availableAddOns: JSON.stringify(normalizeProductAddOns(productForm.availableAddOns))
     };
 
     if (String(productForm.countInStock).trim() !== '') {
@@ -1029,10 +1086,11 @@ export default function AdminDashboard() {
       unit: product.unit,
       measurementValue: product.measurementValue || '',
       measurementUnit: product.measurementUnit || '',
-      countInStock: product.countInStock,
+      countInStock: product.countInStock ?? '',
       featured: product.featured,
       inAgencyCollection: product.inAgencyCollection,
-      isDeal: product.isDeal
+      isDeal: product.isDeal,
+      availableAddOns: normalizeProductAddOns(product.availableAddOns)
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -1411,6 +1469,19 @@ export default function AdminDashboard() {
     setQrScannerStatus('للبدء اضغط على زر السماح بالكاميرا.');
   };
 
+  const openOrderNotePreview = (order) => {
+    setOrderNotePreview({
+      open: true,
+      orderId: String(order?._id || ''),
+      customerName: order?.user?.name || order?.shippingAddress?.fullName || 'عميل',
+      note: order?.shippingAddress?.notes || ''
+    });
+  };
+
+  const closeOrderNotePreview = () => {
+    setOrderNotePreview({ open: false, orderId: '', customerName: '', note: '' });
+  };
+
   const requestQrScanner = async () => {
     setQrScannerStarting(true);
     setQrScannerStatus('جارٍ تشغيل الكاميرا وقراءة QR...');
@@ -1549,7 +1620,15 @@ export default function AdminDashboard() {
                   <option value="لتر">لتر</option>
                 </select>
               </Field>
-              <Field label="الكمية المتاحة (اختياري)"><input name="countInStock" value={productForm.countInStock} onChange={changeProduct} type="number" placeholder="0" /></Field>
+              <Field label="الكمية المتاحة">
+                <div className="admin-stock-field">
+                  <label className="admin-toggle-pill">
+                    <input type="checkbox" checked={trackStock} onChange={(event) => toggleTrackedStock(event.target.checked)} />
+                    تتبع الكمية المتاحة
+                  </label>
+                  <input name="countInStock" value={productForm.countInStock} onChange={changeProduct} type="number" placeholder="0" disabled={!trackStock} />
+                </div>
+              </Field>
               <Field label="صورة الوجبة / المنتج"><input type="file" accept="image/*" onChange={(event) => setImage(event.target.files?.[0] || null)} /></Field>
             </div>
 
@@ -1582,6 +1661,58 @@ export default function AdminDashboard() {
               <label className="admin-toggle-pill"><input type="checkbox" name="inAgencyCollection" checked={productForm.inAgencyCollection} onChange={changeProduct} /> أضف إلى اختيارات فيتوار</label>
             </div>
 
+            <div className="admin-product-addons-picker">
+              <div className="admin-setting-card-head">
+                <Tag size={18} />
+                <strong>إضافات المنتج</strong>
+              </div>
+              <p className="muted">أضف اختيارات إضافية تظهر للعميل داخل صفحة المنتج وقت الطلب.</p>
+              <div className="admin-product-addons-list">
+                {normalizeProductAddOns(productForm.availableAddOns).map((addOn, index) => (
+                  <div key={addOn._id || index} className="admin-product-addon-card">
+                    <div className="admin-dashboard-form-grid">
+                      <Field label="اسم الإضافة">
+                        <input
+                          value={addOn.name}
+                          onChange={(event) => updateProductAddOn(index, 'name', event.target.value)}
+                          placeholder="مثال: صوص جبنة"
+                        />
+                      </Field>
+                      <Field label="السعر">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={addOn.price}
+                          onChange={(event) => updateProductAddOn(index, 'price', event.target.value)}
+                          placeholder="0"
+                        />
+                      </Field>
+                      <Field label="رابط الصورة الاختياري">
+                        <input
+                          value={addOn.image}
+                          onChange={(event) => updateProductAddOn(index, 'image', event.target.value)}
+                          placeholder="https://..."
+                        />
+                      </Field>
+                    </div>
+                    <div className="admin-product-addon-actions">
+                      <button type="button" className="table-action-btn danger" onClick={() => removeProductAddOn(index)}>حذف الإضافة</button>
+                      <label className="admin-toggle-pill">
+                        <input
+                          type="checkbox"
+                          checked={addOn.active !== false}
+                          onChange={(event) => updateProductAddOn(index, 'active', event.target.checked)}
+                        />
+                        مفعلة
+                      </label>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button type="button" className="secondary-btn admin-add-addon-btn" onClick={addProductAddOn}>إضافة اختيار جديد</button>
+            </div>
+
             <button className="primary-btn admin-submit-btn" type="submit">
               <Save size={16} />
               <span>{editing ? 'حفظ التعديلات' : 'إضافة المنتج'}</span>
@@ -1599,6 +1730,7 @@ export default function AdminDashboard() {
                     <th>الحجم / العدد</th>
                     <th>الكود</th>
                     <th>السعر</th>
+                    <th>الإضافات</th>
                     <th>المتاح</th>
                     <th>الإجراءات</th>
                   </tr>
@@ -1612,7 +1744,8 @@ export default function AdminDashboard() {
                       <td>{Number(product.measurementValue || 0) > 0 && product.measurementUnit ? `${product.measurementValue} ${product.measurementUnit}` : '-'}</td>
                       <td>{product.barcode || '-'}</td>
                       <td>{product.price} ج.م</td>
-                      <td>{product.countInStock}</td>
+                      <td>{product.availableAddOns?.length || 0}</td>
+                      <td>{product.countInStock ?? 'غير محدد'}</td>
                       <td>
                         <div className="admin-table-actions">
                           <button type="button" className="table-action-btn" onClick={() => openProductQrPreview(product)}>QR</button>
@@ -2134,35 +2267,6 @@ export default function AdminDashboard() {
           </form>
         </section>
 
-        <section className={`admin-dashboard-panel${activeSection === 'payments' ? ' active' : ''}`}>
-          <div className="admin-section-head">
-            <div>
-              <h2>الدفع والتكامل</h2>
-              <p>اضبط بوابات الدفع ورسوم الشراء وخيارات التفعيل.</p>
-            </div>
-            <CreditCard size={18} />
-          </div>
-          <SearchBox value={searchTerms.payments} onChange={(event) => changeSearch('payments', event.target.value)} placeholder="ابحث داخل إعدادات الدفع..." />
-          <form className="admin-dashboard-form" onSubmit={saveSettings}>
-            <div className="admin-settings-cluster">
-              <article className="admin-setting-card">
-                <div className="admin-setting-card-head"><CreditCard size={18} /><strong>إعدادات الدفع</strong></div>
-                <div className="admin-dashboard-form-grid">
-                  <Field label="العملة"><input value={settingsForm.payment.currency} onChange={(event) => changeSettingsField(['payment', 'currency'], event.target.value)} placeholder="egp" /></Field>
-                  <Field label="مزود الدفع"><input value={settingsForm.payment.onlineProvider} onChange={(event) => changeSettingsField(['payment', 'onlineProvider'], event.target.value)} placeholder="stripe" /></Field>
-                  <Field label="Stripe Publishable Key"><input value={settingsForm.payment.stripePublishableKey} onChange={(event) => changeSettingsField(['payment', 'stripePublishableKey'], event.target.value)} /></Field>
-                  <Field label="Stripe Secret Key"><input value={settingsForm.payment.stripeSecretKey} onChange={(event) => changeSettingsField(['payment', 'stripeSecretKey'], event.target.value)} /></Field>
-                </div>
-                <div className="admin-toggle-row">
-                  <label className="admin-toggle-pill"><input type="checkbox" checked={settingsForm.payment.cashOnDeliveryEnabled} onChange={(event) => changeSettingsField(['payment', 'cashOnDeliveryEnabled'], event.target.checked)} /> تفعيل الدفع عند الاستلام</label>
-                  <label className="admin-toggle-pill"><input type="checkbox" checked={settingsForm.payment.onlinePaymentEnabled} onChange={(event) => changeSettingsField(['payment', 'onlinePaymentEnabled'], event.target.checked)} /> تفعيل الدفع أونلاين</label>
-                </div>
-                <SaveSectionButton saving={settingsSaving} label="حفظ إعدادات الدفع" />
-              </article>
-            </div>
-          </form>
-        </section>
-
         <section className={`admin-dashboard-panel${activeSection === 'loyalty' ? ' active' : ''}`}>
           <div className="admin-section-head">
             <div>
@@ -2334,8 +2438,12 @@ export default function AdminDashboard() {
                 <thead>
                   <tr>
                     <th>العميل</th>
+                    <th>الهاتف</th>
                     <th>الإجمالي</th>
                     <th>الدفع</th>
+                    <th>العنوان</th>
+                    <th>الفرع</th>
+                    <th>الملاحظات</th>
                     <th>الحالة</th>
                     <th>التاريخ</th>
                   </tr>
@@ -2343,9 +2451,25 @@ export default function AdminDashboard() {
                 <tbody>
                   {filteredOrders.map((order) => (
                     <tr key={order._id}>
-                      <td>{order.user?.name || '-'}</td>
+                      <td>{order.user?.name || order.shippingAddress?.fullName || '-'}</td>
+                      <td>{order.user?.phone || order.shippingAddress?.phone || '-'}</td>
                       <td>{order.totalPrice} ج.م</td>
                       <td>{order.isPaid ? 'مدفوع' : order.paymentMethod}</td>
+                      <td>
+                        {order.fulfillmentMethod === 'cafe'
+                          ? (order.shippingAddress?.cafeName || '-')
+                          : ([order.shippingAddress?.governorate, order.shippingAddress?.city, order.shippingAddress?.street].filter(Boolean).join(' • ') || '-')}
+                      </td>
+                      <td>{order.shippingAddress?.branch || '-'}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="table-action-btn edit"
+                          onClick={() => openOrderNotePreview(order)}
+                        >
+                          {String(order.shippingAddress?.notes || '').trim() ? 'عرض الملاحظة' : 'لا توجد ملاحظة'}
+                        </button>
+                      </td>
                       <td>
                         <select value={order.status} onChange={(event) => changeStatus(order._id, event.target.value)}>
                           {orderStatuses.map((status) => <option key={status}>{status}</option>)}
@@ -2507,6 +2631,34 @@ export default function AdminDashboard() {
                 <span>طباعة QR</span>
               </button>
               <button type="button" className="secondary-btn" onClick={closeProductQrPreview}>
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {orderNotePreview.open ? (
+        <div className="barcode-scanner-overlay" onClick={closeOrderNotePreview}>
+          <div className="barcode-scanner-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="barcode-scanner-head">
+              <div>
+                <strong>ملاحظة الطلب</strong>
+                <span>{orderNotePreview.customerName || 'عميل'}</span>
+              </div>
+              <button type="button" className="barcode-scanner-close" onClick={closeOrderNotePreview} aria-label="إغلاق">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="product-qr-modal-card">
+              <strong>رقم الطلب</strong>
+              <code>{orderNotePreview.orderId || '-'}</code>
+              <span>{orderNotePreview.note ? orderNotePreview.note : 'لا توجد ملاحظة مسجلة لهذا الطلب.'}</span>
+            </div>
+
+            <div className="product-qr-modal-actions">
+              <button type="button" className="secondary-btn" onClick={closeOrderNotePreview}>
                 إغلاق
               </button>
             </div>

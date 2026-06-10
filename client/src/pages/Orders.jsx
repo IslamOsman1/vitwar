@@ -4,8 +4,6 @@ import {
   ClipboardList,
   Clock3,
   Package,
-  PackageSearch,
-  Truck,
   MessageCircle,
   PackageCheck,
   ShoppingBag,
@@ -16,11 +14,9 @@ import api from '../api/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const CANCEL_WINDOW_MS = 5 * 60 * 1000;
-const ORDER_STATUS_STEPS = ['جديد', 'قيد التجهيز', 'في الطريق', 'تم التسليم'];
+const ORDER_STATUS_STEPS = ['جديد', 'تم التسليم'];
 const ORDER_STATUS_ICONS = {
   جديد: Package,
-  'قيد التجهيز': PackageSearch,
-  'في الطريق': Truck,
   'تم التسليم': PackageCheck,
   ملغي: XCircle
 };
@@ -34,7 +30,7 @@ const isCancelledOrder = (status) => {
 
 const isDeliveredOrder = (status) => {
   const normalized = normalizeOrderStatus(status);
-  return normalized === 'تم التسليم' || normalized.includes('التسليم');
+  return normalized === 'تم التسليم';
 };
 
 const getOrderProgressState = (status) => {
@@ -140,7 +136,6 @@ export default function Orders() {
           </div>
         </div>
         <div className="account-hero-actions">
-          <Link to="/wishlist" className="secondary-btn">المفضلة</Link>
           <Link to="/" className="primary-btn">العودة للتسوق</Link>
         </div>
       </section>
@@ -211,14 +206,57 @@ export default function Orders() {
                         <strong>{order.totalPrice} ج.م</strong>
                       </div>
                     </div>
-                    <div className="order-meta-box">
-                      <ShoppingBag size={18} />
-                      <div>
-                        <span>طريقة الدفع</span>
-                        <strong>{order.paymentMethod}</strong>
+                      <div className="order-meta-box">
+                        <ShoppingBag size={18} />
+                        <div>
+                          <span>طريقة الدفع</span>
+                          <strong>{order.paymentMethod}</strong>
+                        </div>
                       </div>
                     </div>
+
+                  <div className="order-address-box">
+                    <span>العميل</span>
+                    <strong>{order.user?.name || order.shippingAddress?.fullName || '-'}</strong>
                   </div>
+
+                  {order.fulfillmentMethod !== 'delivery' ? (
+                    <div className="order-address-box">
+                      <span>الفرع</span>
+                      <strong>{order.shippingAddress?.branch || '-'}</strong>
+                    </div>
+                  ) : null}
+
+                  {order.shippingAddress ? (
+                    <div className="order-address-box">
+                      <span>العنوان</span>
+                      <strong>
+                        {[order.shippingAddress.governorate, order.shippingAddress.city, order.shippingAddress.street]
+                          .filter(Boolean)
+                          .join(' • ') || 'غير متوفر'}
+                      </strong>
+                    </div>
+                  ) : null}
+
+                  {order.orderItems?.length ? (
+                    <div className="order-items-preview">
+                      {order.orderItems.map((item, index) => (
+                        <div key={`${order._id}-${item.product || index}`} className="order-item-preview-row">
+                          <div>
+                            <strong>{item.name}</strong>
+                            {item.addOns?.length ? (
+                              <div className="order-item-preview-addons">
+                                {item.addOns.map((addOn) => (
+                                  <small key={`${order._id}-${item.product}-${addOn.addOnId || addOn.product || addOn.name}`}>+ {addOn.name}</small>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                          <span>{item.qty} × {item.price} ج.م</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
 
                   <div className="order-actions-row">
                     {canCancel ? (

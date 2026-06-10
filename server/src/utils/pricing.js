@@ -30,7 +30,12 @@ export const calculateOrderPricing = async ({
   redeemLoyaltyPoints = false,
   user = null
 }) => {
-  const itemsPrice = roundMoney(items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0), 0));
+  const itemsPrice = roundMoney(items.reduce((sum, item) => {
+    const addOnsPrice = (item.addOns || []).reduce((addOnSum, addOn) => (
+      addOnSum + Number(addOn.price || 0) * Number(addOn.qty || 1)
+    ), 0);
+    return sum + (Number(item.price || 0) + addOnsPrice) * Number(item.qty || 0);
+  }, 0));
   const shippingPrice = roundMoney(await calculateShippingPrice(itemsPrice, shippingAddress));
   const subtotal = roundMoney(itemsPrice + shippingPrice);
 

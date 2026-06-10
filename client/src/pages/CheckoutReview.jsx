@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
 import { useStoreSettings } from '../context/StoreSettingsContext.jsx';
 import { calculateCheckoutTotals } from '../utils/pricing.js';
-import { calculateShippingForGovernorate } from '../utils/shipping.js';
+import { getItemLinePrice, getItemUnitPrice } from '../utils/cart.js';
 
 const checkoutDraftKey = 'checkout-draft';
 
@@ -37,14 +37,9 @@ export default function CheckoutReview() {
     if (!items.length) navigate('/cart');
   }, [items, navigate]);
 
-  const orderLabel = useMemo(
-    () => draft?.paymentMethod === 'online' ? 'دفع أونلاين' : 'الدفع عند الاستلام',
-    [draft]
-  );
-
   const shippingPrice = useMemo(
-    () => calculateShippingForGovernorate(settings, draft?.shippingAddress?.city, totals.itemsPrice),
-    [settings, draft, totals.itemsPrice]
+    () => 0,
+    []
   );
 
   const estimatedTotals = useMemo(
@@ -65,24 +60,26 @@ export default function CheckoutReview() {
 
     try {
       const payload = {
-        orderItems: items.map((item) => ({ product: item._id, qty: item.qty })),
+        orderItems: items.map((item) => ({
+          product: item._id,
+          qty: item.qty,
+          addOns: (item.addOns || []).map((addOn) => ({
+            addOnId: addOn._id,
+            qty: addOn.qty || 1
+          }))
+        })),
         shippingAddress: draft.shippingAddress,
-        paymentMethod: draft.paymentMethod,
-        discountCode: draft.discountCode
+        paymentMethod: 'cod',
+        discountCode: draft.discountCode,
+        fulfillmentMethod: draft.fulfillmentMethod
       };
-
-      if (draft.paymentMethod === 'online') {
-        const { data } = await api.post('/payments/stripe/checkout-session', payload);
-        window.location.href = data.url;
-        return;
-      }
 
       await api.post('/orders', payload);
       await refreshProfile().catch(() => undefined);
       clearCart();
       sessionStorage.removeItem(checkoutDraftKey);
       toast.success('تم إنشاء الطلب');
-      navigate('/orders');
+      navigate('/checkout/success');
     } catch (error) {
       toast.error(error.response?.data?.message || 'فشل إنشاء الطلب');
     } finally {
@@ -105,17 +102,35 @@ export default function CheckoutReview() {
       <div className="checkout-layout">
         <section className="checkout-panel checkout-review-panel">
           <div className="checkout-review-block">
-            <strong>بيانات الشحن</strong>
+            <strong>طريقة الاستلام</strong>
+            <p>
+              {draft.fulfillmentMethod === 'cafe'
+                ? 'الكافيهات المجاورة'
+                : draft.fulfillmentMethod === 'delivery'
+                  ? 'التوصيل للمنزل'
+                  : 'استلام من المطعم'}
+            </p>
+          </div>
+
+          <div className="checkout-review-block">
+            <strong>البيانات</strong>
             <p>{draft.shippingAddress.fullName}</p>
             <p>{draft.shippingAddress.phone}</p>
-            <p>{draft.shippingAddress.city} - {draft.shippingAddress.area}</p>
-            <p>{draft.shippingAddress.street}</p>
+            {draft.fulfillmentMethod !== 'delivery' ? <p>الفرع: {draft.shippingAddress.branch || '-'}</p> : null}
+            {draft.fulfillmentMethod === 'delivery' ? (
+              <>
+                <p>المحافظة: {draft.shippingAddress.governorate || draft.shippingAddress.city}</p>
+                <p>المدينة: {draft.shippingAddress.city || draft.shippingAddress.area}</p>
+                <p>العنوان: {draft.shippingAddress.street}</p>
+              </>
+            ) : null}
+            {draft.fulfillmentMethod === 'cafe' ? <p>{draft.shippingAddress.cafeName}</p> : null}
             {draft.shippingAddress.notes ? <p>{draft.shippingAddress.notes}</p> : null}
           </div>
 
           <div className="checkout-review-block">
             <strong>طريقة الدفع</strong>
-            <p>{orderLabel}</p>
+            <p>الدفع عند التوصيل</p>
           </div>
 
           {draft.discountCode ? (
@@ -129,9 +144,18 @@ export default function CheckoutReview() {
             <strong>المنتجات</strong>
             <div className="checkout-review-items">
               {items.map((item) => (
-                <div className="checkout-review-item" key={item._id}>
-                  <span>{item.name}</span>
-                  <small>{item.qty} × {item.price} ج.م</small>
+                <div className="checkout-review-item" key={item.cartKey || item._id}>
+                  <div>
+                    <span>{item.name}</span>
+                    {item.addOns?.length ? (
+                      <div className="checkout-review-addons">
+                        {item.addOns.map((addOn) => (
+                          <small key={`${item.cartKey}-${addOn._id}`}>+ {addOn.name} ({addOn.price} ج.م)</small>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                  <small>{item.qty} × {getItemUnitPrice(item)} ج.م = {getItemLinePrice(item)} ج.م</small>
                 </div>
               ))}
             </div>
@@ -148,7 +172,7 @@ export default function CheckoutReview() {
           <div className="checkout-review-actions">
             <Link to="/checkout" className="secondary-btn">العودة للتعديل</Link>
             <button type="button" className="primary-btn" onClick={submit} disabled={submitting}>
-              {submitting ? 'جارٍ التنفيذ...' : draft.paymentMethod === 'online' ? 'الدفع الآن' : 'تأكيد الطلب'}
+              {submitting ? 'جارٍ التنفيذ...' : 'تأكيد الطلب'}
             </button>
           </div>
         </section>

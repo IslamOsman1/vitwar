@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, Printer, QrCode, Star } from 'lucide-react';
+import { Check, Minus, Plus, Printer, QrCode } from 'lucide-react';
 import QRCode from 'qrcode';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../api/api.js';
-import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
-import { useWishlist } from '../context/WishlistContext.jsx';
+import { normalizeAddOns } from '../utils/cart.js';
 
 const formatMeasurement = (product) => {
   const value = Number(product?.measurementValue || 0);
@@ -20,18 +19,40 @@ const isOutOfStock = (product) => hasTrackedStock(product) && Number(product.cou
 export default function ProductDetails() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
+  const [addOnOptions, setAddOnOptions] = useState([]);
+  const [selectedAddOnsMap, setSelectedAddOnsMap] = useState({});
   const [qty, setQty] = useState(1);
   const [qrImage, setQrImage] = useState('');
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState('');
-  const [submittingReview, setSubmittingReview] = useState(false);
-  const { user } = useAuth();
   const { addToCart } = useCart();
-  const { isFavorite, toggleWishlist } = useWishlist();
 
   useEffect(() => {
-    api.get(`/products/${id}`).then(({ data }) => setProduct(data));
+    let ignore = false;
+
+    api.get(`/products/${id}`)
+      .then((productResponse) => {
+        if (ignore) return;
+        const nextProduct = productResponse.data;
+        const nextAddOns = Array.isArray(nextProduct.availableAddOns)
+          ? nextProduct.availableAddOns.filter((item) => item?._id && item.active !== false)
+          : [];
+        setProduct(nextProduct);
+        setAddOnOptions(nextAddOns);
+      })
+      .catch(() => {
+        if (ignore) return;
+        setProduct(null);
+        setAddOnOptions([]);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, [id]);
+
+  useEffect(() => {
+    setQty(1);
+    setSelectedAddOnsMap({});
+  }, [product?._id]);
 
   useEffect(() => {
     const barcode = String(product?.barcode || '').trim();
@@ -98,50 +119,43 @@ export default function ProductDetails() {
 
   if (!product) return <div className="container page"><p>جاري التحميل...</p></div>;
 
-  const favorite = isFavorite(product._id);
   const measurementLabel = formatMeasurement(product);
   const trackedStock = hasTrackedStock(product);
   const outOfStock = isOutOfStock(product);
-  const reviews = Array.isArray(product.reviews)
-    ? [...product.reviews].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
-    : [];
-  const currentUserReview = reviews.find((entry) => (entry.user?._id || entry.user) === user?.id);
+  const selectedAddOns = normalizeAddOns(addOnOptions
+    .filter((item) => Number(selectedAddOnsMap[item._id] || 0) > 0)
+    .map((item) => ({ ...item, qty: selectedAddOnsMap[item._id] })));
+  const selectedAddOnsTotal = selectedAddOns.reduce((sum, item) => sum + Number(item.price || 0), 0);
 
-  const submitReview = async (event) => {
-    event.preventDefault();
+  const incrementAddOn = (addOnId) => {
+    setSelectedAddOnsMap((current) => ({
+      ...current,
+      [addOnId]: Number(current[addOnId] || 0) + 1
+    }));
+  };
 
-    if (!user) {
-      toast.error('سجل الدخول أولًا حتى تضيف تقييمك');
-      return;
-    }
+  const decrementAddOn = (addOnId) => {
+    setSelectedAddOnsMap((current) => {
+      const nextQty = Number(current[addOnId] || 0) - 1;
+      const next = { ...current };
+      if (nextQty > 0) {
+        next[addOnId] = nextQty;
+      } else {
+        delete next[addOnId];
+      }
+      return next;
+    });
+  };
 
-    if (!String(reviewComment || '').trim()) {
-      toast.error('أضف تعليقك أولًا');
-      return;
-    }
-
-    setSubmittingReview(true);
-    try {
-      const { data } = await api.post(`/products/${product._id}/reviews`, {
-        rating: reviewRating,
-        comment: reviewComment
-      });
-      setProduct(data.product);
-      setReviewComment('');
-      setReviewRating(5);
-      toast.success(data.message || 'تم حفظ تقييمك');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'تعذر حفظ التقييم');
-    } finally {
-      setSubmittingReview(false);
-    }
+  const handleAddToCart = () => {
+    addToCart(product, Math.max(1, Number(qty) || 1), selectedAddOns);
   };
 
   return (
     <div className="container page">
       <div className="product-details">
         <div className="detail-image">
-          {product.image?.url ? <img src={product.image.url} alt={product.name} loading="eager" decoding="async" fetchPriority="high" sizes="(max-width: 768px) 100vw, 48vw" /> : <span>{product.category}</span>}
+          {product.image?.url ? <img src={product.image.url} alt={product.name} loading="eager" decoding="async" sizes="(max-width: 768px) 100vw, 48vw" /> : <span>{product.category}</span>}
         </div>
 
         <div className="detail-info">
@@ -149,17 +163,10 @@ export default function ProductDetails() {
           <h1>{product.name}</h1>
           <p>{product.description}</p>
 
-          <div className="product-rating-summary">
-            <div className="product-stars" aria-label={`تقييم ${product.rating || 0} من 5`}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star key={star} size={18} className={star <= Math.round(Number(product.rating || 0)) ? 'filled' : ''} />
-              ))}
-            </div>
-            <strong>{Number(product.rating || 0).toFixed(1)}</strong>
-            <span>{product.numReviews || 0} تقييم</span>
+          <div className="big-price">
+            {product.price + selectedAddOnsTotal} ج.م <small>/ {product.unit}</small>
           </div>
-
-          <div className="big-price">{product.price} ج.م <small>/ {product.unit}</small></div>
+          {selectedAddOnsTotal ? <p className="muted">السعر الأساسي: {product.price} ج.م</p> : null}
           {measurementLabel ? <p className="muted">الحجم: {measurementLabel}</p> : null}
           <p className="muted">المخزون: {trackedStock ? product.countInStock : 'غير محدد'}</p>
 
@@ -182,78 +189,51 @@ export default function ProductDetails() {
             </div>
           ) : null}
 
+          {addOnOptions.length ? (
+            <div className="product-detail-addons">
+              <strong>الإضافات</strong>
+              <div className="product-detail-addons-list">
+                {addOnOptions.map((addOn) => {
+                  const disabled = isOutOfStock(addOn);
+                  const selectedQty = Number(selectedAddOnsMap[addOn._id] || 0);
+                  const checked = selectedQty > 0;
+                  return (
+                    <div key={addOn._id} className={`product-detail-addon-option${checked ? ' selected' : ''}${disabled ? ' disabled' : ''}`}>
+                      <div className="product-detail-addon-controls">
+                        <button type="button" onClick={() => incrementAddOn(addOn._id)} disabled={disabled} aria-label="إضافة">
+                          <Plus size={18} />
+                        </button>
+                        {checked ? (
+                          <>
+                            <span>{selectedQty}</span>
+                            <button type="button" onClick={() => decrementAddOn(addOn._id)} aria-label="تقليل">
+                              <Minus size={16} />
+                            </button>
+                          </>
+                        ) : (
+                          <span className="product-detail-addon-check"><Check size={16} /></span>
+                        )}
+                      </div>
+                      <span className="product-detail-addon-thumb">
+                        {addOn.image ? <img src={addOn.image} alt={addOn.name} loading="lazy" decoding="async" /> : null}
+                      </span>
+                      <div className="product-detail-addon-copy">
+                        <strong>{addOn.name}</strong>
+                        <small>{addOn.price} ج.م</small>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
           <input type="number" min="1" max={trackedStock ? product.countInStock : undefined} value={qty} onChange={(event) => setQty(event.target.value)} />
           <div className="detail-actions">
-            <button className="primary-btn" onClick={() => addToCart(product, Number(qty))} disabled={outOfStock}>أضف للسلة</button>
-            <button type="button" className={`wishlist-detail-btn${favorite ? ' active' : ''}`} onClick={() => toggleWishlist(product)}>
-              <Heart size={18} /> {favorite ? 'في المفضلة' : 'أضف للمفضلة'}
-            </button>
+            <button className="primary-btn" onClick={handleAddToCart} disabled={outOfStock}>أضف للسلة</button>
           </div>
         </div>
       </div>
-
-      <section className="product-reviews-panel">
-        <div className="section-head compact">
-          <div>
-            <h2>التعليقات والتقييم</h2>
-            <p>{currentUserReview ? 'يمكنك تعديل تقييمك الحالي في أي وقت.' : 'شارك رأيك في المنتج لمساعدة بقية العملاء.'}</p>
-          </div>
-        </div>
-
-        <form className="product-review-form" onSubmit={submitReview}>
-          <label className="product-review-rating">
-            <span>تقييمك</span>
-            <div className="product-review-stars-picker">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  className={star <= reviewRating ? 'active' : ''}
-                  onClick={() => setReviewRating(star)}
-                  aria-label={`اختر ${star} نجوم`}
-                >
-                  <Star size={18} />
-                </button>
-              ))}
-            </div>
-          </label>
-
-          <textarea
-            value={reviewComment}
-            onChange={(event) => setReviewComment(event.target.value)}
-            placeholder={currentUserReview ? currentUserReview.comment : 'اكتب تعليقك عن المنتج...'}
-          />
-
-          {user ? (
-            <button type="submit" className="primary-btn" disabled={submittingReview}>
-              {submittingReview ? 'جارٍ الإرسال...' : currentUserReview ? 'تحديث التقييم' : 'إرسال التقييم'}
-            </button>
-          ) : (
-            <Link to="/login" className="primary-btn">سجل الدخول لإضافة تقييم</Link>
-          )}
-        </form>
-
-        <div className="product-reviews-list">
-          {reviews.length ? reviews.map((review) => (
-            <article key={review._id} className="product-review-card">
-              <div className="product-review-head">
-                <div>
-                  <strong>{review.name || review.user?.name || 'مستخدم'}</strong>
-                  <span>{new Date(review.createdAt || Date.now()).toLocaleDateString('ar-EG')}</span>
-                </div>
-                <div className="product-stars small">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} size={15} className={star <= Number(review.rating || 0) ? 'filled' : ''} />
-                  ))}
-                </div>
-              </div>
-              <p>{review.comment}</p>
-            </article>
-          )) : (
-            <div className="product-reviews-empty">لا توجد تقييمات بعد. كن أول من يضيف رأيه في هذا المنتج.</div>
-          )}
-        </div>
-      </section>
     </div>
   );
 }

@@ -8,7 +8,6 @@ export default function Logo({ className = '', compact = false }) {
       alt="Vitwar"
       loading="eager"
       decoding="async"
-      fetchPriority="high"
       className={`brand-logo ${compact ? 'compact' : 'full'} ${className}`.trim()}
     />
   );
