@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AppSplash from './components/AppSplash.jsx';
 import Header from './components/Header.jsx';
@@ -6,27 +6,28 @@ import Footer from './components/Footer.jsx';
 import SiteNotificationPrompt from './components/SiteNotificationPrompt.jsx';
 import SupportChatWidget from './components/SupportChatWidget.jsx';
 import { ensurePushSubscription } from './utils/pushNotifications.js';
-import Home from './pages/Home.jsx';
-import CategoriesPage from './pages/CategoriesPage.jsx';
-import CategoryPage from './pages/CategoryPage.jsx';
-import OffersPage from './pages/OffersPage.jsx';
-import ProductDetails from './pages/ProductDetails.jsx';
-import ContactPage from './pages/ContactPage.jsx';
-import AboutPage from './pages/AboutPage.jsx';
-import PoliciesPage from './pages/PoliciesPage.jsx';
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx';
-import TermsPage from './pages/TermsPage.jsx';
-import ShippingPolicyPage from './pages/ShippingPolicyPage.jsx';
-import RefundPolicyPage from './pages/RefundPolicyPage.jsx';
-import VitwarPicksPage from './pages/VitwarPicksPage.jsx';
-import Cart from './pages/Cart.jsx';
-import AdminLogin from './pages/AdminLogin.jsx';
-import Checkout from './pages/Checkout.jsx';
-import CheckoutReview from './pages/CheckoutReview.jsx';
-import CheckoutSuccess from './pages/CheckoutSuccess.jsx';
-import AdminDashboard from './pages/AdminDashboard.jsx';
-import StorePurchasesPage from './pages/StorePurchasesPage.jsx';
 import { useAuth } from './context/AuthContext.jsx';
+
+const Home = lazy(() => import('./pages/Home.jsx'));
+const CategoriesPage = lazy(() => import('./pages/CategoriesPage.jsx'));
+const CategoryPage = lazy(() => import('./pages/CategoryPage.jsx'));
+const OffersPage = lazy(() => import('./pages/OffersPage.jsx'));
+const ProductDetails = lazy(() => import('./pages/ProductDetails.jsx'));
+const ContactPage = lazy(() => import('./pages/ContactPage.jsx'));
+const AboutPage = lazy(() => import('./pages/AboutPage.jsx'));
+const PoliciesPage = lazy(() => import('./pages/PoliciesPage.jsx'));
+const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage.jsx'));
+const TermsPage = lazy(() => import('./pages/TermsPage.jsx'));
+const ShippingPolicyPage = lazy(() => import('./pages/ShippingPolicyPage.jsx'));
+const RefundPolicyPage = lazy(() => import('./pages/RefundPolicyPage.jsx'));
+const VitwarPicksPage = lazy(() => import('./pages/VitwarPicksPage.jsx'));
+const Cart = lazy(() => import('./pages/Cart.jsx'));
+const AdminLogin = lazy(() => import('./pages/AdminLogin.jsx'));
+const Checkout = lazy(() => import('./pages/Checkout.jsx'));
+const CheckoutReview = lazy(() => import('./pages/CheckoutReview.jsx'));
+const CheckoutSuccess = lazy(() => import('./pages/CheckoutSuccess.jsx'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard.jsx'));
+const StorePurchasesPage = lazy(() => import('./pages/StorePurchasesPage.jsx'));
 
 function AdminRoute({ children }) {
   const { user } = useAuth();
@@ -89,29 +90,31 @@ export default function App() {
     <Header />
     <SiteNotificationPrompt />
     <main className={`app-main-shell${routeSplashVisible ? ' is-transitioning' : ''}`}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/categories" element={<CategoriesPage />} />
-        <Route path="/category/:name" element={<CategoryPage />} />
-        <Route path="/offers" element={<OffersPage />} />
-        <Route path="/vitwar-picks" element={<VitwarPicksPage />} />
-        <Route path="/product/:id" element={<ProductDetails />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/policies" element={<PoliciesPage />} />
-        <Route path="/policies/privacy" element={<PrivacyPolicyPage />} />
-        <Route path="/policies/terms" element={<TermsPage />} />
-        <Route path="/policies/shipping" element={<ShippingPolicyPage />} />
-        <Route path="/policies/refund" element={<RefundPolicyPage />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/checkout/review" element={<CheckoutReview />} />
-        <Route path="/checkout/success" element={<CheckoutSuccess />} />
-        <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-        <Route path="/admin/store-purchases" element={<AdminRoute><StorePurchasesPage /></AdminRoute>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Suspense fallback={<div className="page route-loading"><p className="muted">جارٍ تحميل الصفحة...</p></div>}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/category/:name" element={<CategoryPage />} />
+          <Route path="/offers" element={<OffersPage />} />
+          <Route path="/vitwar-picks" element={<VitwarPicksPage />} />
+          <Route path="/product/:id" element={<ProductDetails />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/policies" element={<PoliciesPage />} />
+          <Route path="/policies/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/policies/terms" element={<TermsPage />} />
+          <Route path="/policies/shipping" element={<ShippingPolicyPage />} />
+          <Route path="/policies/refund" element={<RefundPolicyPage />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout/review" element={<CheckoutReview />} />
+          <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/store-purchases" element={<AdminRoute><StorePurchasesPage /></AdminRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </main>
     <SupportChatWidget />
     <Footer />
