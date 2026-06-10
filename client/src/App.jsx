@@ -59,13 +59,8 @@ export default function App() {
   useEffect(() => {
     if (firstPathRef.current === location.pathname) return;
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-    const isSmallScreen = window.matchMedia?.('(max-width: 480px)')?.matches;
-    if (prefersReducedMotion || isSmallScreen) {
-      setRouteSplashVisible(false);
-      return undefined;
-    }
     setRouteSplashVisible(true);
-    const timer = window.setTimeout(() => setRouteSplashVisible(false), 420);
+    const timer = window.setTimeout(() => setRouteSplashVisible(false), prefersReducedMotion ? 180 : 520);
     return () => window.clearTimeout(timer);
   }, [location.pathname]);
 
